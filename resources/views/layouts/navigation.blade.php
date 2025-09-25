@@ -17,6 +17,12 @@
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             Dashboard
                         </x-nav-link>
+                        
+                        @can('isFreelancer')
+                            <x-nav-link :href="route('applications.index')" :active="request()->routeIs('applications.index')">
+                                {{ __('Minhas Candidaturas') }}
+                            </x-nav-link>
+                        @endcan
                     @endauth
                 </div>
             </div>
@@ -90,6 +96,12 @@
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     Dashboard
                 </x-responsive-nav-link>
+                
+                @can('isFreelancer')
+                    <x-responsive-nav-link :href="route('applications.index')" :active="request()->routeIs('applications.index')">
+                        {{ __('Minhas Candidaturas') }}
+                    </x-responsive-nav-link>
+                @endcan
             @endauth
         </div>
 

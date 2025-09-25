@@ -16,6 +16,21 @@
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
+        <!-- User Type -->
+        <div class="mt-4">
+            <x-input-label for="user_type" value="Tipo de Usuário" />
+            <select id="user_type" name="user_type" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
+                <option value="">Selecione o tipo de usuário</option>
+                <option value="freelancer" {{ old('user_type') == 'freelancer' ? 'selected' : '' }}>
+                    🧑‍💻 Freelancer - Busco trabalhos
+                </option>
+                <option value="company" {{ old('user_type') == 'company' ? 'selected' : '' }}>
+                    🏢 Empresa - Publico vagas
+                </option>
+            </select>
+            <x-input-error :messages="$errors->get('user_type')" class="mt-2" />
+        </div>
+
         <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />

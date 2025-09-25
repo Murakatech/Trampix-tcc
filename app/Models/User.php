@@ -30,11 +30,11 @@ class User extends Authenticatable
     // Relações
     public function company()
     {
-        return $this->hasOne(Company::class);
+        return $this->hasOne(\App\Models\Company::class);
     }
 
     public function freelancer()
     {
-        return $this->hasOne(Freelancer::class);
+        return $this->hasOne(\App\Models\Freelancer::class);
     }
 }
