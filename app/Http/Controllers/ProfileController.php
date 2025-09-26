@@ -16,8 +16,18 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+        
+        // Carregar perfis ativos
+        $freelancerProfile = $user->freelancer();
+        $companyProfile = $user->company();
+        
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'freelancerProfile' => $freelancerProfile,
+            'companyProfile' => $companyProfile,
+            'canCreateFreelancer' => !$freelancerProfile && auth()->user()->can('canCreateFreelancerProfile'),
+            'canCreateCompany' => !$companyProfile && auth()->user()->can('canCreateCompanyProfile'),
         ]);
     }
 

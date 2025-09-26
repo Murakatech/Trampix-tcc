@@ -27,14 +27,64 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
-    // Relações
+    // Relações - Agora permite múltiplos perfis
+    public function companies()
+    {
+        return $this->hasMany(\App\Models\Company::class);
+    }
+
+    public function freelancers()
+    {
+        return $this->hasMany(\App\Models\Freelancer::class);
+    }
+
+    // Relações para perfil ativo (compatibilidade)
     public function company()
     {
-        return $this->hasOne(\App\Models\Company::class);
+        return $this->hasOne(\App\Models\Company::class)->where('is_active', true);
     }
 
     public function freelancer()
     {
-        return $this->hasOne(\App\Models\Freelancer::class);
+        return $this->hasOne(\App\Models\Freelancer::class)->where('is_active', true);
+    }
+
+    // Métodos helper para verificar tipos de perfil
+    public function isFreelancer()
+    {
+        return $this->freelancers()->where('is_active', true)->exists();
+    }
+
+    public function isCompany()
+    {
+        return $this->companies()->where('is_active', true)->exists();
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function hasActiveProfile($type)
+    {
+        if ($type === 'freelancer') {
+            return $this->isFreelancer();
+        }
+        if ($type === 'company') {
+            return $this->isCompany();
+        }
+        return false;
+    }
+
+    // Método para criar perfil
+    public function createProfile($type, $data = [])
+    {
+        if ($type === 'freelancer') {
+            return $this->freelancers()->create(array_merge(['is_active' => true], $data));
+        }
+        if ($type === 'company') {
+            return $this->companies()->create(array_merge(['is_active' => true], $data));
+        }
+        return null;
     }
 }

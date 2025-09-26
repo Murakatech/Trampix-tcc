@@ -14,6 +14,16 @@ class Freelancer extends Model
         'bio',
         'portfolio_url',
         'cv_url',
+        'phone',
+        'location',
+        'hourly_rate',
+        'availability',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'hourly_rate' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
 
     public function user()

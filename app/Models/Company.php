@@ -16,6 +16,17 @@ class Company extends Model
         'sector',
         'location',
         'description',
+        'website',
+        'phone',
+        'employees_count',
+        'founded_year',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'employees_count' => 'integer',
+        'founded_year' => 'integer',
+        'is_active' => 'boolean',
     ];
 
     public function user()

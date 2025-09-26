@@ -47,6 +47,11 @@ class DevSeeder extends Seeder
                 'sector' => 'Tecnologia',
                 'location' => 'São Paulo/SP',
                 'description' => 'Empresa de tecnologia especializada em desenvolvimento de software.',
+                'website' => 'https://techcorp.com.br',
+                'phone' => '(11) 99999-9999',
+                'employees_count' => 50,
+                'founded_year' => 2018,
+                'is_active' => true,
             ]
         );
 
@@ -67,6 +72,11 @@ class DevSeeder extends Seeder
                 'bio' => 'Desenvolvedor Full Stack com 3 anos de experiência em Laravel, React e Vue.js. Especialista em APIs REST e desenvolvimento ágil.',
                 'portfolio_url' => 'https://joaosilva.dev',
                 'cv_url' => null,
+                'phone' => '(11) 98888-8888',
+                'location' => 'São Paulo/SP',
+                'hourly_rate' => 75.00,
+                'availability' => 'Disponível para projetos de 20h/semana',
+                'is_active' => true,
             ]
         );
 
@@ -164,10 +174,54 @@ class DevSeeder extends Seeder
             );
         }
 
+        // 6. Usuário com múltiplos perfis
+        $multiUser = User::updateOrCreate(
+            ['email' => 'multi@trampix.com'],
+            [
+                'name' => 'Maria Santos',
+                'password' => Hash::make('123456'),
+                'role' => 'freelancer', // role padrão
+                'email_verified_at' => now(),
+            ]
+        );
+
+        // Perfil freelancer
+        Freelancer::updateOrCreate(
+            ['user_id' => $multiUser->id],
+            [
+                'bio' => 'Consultora em Marketing Digital e Desenvolvedora Frontend. Especialista em estratégias digitais e interfaces modernas.',
+                'portfolio_url' => 'https://mariasantos.com',
+                'cv_url' => null,
+                'phone' => '(11) 97777-7777',
+                'location' => 'Rio de Janeiro/RJ',
+                'hourly_rate' => 120.00,
+                'availability' => 'Disponível para consultoria e projetos',
+                'is_active' => true,
+            ]
+        );
+
+        // Perfil empresa
+        Company::updateOrCreate(
+            ['user_id' => $multiUser->id],
+            [
+                'name' => 'Santos Digital Marketing',
+                'cnpj' => '98.765.432/0001-11',
+                'sector' => 'Marketing Digital',
+                'location' => 'Rio de Janeiro/RJ',
+                'description' => 'Agência especializada em marketing digital e desenvolvimento web.',
+                'website' => 'https://santosdigital.com.br',
+                'phone' => '(21) 99999-8888',
+                'employees_count' => 8,
+                'founded_year' => 2020,
+                'is_active' => true,
+            ]
+        );
+
         echo "✅ DevSeeder executado com sucesso!\n";
         echo "📧 Admin: admin@trampix.com | Senha: 123456\n";
         echo "🏢 Empresa: empresa@trampix.com | Senha: 123456\n";
         echo "👤 Freelancer: freelancer@trampix.com | Senha: 123456\n";
+        echo "🔄 Múltiplos Perfis: multi@trampix.com | Senha: 123456\n";
         echo "📊 Criadas 5 vagas e 3 candidaturas de teste\n";
     }
 }
