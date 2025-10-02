@@ -1,157 +1,273 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">
+@extends('layouts.app')
+
+@section('header')
+<div class="bg-white shadow">
+    <div class="container py-4">
+        <h1 class="h2 mb-0">
+            <i class="fas fa-users me-2"></i>
             Candidatos para: {{ $vacancy->title }}
-        </h2>
-    </x-slot>
+        </h1>
+    </div>
+</div>
+@endsection
 
-    <div class="p-6 space-y-4">
-        {{-- Mensagens de sucesso/erro --}}
-        @if(session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                {{ session('success') }}
-            </div>
-        @endif
+@section('content')
+<div class="container mt-4">
+    {{-- Mensagens de sucesso/erro --}}
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-        @if(session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {{ session('error') }}
-            </div>
-        @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-        {{-- Informações da vaga --}}
-        <div class="bg-white p-4 rounded-lg shadow">
-            <h3 class="text-lg font-semibold mb-2">{{ $vacancy->title }}</h3>
-            <p class="text-gray-600 mb-2">{{ $vacancy->description }}</p>
-            <div class="text-sm text-gray-500">
-                <p><strong>Categoria:</strong> {{ $vacancy->category }}</p>
-                <p><strong>Tipo de contrato:</strong> {{ $vacancy->contract_type }}</p>
-                <p><strong>Localização:</strong> {{ $vacancy->location_type }}</p>
+    {{-- Informações da vaga --}}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="card-title mb-0">
+                <i class="fas fa-briefcase me-2"></i>{{ $vacancy->title }}
+            </h3>
+        </div>
+        <div class="card-body">
+            <p class="card-text mb-3">{{ $vacancy->description }}</p>
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Categoria:</strong><br>
+                    <span class="badge bg-secondary">{{ $vacancy->category ?? '-' }}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Tipo de contrato:</strong><br>
+                    <span class="badge bg-info">{{ $vacancy->contract_type ?? '-' }}</span>
+                </div>
+                <div class="col-md-3">
+                    <strong>Modalidade:</strong><br>
+                    <span class="badge bg-warning text-dark">{{ $vacancy->location_type ?? '-' }}</span>
+                </div>
                 @if($vacancy->salary_range)
-                    <p><strong>Faixa salarial:</strong> {{ $vacancy->salary_range }}</p>
+                <div class="col-md-3">
+                    <strong>Faixa salarial:</strong><br>
+                    <span class="badge bg-success">{{ $vacancy->salary_range }}</span>
+                </div>
                 @endif
             </div>
         </div>
-
-        {{-- Lista de candidatos --}}
-        @if ($applications->isEmpty())
-            <div class="bg-yellow-100 text-yellow-800 px-4 py-3 rounded">
-                Nenhum candidato se inscreveu para esta vaga ainda.
-            </div>
-        @else
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-                <table class="w-full">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Candidato
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Email
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Status
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Carta de Apresentação
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Data da Candidatura
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Ações
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @foreach ($applications as $application)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        {{ $application->freelancer->user->name }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">
-                                        {{ $application->freelancer->user->email }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                        @if($application->status === 'pending') bg-yellow-100 text-yellow-800
-                                        @elseif($application->status === 'accepted') bg-green-100 text-green-800
-                                        @elseif($application->status === 'rejected') bg-red-100 text-red-800
-                                        @else bg-gray-100 text-gray-800
-                                        @endif">
-                                        {{ ucfirst($application->status) }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="text-sm text-gray-900 max-w-xs truncate">
-                                        {{ $application->cover_letter ?? 'Sem carta de apresentação' }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $application->created_at->format('d/m/Y H:i') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($application->status === 'pending')
-                                        <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="inline">
-                                            @csrf @method('PATCH')
-                                            <input type="hidden" name="status" value="accepted">
-                                            <button type="submit" class="px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700">
-                                                Aceitar
-                                            </button>
-                                        </form>
-
-                                        <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="inline ms-2">
-                                            @csrf @method('PATCH')
-                                            <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" class="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700">
-                                                Rejeitar
-                                            </button>
-                                        </form>
-                                    @elseif($application->status === 'accepted')
-                                        <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800">
-                                            ✓ Aceito
-                                        </span>
-                                        <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="inline ms-2">
-                                            @csrf @method('PATCH')
-                                            <input type="hidden" name="status" value="rejected">
-                                            <button type="submit" class="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700">
-                                                Rejeitar
-                                            </button>
-                                        </form>
-                                    @elseif($application->status === 'rejected')
-                                        <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="inline">
-                                            @csrf @method('PATCH')
-                                            <input type="hidden" name="status" value="accepted">
-                                            <button type="submit" class="px-2 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700">
-                                                Aceitar
-                                            </button>
-                                        </form>
-                                        <span class="px-2 py-1 text-xs rounded bg-red-100 text-red-800 ms-2">
-                                            ✗ Rejeitado
-                                        </span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="text-sm text-gray-600">
-                Total de candidatos: {{ $applications->count() }}
-            </div>
-        @endif
-
-        {{-- Botão voltar --}}
-        <div class="mt-6">
-            <a href="{{ route('dashboard') }}" 
-               class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                ← Voltar ao Dashboard
-            </a>
-        </div>
     </div>
-</x-app-layout>
+
+    {{-- Lista de candidatos --}}
+    @if ($applications->isEmpty())
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-user-slash fa-4x text-muted mb-4"></i>
+                <h3 class="h5 mb-3">Nenhum candidato ainda</h3>
+                <p class="text-muted mb-4">Esta vaga ainda não recebeu candidaturas.</p>
+                <a href="{{ route('vagas.show', $vacancy) }}" class="btn btn-primary">
+                    <i class="fas fa-eye me-2"></i>Ver Vaga Pública
+                </a>
+            </div>
+        </div>
+    @else
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Lista de Candidatos
+                </h4>
+                <span class="badge bg-primary fs-6">{{ $applications->count() }} candidato(s)</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>
+                                    <i class="fas fa-user me-1"></i>Candidato
+                                </th>
+                                <th>
+                                    <i class="fas fa-envelope me-1"></i>Email
+                                </th>
+                                <th>
+                                    <i class="fas fa-flag me-1"></i>Status
+                                </th>
+                                <th>
+                                    <i class="fas fa-file-text me-1"></i>Carta de Apresentação
+                                </th>
+                                <th>
+                                    <i class="fas fa-calendar me-1"></i>Data da Candidatura
+                                </th>
+                                <th>
+                                    <i class="fas fa-cogs me-1"></i>Ações
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($applications as $application)
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white me-2">
+                                                {{ substr($application->freelancer->user->name, 0, 1) }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ $application->freelancer->user->name }}</div>
+                                                @if($application->freelancer->profession)
+                                                    <small class="text-muted">{{ $application->freelancer->profession }}</small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ $application->freelancer->user->email }}" class="text-decoration-none">
+                                            {{ $application->freelancer->user->email }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @if($application->status === 'pending')
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock me-1"></i>Pendente
+                                            </span>
+                                        @elseif($application->status === 'accepted')
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>Aceito
+                                            </span>
+                                        @elseif($application->status === 'rejected')
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times me-1"></i>Rejeitado
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary">{{ ucfirst($application->status) }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($application->cover_letter)
+                                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#coverLetterModal{{ $application->id }}">
+                                                <i class="fas fa-eye me-1"></i>Ver carta
+                                            </button>
+                                            
+                                            <!-- Modal para carta de apresentação -->
+                                            <div class="modal fade" id="coverLetterModal{{ $application->id }}" tabindex="-1">
+                                                <div class="modal-dialog">
+                                                    <div class="modal-content">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title">Carta de Apresentação</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <p><strong>Candidato:</strong> {{ $application->freelancer->user->name }}</p>
+                                                            <hr>
+                                                            <p>{{ $application->cover_letter }}</p>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <span class="text-muted">
+                                                <i class="fas fa-minus me-1"></i>Sem carta
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <small>{{ $application->created_at->format('d/m/Y') }}</small><br>
+                                        <small class="text-muted">{{ $application->created_at->format('H:i') }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            @if($application->status === 'pending')
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                    @csrf @method('PATCH')
+                                                    <input type="hidden" name="status" value="accepted">
+                                                    <button type="submit" class="btn btn-sm btn-success" 
+                                                            onclick="return confirm('Aceitar esta candidatura?')">
+                                                        <i class="fas fa-check me-1"></i>Aceitar
+                                                    </button>
+                                                </form>
+
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                    @csrf @method('PATCH')
+                                                    <input type="hidden" name="status" value="rejected">
+                                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                                            onclick="return confirm('Rejeitar esta candidatura?')">
+                                                        <i class="fas fa-times me-1"></i>Rejeitar
+                                                    </button>
+                                                </form>
+                                            @elseif($application->status === 'accepted')
+                                                <span class="badge bg-success me-2">
+                                                    <i class="fas fa-check me-1"></i>Aceito
+                                                </span>
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                    @csrf @method('PATCH')
+                                                    <input type="hidden" name="status" value="rejected">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                            onclick="return confirm('Rejeitar esta candidatura?')">
+                                                        <i class="fas fa-times me-1"></i>Rejeitar
+                                                    </button>
+                                                </form>
+                                            @elseif($application->status === 'rejected')
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                    @csrf @method('PATCH')
+                                                    <input type="hidden" name="status" value="accepted">
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                            onclick="return confirm('Aceitar esta candidatura?')">
+                                                        <i class="fas fa-check me-1"></i>Aceitar
+                                                    </button>
+                                                </form>
+                                                <span class="badge bg-danger ms-2">
+                                                    <i class="fas fa-times me-1"></i>Rejeitado
+                                                </span>
+                                            @endif
+                                        </div>
+                                        
+                                        {{-- Link para ver perfil do freelancer --}}
+                                        <div class="mt-1">
+                                            <a href="{{ route('freelancers.show', $application->freelancer) }}" 
+                                               class="btn btn-sm btn-outline-primary" target="_blank">
+                                                <i class="fas fa-user me-1"></i>Ver Perfil
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Botões de navegação --}}
+    <div class="mt-4 d-flex gap-2">
+        <a href="{{ route('dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Voltar ao Dashboard
+        </a>
+        <a href="{{ route('vagas.show', $vacancy) }}" class="btn btn-outline-primary">
+            <i class="fas fa-eye me-1"></i>Ver Vaga Pública
+        </a>
+        <a href="{{ route('vagas.edit', $vacancy) }}" class="btn btn-outline-warning">
+            <i class="fas fa-edit me-1"></i>Editar Vaga
+        </a>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+</style>
+@endsection

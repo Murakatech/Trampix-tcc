@@ -21,6 +21,7 @@ class Company extends Model
         'employees_count',
         'founded_year',
         'is_active',
+        'profile_photo',
     ];
 
     protected $casts = [

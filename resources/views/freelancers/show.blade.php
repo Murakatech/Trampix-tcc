@@ -1,16 +1,38 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Meu Perfil de Freelancer') }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+@section('content')
+<div class="container">
+    {{-- Cabeçalho --}}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="h3 mb-0">
+                @if(auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id)
+                    Meu Perfil de Freelancer
+                @else
+                    Perfil de {{ $freelancer->user->name }}
+                @endif
+            </h2>
+        </div>
+    </div>
+
+    {{-- Card do Perfil --}}
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
                     <div class="row">
-                        <div class="col-md-8">
+                        <div class="col-md-3 text-center mb-4">
+                            @if($freelancer->profile_photo)
+                                <img src="{{ asset('storage/' . $freelancer->profile_photo) }}" 
+                                     alt="Foto de {{ $freelancer->user->name }}" 
+                                     class="img-thumbnail" 
+                                     style="width: 200px; height: 200px; object-fit: cover;">
+                            @else
+                                <div class="bg-light d-flex align-items-center justify-content-center" 
+                                     style="width: 200px; height: 200px; border-radius: 8px;">
+                                    <i class="fas fa-user fa-4x text-muted"></i>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="col-md-9">
                             <h3>{{ $freelancer->user->name }}</h3>
                             
                             @if($freelancer->bio)
@@ -64,23 +86,44 @@
                         </div>
 
                         <div class="col-md-4">
-                            <div class="d-grid gap-2">
-                                <a href="{{ route('freelancers.edit', $freelancer) }}" class="btn btn-primary">
-                                    <i class="fas fa-edit"></i> Editar Perfil
-                                </a>
-                                
-                                <a href="{{ route('applications.index') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-briefcase"></i> Minhas Candidaturas
-                                </a>
-                                
-                                <a href="{{ route('home') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-search"></i> Buscar Vagas
-                                </a>
-                            </div>
+                            {{-- Botões de ação apenas para o próprio freelancer --}}
+                            @if(auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id)
+                                <div class="d-grid gap-2">
+                                    <a href="{{ route('freelancers.edit', $freelancer) }}" class="btn btn-primary">
+                                        <i class="fas fa-edit"></i> Editar Perfil
+                                    </a>
+                                    
+                                    <a href="{{ route('applications.index') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-briefcase"></i> Minhas Candidaturas
+                                    </a>
+                                    
+                                    <a href="{{ route('home') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-search"></i> Buscar Vagas
+                                    </a>
+                                </div>
+                            @else
+                                {{-- Botões para empresas visualizando o perfil --}}
+                                <div class="d-grid gap-2">
+                                    @if($freelancer->cv_path)
+                                        <a href="{{ route('freelancers.download-cv', $freelancer) }}" class="btn btn-primary">
+                                            <i class="fas fa-download"></i> Baixar CV
+                                        </a>
+                                    @endif
+                                    
+                                    <a href="mailto:{{ $freelancer->user->email }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-envelope"></i> Entrar em Contato
+                                    </a>
+                                    
+                                    <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left"></i> Voltar
+                                    </a>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</x-app-layout>
+</div>
+@endsection

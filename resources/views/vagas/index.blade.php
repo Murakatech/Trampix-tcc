@@ -1,61 +1,115 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">
-            Vagas Disponíveis
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="p-6 space-y-4">
-        {{-- Alerts de sessão --}}
-        @if (session('ok'))
-            <div class="bg-green-100 text-green-800 px-4 py-2 rounded">{{ session('ok') }}</div>
-        @endif
-
-        @if ($vagas->isEmpty())
-            <p>Nenhuma vaga encontrada.</p>
-        @else
-            <table class="w-full border-collapse border border-gray-300">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border border-gray-300 px-3 py-2">Título</th>
-                        <th class="border border-gray-300 px-3 py-2">Empresa</th>
-                        <th class="border border-gray-300 px-3 py-2">Categoria</th>
-                        <th class="border border-gray-300 px-3 py-2">Tipo</th>
-                        <th class="border border-gray-300 px-3 py-2">Local</th>
-                        <th class="border border-gray-300 px-3 py-2">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($vagas as $vaga)
-                        <tr>
-                            <td class="border border-gray-300 px-3 py-2">
-                                <a href="{{ route('vagas.show', $vaga->id) }}" class="text-blue-600">
-                                    {{ $vaga->title }}
-                                </a>
-                            </td>
-                            <td class="border border-gray-300 px-3 py-2">
-                                {{ $vaga->company->name ?? '-' }}
-                            </td>
-                            <td class="border border-gray-300 px-3 py-2">
-                                {{ $vaga->category ?? '-' }}
-                            </td>
-                            <td class="border border-gray-300 px-3 py-2">
-                                {{ $vaga->contract_type ?? '-' }}
-                            </td>
-                            <td class="border border-gray-300 px-3 py-2">
-                                {{ $vaga->location_type ?? '-' }}
-                            </td>
-                            <td class="border border-gray-300 px-3 py-2">
-                                <a href="{{ route('vagas.show', $vaga->id) }}" class="text-blue-600">Ver</a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
-            <div class="mt-4">
-                {{ $vagas->links() }}
-            </div>
-        @endif
+@section('header')
+<div class="bg-white shadow">
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold text-gray-900">Vagas Disponíveis</h1>
     </div>
-</x-app-layout>
+</div>
+@endsection
+
+@section('content')
+<div class="container mt-4">
+    {{-- Alerts de sessão --}}
+    @if (session('ok'))
+        <div class="alert alert-success">{{ session('ok') }}</div>
+    @endif
+
+    @if ($vagas->isEmpty())
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Nenhuma vaga encontrada.
+        </div>
+    @else
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Título</th>
+                                <th>Empresa</th>
+                                <th>Categoria</th>
+                                <th>Tipo</th>
+                                <th>Local</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($vagas as $vaga)
+                                <tr>
+                                    <td>
+                                        <a href="{{ route('vagas.show', $vaga->id) }}" class="text-decoration-none fw-bold">
+                                            {{ $vaga->title }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{ $vaga->company->name ?? '-' }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ $vaga->category ?? '-' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ $vaga->contract_type ?? '-' }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ $vaga->location_type ?? '-' }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <a href="{{ route('vagas.show', $vaga->id) }}" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>Ver
+                                            </a>
+                                            
+                                            @can('isFreelancer')
+                                                @php
+                                                    $hasApplied = $vaga->applications()->where('freelancer_id', auth()->user()->freelancer?->id)->exists();
+                                                @endphp
+                                                
+                                                @if (!$hasApplied)
+                                    <form action="{{ route('applications.store', $vaga->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="fas fa-paper-plane me-1"></i>Candidatar
+                                        </button>
+                                    </form>
+                                @else
+                                                    <span class="badge bg-warning">Já candidatado</span>
+                                                @endif
+                                            @endcan
+                                            
+                                            @can('update', $vaga)
+                                                <a href="{{ route('vagas.edit', $vaga->id) }}" class="btn btn-outline-warning btn-sm">
+                                                    <i class="fas fa-edit me-1"></i>Editar
+                                                </a>
+                                            @endcan
+                                            
+                                            @can('delete', $vaga)
+                                                <form action="{{ route('vagas.destroy', $vaga->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                                            onclick="return confirm('Tem certeza que deseja excluir esta vaga?')">
+                                                        <i class="fas fa-trash me-1"></i>Excluir
+                                                    </button>
+                                                </form>
+                                            @endcan
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                
+                {{-- Paginação --}}
+                @if ($vagas->hasPages())
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $vagas->links() }}
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
+</div>
+@endsection

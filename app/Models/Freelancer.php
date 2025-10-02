@@ -19,6 +19,7 @@ class Freelancer extends Model
         'hourly_rate',
         'availability',
         'is_active',
+        'profile_photo',
     ];
 
     protected $casts = [

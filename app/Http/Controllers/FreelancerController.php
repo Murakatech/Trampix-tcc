@@ -22,13 +22,21 @@ class FreelancerController extends Controller
 
     public function show(Freelancer $freelancer)
     {
-        // Só o dono do perfil ou admin podem ver
+        // Permitir visualização para:
+        // 1. O próprio freelancer
+        // 2. Administradores
+        // 3. Empresas (para visualizar candidatos)
         if (auth()->user()->isAdmin() || 
-            (auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id)) {
-            return view('freelancers.show', compact('freelancer'));
+            (auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id) ||
+            auth()->user()->isCompany()) {
+            return view('profile.show', [
+                'user' => $freelancer->user,
+                'freelancer' => $freelancer,
+                'company' => null,
+            ]);
         }
 
-        abort(403, 'Acesso negado. Você só pode visualizar seu próprio perfil.');
+        abort(403, 'Acesso negado.');
     }
 
     public function showOwn()
@@ -42,7 +50,11 @@ class FreelancerController extends Controller
                 ->with('info', 'Você precisa criar um perfil de freelancer primeiro.');
         }
         
-        return view('freelancers.show', compact('freelancer'));
+        return view('profile.show', [
+            'user' => $freelancer->user,
+            'freelancer' => $freelancer,
+            'company' => null,
+        ]);
     }
 
     public function create()

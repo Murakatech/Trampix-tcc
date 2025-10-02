@@ -1,86 +1,125 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">
-            {{ $vaga->title }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="p-6 space-y-4">
-        {{-- Alerts --}}
-        @if (session('success'))
-            <div class="bg-green-100 text-green-800 px-4 py-2 rounded">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="bg-red-100 text-red-800 px-4 py-2 rounded">{{ session('error') }}</div>
-        @endif
+@section('header')
+<div class="bg-white shadow">
+    <div class="container py-4">
+        <h1 class="h2 mb-0">{{ $vaga->title }}</h1>
+    </div>
+</div>
+@endsection
 
-        {{-- Erros de validação --}}
-        @if ($errors->any())
-            <div class="bg-red-100 text-red-800 px-4 py-2 rounded">
-                <ul class="list-disc list-inside">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+@section('content')
+<div class="container mt-4">
+    {{-- Alerts --}}
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+    @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
 
-        <div class="space-y-2">
-            <p><strong>Empresa:</strong> {{ $vaga->company->name ?? '-' }}</p>
-            <p><strong>Descrição:</strong> {{ $vaga->description ?? '-' }}</p>
-            <p><strong>Requisitos:</strong> {{ $vaga->requirements ?? '-' }}</p>
-            <p><strong>Categoria:</strong> {{ $vaga->category ?? '-' }}</p>
-            <p><strong>Tipo de contrato:</strong> {{ $vaga->contract_type ?? '-' }}</p>
-            <p><strong>Local:</strong> {{ $vaga->location_type ?? '-' }}</p>
-            <p><strong>Faixa salarial:</strong> {{ $vaga->salary_range ?? '-' }}</p>
-            <p><strong>Status:</strong> {{ $vaga->status ?? 'active' }}</p>
+    {{-- Erros de validação --}}
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
+    @endif
 
-        {{-- Aplicar (freelancer logado) --}}
-        @auth
-            @can('isFreelancer')
-                @php
-                    $freelancerId = auth()->user()->freelancer->id ?? null;
-                    $alreadyApplied = $freelancerId
-                        ? \App\Models\Application::where('job_vacancy_id', $vaga->id)
-                            ->where('freelancer_id', $freelancerId)
-                            ->exists()
-                        : false;
-                @endphp
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Empresa:</strong> {{ $vaga->company->name ?? '-' }}</p>
+                    <p><strong>Categoria:</strong> <span class="badge bg-secondary">{{ $vaga->category ?? '-' }}</span></p>
+                    <p><strong>Tipo de contrato:</strong> <span class="badge bg-info">{{ $vaga->contract_type ?? '-' }}</span></p>
+                    <p><strong>Local:</strong> <span class="badge bg-success">{{ $vaga->location_type ?? '-' }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Faixa salarial:</strong> {{ $vaga->salary_range ?? '-' }}</p>
+                    <p><strong>Status:</strong> <span class="badge bg-primary">{{ $vaga->status ?? 'active' }}</span></p>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="mb-3">
+                <h5>Descrição</h5>
+                <p>{{ $vaga->description ?? '-' }}</p>
+            </div>
+            
+            <div class="mb-3">
+                <h5>Requisitos</h5>
+                <p>{{ $vaga->requirements ?? '-' }}</p>
+            </div>
 
-                @if ($alreadyApplied)
-                    <p class="text-green-700">Você já se candidatou a esta vaga.</p>
-                @else
-                    <form method="POST" action="{{ route('applications.store', $vaga->id) }}" class="mt-2 space-y-2">
-                        @csrf
-                        <textarea
-                            name="cover_letter"
-                            rows="3"
-                            placeholder="Mensagem opcional ao recrutador"
-                            class="w-full border rounded p-2"
-                        >{{ old('cover_letter') }}</textarea>
+            {{-- Aplicar (freelancer logado) --}}
+            @auth
+                @can('isFreelancer')
+                    @php
+                        $freelancerId = auth()->user()->freelancer->id ?? null;
+                        $alreadyApplied = $freelancerId
+                            ? \App\Models\Application::where('job_vacancy_id', $vaga->id)
+                                ->where('freelancer_id', $freelancerId)
+                                ->exists()
+                            : false;
+                    @endphp
 
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
-                            Aplicar
-                        </button>
-                    </form>
+                    <hr>
+                    
+                    @if ($alreadyApplied)
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Você já se candidatou a esta vaga.
+                        </div>
+                    @else
+                        <form method="POST" action="{{ route('applications.store', $vaga->id) }}">
+                            @csrf
+                            <div class="mb-3">
+                                <label for="cover_letter" class="form-label">Mensagem opcional ao recrutador</label>
+                                <textarea
+                                    id="cover_letter"
+                                    name="cover_letter"
+                                    rows="3"
+                                    class="form-control"
+                                    placeholder="Conte um pouco sobre você e por que se interessa por esta vaga..."
+                                >{{ old('cover_letter') }}</textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Candidatar-se
+                            </button>
+                        </form>
+                    @endif
+                @endcan
+            @endauth
+
+            {{-- Ações da empresa dona --}}
+            @can('isCompany')
+                @if(($vaga->company?->user_id) === auth()->id())
+                    <hr>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('applications.byVacancy', $vaga->id) }}" class="btn btn-outline-primary">
+                            <i class="fas fa-users me-1"></i> Ver Candidatos
+                        </a>
+                        <a href="{{ route('vagas.edit', $vaga) }}" class="btn btn-outline-warning">
+                            <i class="fas fa-edit me-1"></i> Editar
+                        </a>
+                        <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" class="d-inline" 
+                              onsubmit="return confirm('Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita.');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="fas fa-trash me-1"></i> Excluir
+                            </button>
+                        </form>
+                    </div>
                 @endif
             @endcan
-        @endauth
-
-        {{-- Ações da empresa dona --}}
-        @can('isCompany')
-            @if(($vaga->company?->user_id) === auth()->id())
-                <div class="flex items-center gap-3 pt-4">
-                    <a href="{{ route('applications.byVacancy', $vaga->id) }}" class="text-blue-600">Ver candidatos</a>
-                    <a href="{{ route('vagas.edit', $vaga) }}" class="text-blue-600">Editar</a>
-                    <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" onsubmit="return confirm('Excluir esta vaga?');">
-                        @csrf
-                        @method('DELETE')
-                        <button class="text-red-600">Excluir</button>
-                    </form>
-                </div>
-            @endif
-        @endcan
+        </div>
     </div>
-</x-app-layout>
+</div>
+@endsection

@@ -20,18 +20,24 @@ class CompanyController extends Controller
         return view('companies.index', compact('companies'));
     }
 
-    public function show()
+    public function show(Company $company)
     {
-        Gate::authorize('isCompany');
-        
-        $company = auth()->user()->company;
-        
-        if (!$company) {
-            return redirect()->route('companies.create')
-                ->with('info', 'Você precisa criar um perfil de empresa primeiro.');
+        // Verificar se a empresa está ativa
+        if (!$company->is_active) {
+            abort(404, 'Empresa não encontrada.');
         }
         
-        return view('companies.show', compact('company'));
+        // Carregar relacionamentos necessários
+        $company->load(['user', 'vacancies' => function($query) {
+            $query->where('status', 'active')->latest()->take(5);
+        }]);
+        
+        // Usar a tela unificada de perfil
+        return view('profile.show', [
+            'user' => $company->user,
+            'company' => $company,
+            'freelancer' => null,
+        ]);
     }
 
     public function create()

@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\FreelancerController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\ProfilePhotoController;
 use Illuminate\Support\Facades\Route;
 
 // garante que {vaga} só aceite números
@@ -29,14 +30,27 @@ Route::get('/dashboard', fn () => view('dashboard'))
     ->middleware(['auth','verified'])
     ->name('dashboard');
 
+// Styleguide (apenas para desenvolvimento)
+Route::get('/styleguide', fn () => view('styleguide'))
+    ->middleware(['auth'])
+    ->name('styleguide');
+
 // Público
 Route::resource('vagas', JobVacancyController::class)->only(['index','show']);
+Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
 
 // Perfil / dashboard
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Perfil unificado
+    Route::get('/profiles/{user}', [ProfileController::class, 'show'])->name('profiles.show');
+    
+    // Rotas para upload de foto de perfil
+    Route::post('/profile/photo/upload', [ProfilePhotoController::class, 'upload'])->name('profile.photo.upload');
+    Route::delete('/profile/photo/delete', [ProfilePhotoController::class, 'delete'])->name('profile.photo.delete');
     
     // Rotas para perfis de freelancer
     Route::get('/freelancers/profile', [FreelancerController::class, 'showOwn'])->name('freelancers.profile');
@@ -45,13 +59,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/freelancers/{freelancer}/download-cv', [FreelancerController::class, 'downloadCv'])
         ->name('freelancers.download-cv');
     
-    // Rotas para perfis de empresa
-    Route::get('/companies', [CompanyController::class, 'show'])->name('companies.show');
-    Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
-    Route::post('/companies', [CompanyController::class, 'store'])->name('companies.store');
-    Route::get('/companies/{company}/edit', [CompanyController::class, 'edit'])->name('companies.edit');
-    Route::put('/companies/{company}', [CompanyController::class, 'update'])->name('companies.update');
-    Route::delete('/companies/{company}', [CompanyController::class, 'destroy'])->name('companies.destroy');
+    // Rotas para perfis de empresa (autenticadas)
+    Route::resource('companies', CompanyController::class)
+        ->only(['create', 'store', 'edit', 'update', 'destroy']);
     Route::get('/companies/{company}/vacancies', [CompanyController::class, 'vacancies'])
         ->name('companies.vacancies');
 });
@@ -73,6 +83,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'can:isAdmin'])->group(function () {
     Route::get('/admin/freelancers', [FreelancerController::class, 'index'])->name('admin.freelancers');
     Route::get('/admin/companies', [CompanyController::class, 'index'])->name('admin.companies');
+    Route::get('/admin/applications', [ApplicationController::class, 'adminIndex'])->name('admin.applications');
 });
 
 require __DIR__.'/auth.php';

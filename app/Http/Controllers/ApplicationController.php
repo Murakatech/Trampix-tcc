@@ -100,4 +100,21 @@ class ApplicationController extends Controller
 
         return back()->with('success', "Candidatura para '{$jobTitle}' cancelada com sucesso!");
     }
+
+    // Área administrativa - todas as candidaturas
+    public function adminIndex()
+    {
+        $applications = Application::with(['freelancer.user', 'jobVacancy.company'])
+            ->latest()
+            ->paginate(20);
+
+        $stats = [
+            'total' => Application::count(),
+            'pending' => Application::where('status', 'pending')->count(),
+            'accepted' => Application::where('status', 'accepted')->count(),
+            'rejected' => Application::where('status', 'rejected')->count(),
+        ];
+
+        return view('admin.applications', compact('applications', 'stats'));
+    }
 }

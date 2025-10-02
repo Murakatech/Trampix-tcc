@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,28 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    /**
+     * Exibe a tela unificada de perfil para qualquer usuário
+     */
+    public function show(User $user): View
+    {
+        $freelancer = $user->freelancer;
+        $company = $user->company;
+
+        // Carregar vagas recentes da empresa (se houver)
+        if ($company) {
+            $company->load(['vacancies' => function($query) {
+                $query->where('status', 'active')->latest()->take(5);
+            }]);
+        }
+
+        return view('profile.show', [
+            'user' => $user,
+            'freelancer' => $freelancer,
+            'company' => $company,
+        ]);
+    }
+
     /**
      * Display the user's profile form.
      */

@@ -7,6 +7,12 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Componente de Upload de Foto -->
+            @include('components.profile-photo-upload', [
+                'profilePhoto' => $freelancer->profile_photo,
+                'profileType' => 'freelancer'
+            ])
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <form method="POST" action="{{ route('freelancers.update', $freelancer) }}" enctype="multipart/form-data">
@@ -79,7 +85,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('freelancers.show') }}" class="btn btn-secondary">
+                            <a href="{{ route('freelancers.show', $freelancer) }}" class="btn btn-secondary">
                                 {{ __('Cancelar') }}
                             </a>
 

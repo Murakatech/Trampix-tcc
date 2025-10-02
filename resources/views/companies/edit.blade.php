@@ -7,6 +7,12 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <!-- Componente de Upload de Foto -->
+            @include('components.profile-photo-upload', [
+                'profilePhoto' => $company->profile_photo,
+                'profileType' => 'company'
+            ])
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <form method="POST" action="{{ route('companies.update', $company) }}">
@@ -22,11 +28,31 @@
                                 </div>
 
                                 <div class="mb-3">
+                                    <x-input-label for="cnpj" :value="__('CNPJ')" />
+                                    <x-text-input id="cnpj" name="cnpj" type="text" class="form-control" :value="old('cnpj', $company->cnpj)" placeholder="00.000.000/0000-00" />
+                                    <x-input-error :messages="$errors->get('cnpj')" class="mt-2" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <x-input-label for="sector" :value="__('Setor de Atuação')" />
+                                    <x-text-input id="sector" name="sector" type="text" class="form-control" :value="old('sector', $company->sector)" placeholder="Ex: Tecnologia, Saúde, Educação..." />
+                                    <x-input-error :messages="$errors->get('sector')" class="mt-2" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <x-input-label for="location" :value="__('Localização')" />
+                                    <x-text-input id="location" name="location" type="text" class="form-control" :value="old('location', $company->location)" placeholder="Cidade, Estado" />
+                                    <x-input-error :messages="$errors->get('location')" class="mt-2" />
+                                </div>
+
+                                <div class="mb-3">
                                     <x-input-label for="description" :value="__('Descrição')" />
                                     <textarea id="description" name="description" class="form-control" rows="4" placeholder="Descreva sua empresa, área de atuação, missão...">{{ old('description', $company->description) }}</textarea>
                                     <x-input-error :messages="$errors->get('description')" class="mt-2" />
                                 </div>
+                            </div>
 
+                            <div class="col-md-6">
                                 <div class="mb-3">
                                     <x-input-label for="website" :value="__('Website')" />
                                     <x-text-input id="website" name="website" type="url" class="form-control" :value="old('website', $company->website)" placeholder="https://www.suaempresa.com" />
@@ -38,20 +64,18 @@
                                     <x-text-input id="phone" name="phone" type="text" class="form-control" :value="old('phone', $company->phone)" placeholder="(11) 3333-4444" />
                                     <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                                 </div>
-                            </div>
 
-                            <div class="col-md-6">
                                 <div class="mb-3">
-                                    <x-input-label for="employee_count" :value="__('Número de Funcionários')" />
-                                    <select id="employee_count" name="employee_count" class="form-control">
+                                    <x-input-label for="employees_count" :value="__('Número de Funcionários')" />
+                                    <select id="employees_count" name="employees_count" class="form-control">
                                         <option value="">Selecione o porte da empresa</option>
-                                        <option value="1-10" {{ old('employee_count', $company->employee_count) == '1-10' ? 'selected' : '' }}>1-10 funcionários</option>
-                                        <option value="11-50" {{ old('employee_count', $company->employee_count) == '11-50' ? 'selected' : '' }}>11-50 funcionários</option>
-                                        <option value="51-200" {{ old('employee_count', $company->employee_count) == '51-200' ? 'selected' : '' }}>51-200 funcionários</option>
-                                        <option value="201-500" {{ old('employee_count', $company->employee_count) == '201-500' ? 'selected' : '' }}>201-500 funcionários</option>
-                                        <option value="500+" {{ old('employee_count', $company->employee_count) == '500+' ? 'selected' : '' }}>Mais de 500 funcionários</option>
+                                        <option value="1-10" {{ old('employees_count', $company->employees_count) == '1-10' ? 'selected' : '' }}>1-10 funcionários</option>
+                                        <option value="11-50" {{ old('employees_count', $company->employees_count) == '11-50' ? 'selected' : '' }}>11-50 funcionários</option>
+                                        <option value="51-200" {{ old('employees_count', $company->employees_count) == '51-200' ? 'selected' : '' }}>51-200 funcionários</option>
+                                        <option value="201-500" {{ old('employees_count', $company->employees_count) == '201-500' ? 'selected' : '' }}>201-500 funcionários</option>
+                                        <option value="500+" {{ old('employees_count', $company->employees_count) == '500+' ? 'selected' : '' }}>Mais de 500 funcionários</option>
                                     </select>
-                                    <x-input-error :messages="$errors->get('employee_count')" class="mt-2" />
+                                    <x-input-error :messages="$errors->get('employees_count')" class="mt-2" />
                                 </div>
 
                                 <div class="mb-3">
@@ -73,7 +97,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('companies.show') }}" class="btn btn-secondary">
+                            <a href="{{ route('companies.show', $company) }}" class="btn btn-secondary">
                                 {{ __('Cancelar') }}
                             </a>
 
