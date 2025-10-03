@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Http\Requests\ProfileUpdateRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,33 +41,102 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         
-        // Carregar perfis ativos
-        $freelancerProfile = $user->freelancer();
-        $companyProfile = $user->company();
+        // Carregar perfis (hasOne)
+        $freelancer = $user->freelancer;
+        $company = $user->company;
         
         return view('profile.edit', [
             'user' => $user,
-            'freelancerProfile' => $freelancerProfile,
-            'companyProfile' => $companyProfile,
-            'canCreateFreelancer' => !$freelancerProfile && auth()->user()->can('canCreateFreelancerProfile'),
-            'canCreateCompany' => !$companyProfile && auth()->user()->can('canCreateCompanyProfile'),
+            'freelancer' => $freelancer,
+            'company' => $company,
+            'canCreateFreelancer' => !$freelancer && auth()->user()->can('canCreateFreelancerProfile'),
+            'canCreateCompany' => !$company && auth()->user()->can('canCreateCompanyProfile'),
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $section = $request->input('section', 'account');
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        if ($section === 'account') {
+            $validated = $request->validate(\App\Http\Requests\AccountUpdateRequest::rulesFor($user->id));
+
+            $user->fill($validated);
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+            $user->save();
+
+            return Redirect::route('profile.edit')->with('status', 'profile-updated');
         }
 
-        $request->user()->save();
+        if ($section === 'freelancer') {
+            // Autorizações: criar/editar
+            $freelancer = $user->freelancer;
+            if ($freelancer) {
+                // Usar Policy padrão para atualização
+                $this->authorize('update', $freelancer);
+            } else {
+                $this->authorize('canCreateFreelancerProfile');
+            }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+            $validated = $request->validate(\App\Http\Requests\FreelancerUpdateRequest::rulesFor($freelancer?->id));
+
+            // Upload/remoção de CV
+            if ($freelancer) {
+                if ($request->boolean('remove_cv') && $freelancer->cv_url) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_url);
+                    $validated['cv_url'] = null;
+                }
+                if ($request->hasFile('cv')) {
+                    if ($freelancer->cv_url) {
+                        \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_url);
+                    }
+                    $cvPath = $request->file('cv')->store('cvs', 'public');
+                    $validated['cv_url'] = $cvPath;
+                }
+            } else {
+                if ($request->hasFile('cv')) {
+                    $cvPath = $request->file('cv')->store('cvs', 'public');
+                    $validated['cv_url'] = $cvPath;
+                }
+            }
+
+            if ($freelancer) {
+                $freelancer->update($validated);
+            } else {
+                $freelancer = $user->createProfile('freelancer', $validated);
+            }
+
+            return Redirect::route('profile.edit')->with('success', 'Perfil de freelancer atualizado com sucesso!');
+        }
+
+        if ($section === 'company') {
+            $company = $user->company;
+            if ($company) {
+                // Usar Policy padrão para atualização
+                $this->authorize('update', $company);
+            } else {
+                $this->authorize('canCreateCompanyProfile');
+            }
+
+            $validated = $request->validate(\App\Http\Requests\CompanyUpdateRequest::rulesFor($company?->id));
+
+            if ($company) {
+                $company->update($validated);
+            } else {
+                $company = $user->createProfile('company', $validated);
+            }
+
+            return Redirect::route('profile.edit')->with('success', 'Perfil de empresa atualizado com sucesso!');
+        }
+
+        // Fallback
+        return Redirect::route('profile.edit');
     }
 
     /**

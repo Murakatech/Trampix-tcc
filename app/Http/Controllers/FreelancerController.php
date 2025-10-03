@@ -154,6 +154,16 @@ class FreelancerController extends Controller
 
     public function downloadCv(Freelancer $freelancer)
     {
+        // Autorizações consistentes com a visualização do perfil:
+        // 1. Administradores
+        // 2. O próprio freelancer dono do CV
+        // 3. Usuários empresa (podem acessar CVs de candidatos)
+        if (!(auth()->user()->isAdmin() ||
+            (auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id) ||
+            auth()->user()->isCompany())) {
+            abort(403, 'Acesso negado.');
+        }
+
         if (!$freelancer->cv_url || !Storage::disk('public')->exists($freelancer->cv_url)) {
             abort(404, 'CV não encontrado');
         }
