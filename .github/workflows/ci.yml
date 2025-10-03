@@ -17,8 +17,8 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: sqlite, pdo_sqlite, mbstring
+          php-version: '8.3'
+          extensions: sqlite3, pdo_sqlite, mbstring
           coverage: none
 
       - name: Install dependencies
@@ -37,6 +37,10 @@ jobs:
         run: |
           mkdir -p database
           touch database/database.sqlite
+
+      - name: Run migrations
+        run: |
+          php artisan migrate --force
 
       - name: Run test suite
         run: vendor/bin/phpunit --colors=always
