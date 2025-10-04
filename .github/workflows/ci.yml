@@ -42,5 +42,10 @@ jobs:
         run: |
           php artisan migrate --force
 
+      - name: Stub Vite manifest for tests
+        run: |
+          mkdir -p public/build
+          echo '{ "resources/css/app.css": { "file": "assets/app.css" }, "resources/js/app.js": { "file": "assets/app.js" } }' > public/build/manifest.json
+
       - name: Run test suite
         run: vendor/bin/phpunit --colors=always
