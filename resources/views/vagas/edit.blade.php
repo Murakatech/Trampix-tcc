@@ -120,13 +120,13 @@
                 </div>
                 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn-trampix-primary btn-glow">
                         <i class="fas fa-save me-1"></i>Atualizar Vaga
                     </button>
-                    <a href="{{ route('vagas.show', $vaga) }}" class="btn btn-secondary">
+                    <a href="{{ route('vagas.show', $vaga) }}" class="btn-trampix-secondary btn-glow">
                         <i class="fas fa-eye me-1"></i>Visualizar
                     </a>
-                    <a href="{{ route('vagas.index') }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('vagas.index') }}" class="btn-trampix-secondary btn-glow">
                         <i class="fas fa-arrow-left me-1"></i>Voltar
                     </a>
                 </div>
