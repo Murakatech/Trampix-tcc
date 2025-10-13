@@ -10,6 +10,7 @@
     <form method="post" action="{{ route('profile.update') }}">
         @csrf
         @method('patch')
+        <input type="hidden" name="section" value="account">
 
         <div class="mb-3">
             <label for="name" class="form-label">Nome</label>

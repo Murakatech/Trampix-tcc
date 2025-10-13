@@ -89,8 +89,8 @@
                             {{-- Botões de ação apenas para o próprio freelancer --}}
                             @if(auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id)
                                 <div class="d-grid gap-2">
-                                    <a href="{{ route('freelancers.edit', $freelancer) }}" class="btn btn-primary">
-                                        <i class="fas fa-edit"></i> Editar Perfil
+                                    <a href="{{ route('profile.edit') }}" class="btn btn-primary">
+                                        <i class="fas fa-user-cog"></i> Configurar Conta
                                     </a>
                                     
                                     <a href="{{ route('applications.index') }}" class="btn btn-outline-secondary">

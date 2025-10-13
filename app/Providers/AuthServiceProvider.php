@@ -4,6 +4,10 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Freelancer;
+use App\Models\Company;
+use App\Policies\FreelancerPolicy;
+use App\Policies\CompanyPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -14,6 +18,10 @@ class AuthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Register model policies
+        Gate::policy(Freelancer::class, FreelancerPolicy::class);
+        Gate::policy(Company::class, CompanyPolicy::class);
+
         // Gates baseados em perfis ativos (novo sistema)
         Gate::define('isFreelancer', function ($user) {
             return $user->isAdmin() || $user->isFreelancer();

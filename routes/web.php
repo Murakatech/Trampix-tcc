@@ -38,15 +38,18 @@ Route::get('/styleguide', fn () => view('styleguide'))
 // Público
 Route::resource('vagas', JobVacancyController::class)->only(['index','show']);
 Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
+// Perfil público unificado (visualização)
+Route::get('/profiles/{user}', [ProfileController::class, 'show'])->name('profiles.show');
 
 // Perfil / dashboard
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    // Permitir seções específicas na edição unificada (conta, freelancer, company)
+    Route::get('/profile/{section}', [ProfileController::class, 'edit'])
+        ->where('section', 'account|freelancer|company')
+        ->name('profile.edit.section');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
-    // Perfil unificado
-    Route::get('/profiles/{user}', [ProfileController::class, 'show'])->name('profiles.show');
     
     // Rotas para upload de foto de perfil
     Route::post('/profile/photo/upload', [ProfilePhotoController::class, 'upload'])->name('profile.photo.upload');
@@ -55,13 +58,21 @@ Route::middleware('auth')->group(function () {
     // Rotas para perfis de freelancer
     Route::get('/freelancers/profile', [FreelancerController::class, 'showOwn'])->name('freelancers.profile');
     Route::resource('freelancers', FreelancerController::class)
-        ->only(['show', 'create', 'store', 'edit', 'update', 'destroy']);
+        ->only(['show', 'create', 'store', 'update', 'destroy']);
+    // Redirect legado para edição de freelancer → /profile
+    Route::get('/freelancers/{freelancer}/edit', function () {
+        return redirect()->route('profile.edit');
+    })->name('freelancers.edit');
     Route::get('/freelancers/{freelancer}/download-cv', [FreelancerController::class, 'downloadCv'])
         ->name('freelancers.download-cv');
     
     // Rotas para perfis de empresa (autenticadas)
     Route::resource('companies', CompanyController::class)
-        ->only(['create', 'store', 'edit', 'update', 'destroy']);
+        ->only(['create', 'store', 'update', 'destroy']);
+    // Redirect legado para edição de empresa → /profile
+    Route::get('/companies/{company}/edit', function () {
+        return redirect()->route('profile.edit');
+    })->name('companies.edit');
     Route::get('/companies/{company}/vacancies', [CompanyController::class, 'vacancies'])
         ->name('companies.vacancies');
 });

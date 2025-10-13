@@ -88,8 +88,8 @@
                             </li>
                             <li>
                                 <a class="dropdown-item" href="{{ route('profile.edit') }}">
-                                    <i class="fas fa-user-edit me-2"></i>
-                                    Perfil
+                                    <i class="fas fa-user-cog me-2"></i>
+                                    Configurar Conta
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>

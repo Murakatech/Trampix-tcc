@@ -169,8 +169,8 @@
                         @auth
                             @if(auth()->id() === $user->id)
                                 @if(isset($freelancer) && $freelancer)
-                                    <a href="{{ route('freelancers.edit', $freelancer) }}" class="btn btn-primary">
-                                        <i class="fas fa-edit"></i> Editar Perfil
+                                    <a href="{{ route('profile.edit') }}" class="btn btn-primary">
+                                        <i class="fas fa-user-cog"></i> Configurar Conta
                                     </a>
                                     <a href="{{ route('applications.index') }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-briefcase"></i> Minhas Candidaturas
@@ -180,8 +180,8 @@
                                     </a>
                                 @endif
                                 @if(isset($company) && $company)
-                                    <a href="{{ route('companies.edit', $company) }}" class="btn btn-primary">
-                                        <i class="fas fa-edit"></i> Editar Empresa
+                                    <a href="{{ route('profile.edit') }}" class="btn btn-primary">
+                                        <i class="fas fa-user-cog"></i> Configurar Conta
                                     </a>
                                     <a href="{{ route('companies.vacancies', $company) }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-briefcase"></i> Minhas Vagas

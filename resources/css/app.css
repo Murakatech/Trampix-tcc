@@ -1,3 +1,113 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Trampix design tokens (global CSS variables) */
+:root {
+  --trampix-purple: #8F3FF7;
+  --trampix-green: #B9FF66;
+  --trampix-black: #191A23;
+  --trampix-light-gray: #F3F3F3;
+  --trampix-red: #FF4C4C;
+  --trampix-dark-gray: #4A4A4A;
+}
+
+/* Custom components and utilities for modern auth screens */
+@layer components {
+  .card-glass {
+    @apply bg-white/80 backdrop-blur-sm border border-white/40 shadow-2xl sm:rounded-2xl p-8;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg font-semibold transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+  }
+  .btn-primary {
+    @apply btn bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500;
+  }
+  .btn-secondary {
+    @apply btn bg-white text-indigo-700 border border-indigo-200 hover:border-indigo-300 focus-visible:ring-indigo-400;
+  }
+
+  /* Trampix styleguide button variants */
+  .btn-trampix-primary {
+    @apply btn;
+    background-color: var(--trampix-purple);
+    border-color: var(--trampix-purple);
+    color: white;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .btn-trampix-primary:hover {
+    background-color: var(--trampix-green);
+    border-color: var(--trampix-green);
+    color: var(--trampix-black);
+    transform: translateY(-2px);
+  }
+  .btn-trampix-secondary {
+    @apply btn;
+    background-color: var(--trampix-light-gray);
+    border: 2px solid var(--trampix-purple);
+    color: var(--trampix-black);
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .btn-trampix-secondary:hover {
+    background-color: var(--trampix-green);
+    border-color: var(--trampix-green);
+    color: var(--trampix-black);
+    transform: translateY(-2px);
+  }
+  .btn-trampix-danger {
+    @apply btn;
+    background-color: var(--trampix-red);
+    border-color: var(--trampix-red);
+    color: white;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .btn-trampix-danger:hover {
+    background-color: #e63946;
+    border-color: #e63946;
+    color: white;
+    transform: translateY(-2px);
+  }
+}
+
+@layer utilities {
+  .animate-fade-in { animation: fade-in 450ms cubic-bezier(.2,.7,.2,1) both; }
+  .animate-float { animation: float 8s ease-in-out infinite; }
+  .btn-glow { box-shadow: 0 0 0 rgba(0,0,0,0); transition: box-shadow .25s, transform .15s; }
+  .btn-glow:hover { box-shadow: 0 10px 25px rgba(59,130,246,.35); transform: translateY(-1px); }
+  .icon-spin-slow { animation: spin 1.5s linear infinite; }
+
+  /* Modal helpers */
+  .modal-backdrop { @apply fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center z-50 transition-opacity; }
+  .modal-panel { @apply w-full sm:max-w-md bg-white rounded-xl shadow-xl transform transition-all; }
+  .slide-in { animation: slide-in 250ms ease-out both; }
+  .slide-out { animation: slide-out 200ms ease-in both; }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes slide-in {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-out {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(24px); }
+}

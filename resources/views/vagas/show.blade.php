@@ -89,7 +89,7 @@
                                 >{{ old('cover_letter') }}</textarea>
                             </div>
 
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn-trampix-primary btn-glow">
                                 <i class="fas fa-paper-plane me-2"></i>Candidatar-se
                             </button>
                         </form>
@@ -102,17 +102,17 @@
                 @if(($vaga->company?->user_id) === auth()->id())
                     <hr>
                     <div class="d-flex gap-2">
-                        <a href="{{ route('applications.byVacancy', $vaga->id) }}" class="btn btn-outline-primary">
+                        <a href="{{ route('applications.byVacancy', $vaga->id) }}" class="btn-trampix-secondary btn-glow">
                             <i class="fas fa-users me-1"></i> Ver Candidatos
                         </a>
-                        <a href="{{ route('vagas.edit', $vaga) }}" class="btn btn-outline-warning">
+                        <a href="{{ route('vagas.edit', $vaga) }}" class="btn-trampix-secondary btn-glow">
                             <i class="fas fa-edit me-1"></i> Editar
                         </a>
                         <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" class="d-inline" 
                               onsubmit="return confirm('Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita.');">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-outline-danger">
+                            <button type="submit" class="btn-trampix-danger btn-glow">
                                 <i class="fas fa-trash me-1"></i> Excluir
                             </button>
                         </form>

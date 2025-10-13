@@ -34,9 +34,9 @@
                             @endif
                         </div>
                         <div class="col-md-2 text-end">
-                            <a href="{{ route('companies.edit', $company) }}" class="btn btn-outline-primary">
-                                <i class="fas fa-edit me-1"></i>
-                                Editar Perfil
+                            <a href="{{ route('profile.edit') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-cog me-1"></i>
+                                Configurar Conta
                             </a>
                         </div>
                     </div>
