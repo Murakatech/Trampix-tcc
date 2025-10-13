@@ -60,7 +60,7 @@
                         <!-- Lista de Empresas -->
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
-                                <thead class="table-dark">
+                                <thead class="trampix-table-header">
                                     <tr>
                                         <th>ID</th>
                                         <th>Empresa</th>

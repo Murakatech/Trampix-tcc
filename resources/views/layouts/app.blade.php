@@ -15,6 +15,72 @@
 
         <!-- Custom Styles -->
         @stack('styles')
+
+        <!-- Trampix Styleguide (global tokens + buttons) -->
+        <style>
+            :root {
+                --trampix-purple: #8F3FF7;
+                --trampix-green: #B9FF66;
+                --trampix-black: #191A23;
+                --trampix-light-gray: #F3F3F3;
+                --trampix-red: #FF4C4C;
+                --trampix-dark-gray: #4A4A4A;
+            }
+
+            /* Tipografia básica do styleguide */
+            .trampix-h1 { color: var(--trampix-purple); font-weight: 700; font-size: 2.5rem; }
+            .trampix-h2 { color: var(--trampix-black); font-weight: 500; font-size: 2rem; }
+            .trampix-h3 { color: var(--trampix-green); font-weight: 600; font-size: 1.5rem; }
+            .trampix-p { color: var(--trampix-dark-gray); font-weight: 400; }
+
+            /* Cabeçalho de tabela com identidade Trampix (override Bootstrap) */
+            table.table thead.trampix-table-header { background-color: var(--trampix-light-gray) !important; }
+            table.table thead.trampix-table-header th { color: var(--trampix-black) !important; font-weight: 600; letter-spacing: .02em; padding-top: .75rem; padding-bottom: .75rem; }
+            .btn-trampix-primary {
+                display: inline-flex; align-items: center; justify-content: center;
+                background-color: var(--trampix-purple);
+                border: 1px solid var(--trampix-purple);
+                color: #fff; border-radius: 12px;
+                padding: 12px 24px; font-weight: 500; transition: all .3s ease;
+                text-decoration: none;
+            }
+            .btn-trampix-primary:hover {
+                background-color: var(--trampix-green);
+                border-color: var(--trampix-green);
+                color: var(--trampix-black);
+                transform: translateY(-2px);
+            }
+            .btn-trampix-secondary {
+                display: inline-flex; align-items: center; justify-content: center;
+                background-color: var(--trampix-light-gray);
+                border: 2px solid var(--trampix-purple);
+                color: var(--trampix-black); border-radius: 12px;
+                padding: 12px 24px; font-weight: 500; transition: all .3s ease;
+                text-decoration: none;
+            }
+            .btn-trampix-secondary:hover {
+                background-color: var(--trampix-green);
+                border-color: var(--trampix-green);
+                color: var(--trampix-black);
+                transform: translateY(-2px);
+            }
+            .btn-trampix-danger {
+                display: inline-flex; align-items: center; justify-content: center;
+                background-color: var(--trampix-red);
+                border: 1px solid var(--trampix-red);
+                color: #fff; border-radius: 12px;
+                padding: 12px 24px; font-weight: 500; transition: all .3s ease;
+                text-decoration: none;
+            }
+            .btn-trampix-danger:hover {
+                background-color: #e63946;
+                border-color: #e63946;
+                color: #fff;
+                transform: translateY(-2px);
+            }
+            .btn-glow { box-shadow: 0 0 0 rgba(0,0,0,0); transition: box-shadow .25s, transform .15s; }
+            .btn-glow:hover { box-shadow: 0 10px 25px rgba(143, 63, 247, .25); transform: translateY(-1px); }
+        </style>
     </head>
     <body>
         <div id="app">
