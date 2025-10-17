@@ -1,0 +1,2 @@
+# Este arquivo mantém a pasta tests/Unit versionada no Git
+# Necessário para o PHPUnit funcionar corretamente no CI/CD
