@@ -48,4 +48,4 @@ jobs:
           echo '{ "resources/css/app.css": { "file": "assets/app.css" }, "resources/js/app.js": { "file": "assets/app.js" } }' > public/build/manifest.json
 
       - name: Run test suite
-        run: vendor/bin/phpunit --colors=always
+        run: php artisan test --no-coverage --colors=always
