@@ -11,8 +11,15 @@ use Illuminate\Support\Facades\Route;
 // garante que {vaga} só aceite números
 Route::pattern('vaga', '[0-9]+');
 
-// Home
-Route::get('/', [JobVacancyController::class, 'index'])->name('home');
+// Landing Page Principal
+Route::get('/', function () {
+    return view('welcome');
+})->name('welcome');
+
+// Rota de compatibilidade para componentes que ainda usam route('home')
+Route::get('/home', function () {
+    return redirect()->route('welcome');
+})->name('home');
 
 // Protegido (auth + empresa) — registre ANTES
 Route::middleware(['auth','can:isCompany'])->group(function () {
