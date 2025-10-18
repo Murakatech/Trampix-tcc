@@ -9,6 +9,9 @@ const messages = {
     email: 'Informe um endereço de e-mail válido.',
     passwordConfirm: 'As senhas não coincidem.',
     minLength: 'Este campo deve ter pelo menos {min} caracteres.',
+    passwordMinLength: 'A senha deve ter pelo menos 8 caracteres.',
+    passwordSpecialChar: 'A senha deve conter pelo menos 1 caractere especial (!@#$%^&*).',
+    passwordUppercase: 'A senha deve conter pelo menos 1 letra maiúscula.',
 };
 
 class TrampixValidator {
@@ -109,6 +112,15 @@ class TrampixValidator {
             return false;
         }
 
+        // Validação específica de senha
+        if (input.name === 'password' && value) {
+            const passwordValidation = this.validatePassword(value);
+            if (!passwordValidation.isValid) {
+                this.showError(input, passwordValidation.message);
+                return false;
+            }
+        }
+
         // Validação de confirmação de senha
         if (input.name === 'password_confirmation' || input.name === 'confirm_password') {
             const passwordField = input.form.querySelector('input[name="password"]');
@@ -119,6 +131,39 @@ class TrampixValidator {
         }
 
         return true;
+    }
+
+    validatePassword(password) {
+        // Regra 1: Mínimo de 8 caracteres
+        if (password.length < 8) {
+            return {
+                isValid: false,
+                message: messages.passwordMinLength
+            };
+        }
+
+        // Regra 2: Pelo menos 1 caractere especial
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+        if (!specialCharRegex.test(password)) {
+            return {
+                isValid: false,
+                message: messages.passwordSpecialChar
+            };
+        }
+
+        // Regra 3: Pelo menos 1 letra maiúscula
+        const uppercaseRegex = /[A-Z]/;
+        if (!uppercaseRegex.test(password)) {
+            return {
+                isValid: false,
+                message: messages.passwordUppercase
+            };
+        }
+
+        return {
+            isValid: true,
+            message: ''
+        };
     }
 
     showError(input, message) {

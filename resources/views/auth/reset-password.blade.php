@@ -42,6 +42,7 @@
                 placeholder="Digite sua nova senha"
             />
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-password-requirements />
         </div>
 
         <!-- Confirm Password -->
