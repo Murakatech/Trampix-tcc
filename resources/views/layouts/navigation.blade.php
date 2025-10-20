@@ -47,8 +47,8 @@
                     <!-- Novo cabeçalho com avatar + nome + dropdown -->
                     <li class="nav-item dropdown">
                         <div class="d-flex align-items-center justify-content-center">
-                            <div class="text-center position-relative dropdown">
-                                <button class="btn p-0 border-0 bg-transparent dropdown-toggle" 
+                            <div class="position-relative dropdown">
+                                <button class="btn p-2 border-0 bg-transparent dropdown-toggle d-flex align-items-center gap-2" 
                                         type="button" 
                                         id="profileDropdown" 
                                         data-bs-toggle="dropdown" 
@@ -71,18 +71,20 @@
                                         <img src="{{ asset('storage/' . $profilePhoto) }}" 
                                              alt="Foto de Perfil" 
                                              class="rounded-circle border-2 shadow-sm hover:shadow-md transition-all duration-300"
-                                             style="width: 48px; height: 48px; object-fit: cover; border-color: #8b5cf6;">
+                                             style="width: 40px; height: 40px; object-fit: cover; border-color: #8b5cf6;">
                                     @else
                                         <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm hover:shadow-md transition-all duration-300"
-                                             style="width: 48px; height: 48px; background-color: #8b5cf6; border: 2px solid #8b5cf6;">
-                                            <i class="fas fa-user text-white" style="font-size: 18px;"></i>
+                                             style="width: 40px; height: 40px; background-color: #8b5cf6; border: 2px solid #8b5cf6;">
+                                            <i class="fas fa-user text-white" style="font-size: 16px;"></i>
                                         </div>
                                     @endif
                                     
-                                    <p class="text-sm text-gray-700 mt-1 font-semibold mb-0" 
-                                       style="font-size: 12px; color: #374151; font-weight: 600; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                    <span class="text-sm text-gray-700 font-semibold d-none d-md-inline" 
+                                          style="font-size: 14px; color: #374151; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                                         {{ auth()->user()->name }}
-                                    </p>
+                                    </span>
+                                    
+                                    <i class="fas fa-chevron-down text-muted" style="font-size: 12px;"></i>
                                 </button>
 
                                 <!-- Dropdown Menu -->
