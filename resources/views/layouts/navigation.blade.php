@@ -75,155 +75,50 @@
                     <div class="trampix-nav-right">
                         <ul class="navbar-nav">
                 @auth
-                    <!-- Menu de Perfil Redesenhado -->
-                    <li class="nav-item dropdown" 
-                        x-data="{ 
-                            open: false,
-                            toggle() { this.open = !this.open },
-                            close() { this.open = false }
-                        }"
-                        x-on:click.away="close()"
-                        x-on:keydown.escape="close()">
+                    @php
+                        $activeProfile = null;
+                        $profilePhoto = null;
                         
-                        <!-- Botão do Perfil -->
-                        <button class="trampix-profile-btn d-flex align-items-center gap-2 border-0 bg-transparent p-2 rounded-3"
-                                type="button"
-                                x-on:click="toggle()"
-                                x-bind:aria-expanded="open"
-                                aria-haspopup="true"
-                                role="button"
-                                tabindex="0">
-                            
-                            @php
-                                $activeProfile = null;
-                                $profilePhoto = null;
-                                $userRole = 'Usuário';
-                                
-                                if (auth()->user()->freelancer) {
-                                    $activeProfile = auth()->user()->freelancer;
-                                    $profilePhoto = $activeProfile->profile_photo;
-                                    $userRole = 'Freelancer';
-                                } elseif (auth()->user()->company) {
-                                    $activeProfile = auth()->user()->company;
-                                    $profilePhoto = $activeProfile->profile_photo;
-                                    $userRole = 'Empresa';
-                                }
-                            @endphp
-                            
-                            <!-- Avatar -->
-                            <div class="trampix-avatar position-relative">
-                                @if($profilePhoto)
-                                    <img src="{{ asset('storage/' . $profilePhoto) }}" 
-                                         alt="Foto de {{ auth()->user()->name }}" 
-                                         class="trampix-avatar-img">
-                                @else
-                                    <div class="trampix-avatar-placeholder">
-                                        <i class="fas fa-user"></i>
-                                    </div>
-                                @endif
-                                
-                                <!-- Indicador de status online -->
-                                <div class="trampix-status-indicator"></div>
-                            </div>
-                            
-                            <!-- Informações do usuário (desktop) -->
-                            <div class="trampix-user-info d-none d-lg-block text-start">
-                                <div class="trampix-user-name">{{ auth()->user()->name }}</div>
-                                <div class="trampix-user-role">{{ $userRole }}</div>
-                            </div>
-                            
-                            <!-- Ícone de seta -->
-                            <i class="fas fa-chevron-down trampix-chevron" 
-                               x-bind:class="{ 'rotate-180': open }"></i>
-                        </button>
+                        if (auth()->user()->freelancer) {
+                            $activeProfile = auth()->user()->freelancer;
+                            $profilePhoto = $activeProfile->profile_photo;
+                        } elseif (auth()->user()->company) {
+                            $activeProfile = auth()->user()->company;
+                            $profilePhoto = $activeProfile->profile_photo;
+                        }
+                    @endphp
+                    
+                    <!-- Novo cabeçalho com avatar circular + nome + dropdown -->
+                    <li class="nav-item">
+                        <div class="flex items-center justify-end space-x-4">
+                            <div class="text-center relative group">
+                                <button class="focus:outline-none">
+                                    <img src="{{ asset('storage/' . ($profilePhoto ?? 'default-profile.png')) }}" 
+                                         alt="Foto de Perfil" 
+                                         class="rounded-full w-12 h-12 object-cover border-2 border-trampix-primary shadow-sm hover:shadow-md transition">
+                                </button>
 
-                        <!-- Menu Dropdown -->
-                        <div class="trampix-dropdown-menu"
-                             x-show="open"
-                             x-transition:enter="transition ease-out duration-200"
-                             x-transition:enter-start="opacity-0 transform scale-95"
-                             x-transition:enter-end="opacity-1 transform scale-100"
-                             x-transition:leave="transition ease-in duration-150"
-                             x-transition:leave-start="opacity-1 transform scale-100"
-                             x-transition:leave-end="opacity-0 transform scale-95"
-                             x-cloak>
-                            
-                            <!-- Header do menu -->
-                            <div class="trampix-dropdown-header">
-                                <div class="d-flex align-items-center gap-3">
-                                    @if($profilePhoto)
-                                        <img src="{{ asset('storage/' . $profilePhoto) }}" 
-                                             alt="Foto de {{ auth()->user()->name }}" 
-                                             class="trampix-dropdown-avatar">
-                                    @else
-                                        <div class="trampix-dropdown-avatar-placeholder">
-                                            <i class="fas fa-user"></i>
-                                        </div>
-                                    @endif
-                                    
-                                    <div>
-                                        <div class="trampix-dropdown-name">{{ auth()->user()->name }}</div>
-                                        <div class="trampix-dropdown-email">{{ auth()->user()->email }}</div>
-                                        <div class="trampix-dropdown-role">{{ $userRole }}</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Divisor -->
-                            <div class="trampix-dropdown-divider"></div>
-                            
-                            <!-- Itens do menu -->
-                            <div class="trampix-dropdown-items">
-                                <a href="{{ route('profiles.show', auth()->user()) }}" 
-                                   class="trampix-dropdown-item"
-                                   x-on:click="close()">
-                                    <i class="fas fa-eye trampix-item-icon" style="color: var(--trampix-purple);"></i>
-                                    <div class="trampix-item-content">
-                                        <div class="trampix-item-title">Ver Perfil Profissional</div>
-                                        <div class="trampix-item-subtitle">Visualizar perfil público</div>
-                                    </div>
-                                </a>
-                                
-                                <a href="{{ route('profile.edit') }}" 
-                                   class="trampix-dropdown-item"
-                                   x-on:click="close()">
-                                    <i class="fas fa-cog trampix-item-icon" style="color: var(--trampix-green);"></i>
-                                    <div class="trampix-item-content">
-                                        <div class="trampix-item-title">Configurações</div>
-                                        <div class="trampix-item-subtitle">Editar perfil e preferências</div>
-                                    </div>
-                                </a>
-                                
-                                @can('isFreelancer')
-                                    <a href="{{ route('applications.index') }}" 
-                                       class="trampix-dropdown-item"
-                                       x-on:click="close()">
-                                        <i class="fas fa-file-alt trampix-item-icon" style="color: #007bff;"></i>
-                                        <div class="trampix-item-content">
-                                            <div class="trampix-item-title">Minhas Candidaturas</div>
-                                            <div class="trampix-item-subtitle">Acompanhar aplicações</div>
-                                        </div>
+                                <p class="text-sm text-gray-700 mt-1 font-semibold truncate w-24 mx-auto">
+                                    {{ auth()->user()->name }}
+                                </p>
+
+                                <!-- Dropdown -->
+                                <div class="hidden group-hover:block absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-lg z-50 border">
+                                    <a href="{{ route('profiles.show', auth()->user()) }}" 
+                                       class="block px-4 py-2 text-gray-700 hover:bg-trampix-light hover:text-trampix-primary transition">
+                                        Ver Perfil Profissional
                                     </a>
-                                @endcan
-                            </div>
-                            
-                            <!-- Divisor -->
-                            <div class="trampix-dropdown-divider"></div>
-                            
-                            <!-- Logout -->
-                            <div class="trampix-dropdown-footer">
-                                <form method="POST" action="{{ route('logout') }}" class="w-100">
-                                    @csrf
-                                    <button type="submit" 
-                                            class="trampix-logout-btn w-100"
-                                            x-on:click="close()">
-                                        <i class="fas fa-sign-out-alt trampix-item-icon" style="color: var(--trampix-red);"></i>
-                                        <div class="trampix-item-content">
-                                            <div class="trampix-item-title">Sair</div>
-                                            <div class="trampix-item-subtitle">Encerrar sessão</div>
-                                        </div>
-                                    </button>
-                                </form>
+                                    
+                                    <div class="border-t border-gray-100"></div>
+                                    
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" 
+                                                class="w-full text-left block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition">
+                                            Sair
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </li>
