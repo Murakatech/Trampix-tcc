@@ -1,155 +1,132 @@
 @php
-use Illuminate\Support\Facades\Gate;
+    use Illuminate\Support\Facades\Gate;
 @endphp
 
 @extends('layouts.app')
 
 @section('header')
-<div class="bg-white shadow">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+<div class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p class="text-sm text-gray-500">Bem-vindo, {{ Auth::user()->name }} 👋</p>
     </div>
 </div>
 @endsection
 
 @section('content')
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <!-- Dashboard Principal -->
-            <div class="card">
-                <div class="card-body">
-                    
-                    @if(Gate::allows('isAdmin'))
-                        <div class="mb-4">
-                            <h4 class="h6 text-muted mb-3">
-                                <i class="fas fa-cog me-2"></i>Área Administrativa
-                            </h4>
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <a href="{{ route('admin.freelancers') }}" 
-                                       class="card text-decoration-none border-primary">
-                                        <div class="card-body d-flex align-items-center">
-                                            <i class="fas fa-users text-primary fs-4 me-3"></i>
-                                            <div>
-                                                <div class="fw-bold text-primary">Freelancers</div>
-                                                <div class="small text-muted">Gerenciar freelancers</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                                
-                                <div class="col-md-4">
-                                    <a href="{{ route('admin.companies') }}" 
-                                       class="card text-decoration-none border-success">
-                                        <div class="card-body d-flex align-items-center">
-                                            <i class="fas fa-building text-success fs-4 me-3"></i>
-                                            <div>
-                                                <div class="fw-bold text-success">Empresas</div>
-                                                <div class="small text-muted">Gerenciar empresas</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                                
-                                <div class="col-md-4">
-                                    <a href="{{ route('admin.applications') }}" 
-                                       class="card text-decoration-none border-info">
-                                        <div class="card-body d-flex align-items-center">
-                                            <i class="fas fa-clipboard-list text-info fs-4 me-3"></i>
-                                            <div>
-                                                <div class="fw-bold text-info">Candidaturas</div>
-                                                <div class="small text-muted">Ver todas candidaturas</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <div class="space-y-10">
+
+        {{-- Seção ADMIN --}}
+        @if(Gate::allows('isAdmin'))
+            <section>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-cog text-purple-500 mr-2"></i> Área Administrativa
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <a href="{{ route('admin.freelancers') }}" class="trampix-card hover:scale-[1.02] transition">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-purple-500 text-2xl mr-3"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">Freelancers</p>
+                                <p class="text-sm text-gray-500">Gerenciar freelancers</p>
                             </div>
                         </div>
-                    @endif
-                    
-                    @if(Gate::allows('isCompany'))
-                        <div class="mb-4">
-                            <h4 class="h6 text-muted mb-3">
-                                <i class="fas fa-briefcase me-2"></i>Área da Empresa
-                            </h4>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <a href="{{ route('vagas.create') }}" 
-                                       class="card text-decoration-none border-primary">
-                                        <div class="card-body d-flex align-items-center">
-                                            <i class="fas fa-plus text-primary fs-4 me-3"></i>
-                                            <div>
-                                                <div class="fw-bold text-primary">Nova Vaga</div>
-                                                <div class="small text-muted">Criar nova vaga</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <a href="{{ route('home') }}" 
-                                       class="card text-decoration-none border-success">
-                                        <div class="card-body d-flex align-items-center">
-                                            <i class="fas fa-list text-success fs-4 me-3"></i>
-                                            <div>
-                                                <div class="fw-bold text-success">Minhas Vagas</div>
-                                                <div class="small text-muted">Gerenciar vagas</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
+                    </a>
+
+                    <a href="{{ route('admin.companies') }}" class="trampix-card hover:scale-[1.02] transition">
+                        <div class="flex items-center">
+                            <i class="fas fa-building text-green-500 text-2xl mr-3"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">Empresas</p>
+                                <p class="text-sm text-gray-500">Gerenciar empresas</p>
                             </div>
                         </div>
-                    @endif
-                    
-                    @if(Gate::allows('isFreelancer'))
-                        <div class="mb-4">
-                            <h4 class="h6 text-muted mb-3">
-                                <i class="fas fa-user me-2"></i>Área do Freelancer
-                            </h4>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <a href="{{ route('applications.index') }}" 
-                                       class="card text-decoration-none border-primary">
-                                        <div class="card-body d-flex align-items-center">
-                                            <i class="fas fa-clipboard-list text-primary fs-4 me-3"></i>
-                                            <div>
-                                                <div class="fw-bold text-primary">Minhas Candidaturas</div>
-                                                <div class="small text-muted">Ver candidaturas</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
-                                
-                                <div class="col-md-6">
-                                    <a href="{{ route('home') }}" 
-                                       class="card text-decoration-none border-success">
-                                        <div class="card-body d-flex align-items-center">
-                                            <i class="fas fa-search text-success fs-4 me-3"></i>
-                                            <div>
-                                                <div class="fw-bold text-success">Buscar Vagas</div>
-                                                <div class="small text-muted">Encontrar oportunidades</div>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </div>
+                    </a>
+
+                    <a href="{{ route('admin.applications') }}" class="trampix-card hover:scale-[1.02] transition">
+                        <div class="flex items-center">
+                            <i class="fas fa-clipboard-list text-blue-500 text-2xl mr-3"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">Candidaturas</p>
+                                <p class="text-sm text-gray-500">Ver todas candidaturas</p>
                             </div>
                         </div>
-                    @endif
-                    
-                    {{-- Link para Styleguide (desenvolvimento) --}}
-                    <div class="mt-4 pt-3 border-top">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">Ferramentas de Desenvolvimento</small>
-                            <a href="{{ route('styleguide') }}" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-palette me-1"></i>Ver Styleguide
-                            </a>
-                        </div>
-                    </div>
+                    </a>
                 </div>
+            </section>
+        @endif
+
+        {{-- Seção EMPRESA --}}
+        @if(Gate::allows('isCompany'))
+            <section>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-briefcase text-purple-500 mr-2"></i> Área da Empresa
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <a href="{{ route('vagas.create') }}" class="trampix-card hover:scale-[1.02] transition">
+                        <div class="flex items-center">
+                            <i class="fas fa-plus text-purple-500 text-2xl mr-3"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">Nova Vaga</p>
+                                <p class="text-sm text-gray-500">Criar nova vaga</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('home') }}" class="trampix-card hover:scale-[1.02] transition">
+                        <div class="flex items-center">
+                            <i class="fas fa-list text-green-500 text-2xl mr-3"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">Minhas Vagas</p>
+                                <p class="text-sm text-gray-500">Gerenciar vagas</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </section>
+        @endif
+
+        {{-- Seção FREELANCER --}}
+        @if(Gate::allows('isFreelancer'))
+            <section>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-user text-purple-500 mr-2"></i> Área do Freelancer
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <a href="{{ route('applications.index') }}" class="trampix-card hover:scale-[1.02] transition">
+                        <div class="flex items-center">
+                            <i class="fas fa-clipboard-list text-purple-500 text-2xl mr-3"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">Minhas Candidaturas</p>
+                                <p class="text-sm text-gray-500">Ver candidaturas</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{{ route('home') }}" class="trampix-card hover:scale-[1.02] transition">
+                        <div class="flex items-center">
+                            <i class="fas fa-search text-green-500 text-2xl mr-3"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">Buscar Vagas</p>
+                                <p class="text-sm text-gray-500">Encontrar oportunidades</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </section>
+        @endif
+
+        {{-- Ferramentas de Desenvolvimento --}}
+        <section class="pt-6 border-t border-gray-200">
+            <div class="flex justify-between items-center">
+                <small class="text-gray-500">Ferramentas de Desenvolvimento</small>
+                <a href="{{ route('styleguide') }}" class="btn-trampix-secondary text-sm">
+                    <i class="fas fa-palette mr-1"></i> Ver Styleguide
+                </a>
             </div>
-        </div>
+        </section>
+
     </div>
 </div>
 @endsection
