@@ -35,46 +35,84 @@ class ProfileController extends Controller
     }
 
     /**
-     * Display the user's profile form.
+     * Display the account settings form.
      */
-    public function edit(Request $request): View
+    public function account(Request $request): View
     {
-        $user = $request->user();
-        
-        // Carregar perfis (hasOne)
-        $freelancer = $user->freelancer;
-        $company = $user->company;
-        
-        return view('profile.edit', [
-            'user' => $user,
-            'freelancer' => $freelancer,
-            'company' => $company,
-            'canCreateFreelancer' => !$freelancer && auth()->user()->can('canCreateFreelancerProfile'),
-            'canCreateCompany' => !$company && auth()->user()->can('canCreateCompanyProfile'),
+        return view('profile.account', [
+            'user' => $request->user(),
         ]);
     }
 
     /**
-     * Update the user's profile information.
+     * Display the user's profile form based on active role.
+     */
+    public function edit(Request $request): View|RedirectResponse
+    {
+        $user = $request->user();
+        $activeRole = session('active_role');
+        
+        // Se não há active_role definido, redirecionar para seleção
+        if (!$activeRole) {
+            return redirect()->route('select-role.show');
+        }
+        
+        // Carregar apenas o perfil ativo
+        $profile = null;
+        if ($activeRole === 'freelancer') {
+            $profile = $user->freelancer;
+        } elseif ($activeRole === 'company') {
+            $profile = $user->company;
+        }
+        
+        return view('profile.edit', [
+            'user' => $user,
+            'activeRole' => $activeRole,
+            'profile' => $profile,
+            'hasFreelancer' => $user->isFreelancer(),
+            'hasCompany' => $user->isCompany(),
+        ]);
+    }
+
+    /**
+     * Update the user's account information.
+     */
+    public function updateAccount(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $validated = $request->validate(\App\Http\Requests\AccountUpdateRequest::rulesFor($user->id));
+
+        $user->fill($validated);
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+        $user->save();
+
+        return Redirect::route('profile.account')->with('status', 'profile-updated');
+    }
+
+    /**
+     * Update the user's profile information based on active role.
      */
     public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $section = $request->input('section', 'account');
-
-        if ($section === 'account') {
-            $validated = $request->validate(\App\Http\Requests\AccountUpdateRequest::rulesFor($user->id));
-
-            $user->fill($validated);
-            if ($user->isDirty('email')) {
-                $user->email_verified_at = null;
-            }
-            $user->save();
-
-            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $activeRole = session('active_role');
+        
+        // Verificar se é criação de novo perfil via modal
+        if ($request->has('create_company_profile')) {
+            return $this->createCompanyProfile($request);
+        }
+        
+        if ($request->has('create_freelancer_profile')) {
+            return $this->createFreelancerProfile($request);
+        }
+        
+        if (!$activeRole) {
+            return redirect()->route('select-role.show');
         }
 
-        if ($section === 'freelancer') {
+        if ($activeRole === 'freelancer') {
             // Autorizações: criar/editar
             $freelancer = $user->freelancer;
             if ($freelancer) {
@@ -115,7 +153,7 @@ class ProfileController extends Controller
             return Redirect::route('profile.edit')->with('success', 'Perfil de freelancer atualizado com sucesso!');
         }
 
-        if ($section === 'company') {
+        if ($activeRole === 'company') {
             $company = $user->company;
             if ($company) {
                 // Usar Policy padrão para atualização
@@ -158,5 +196,249 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Create a new company profile for the user.
+     */
+    private function createCompanyProfile(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Verificar se já tem perfil empresa
+        if ($user->company) {
+            return redirect()->route('profile.edit')->with('error', 'Você já possui um perfil de empresa.');
+        }
+        
+        $validated = $request->validate([
+            'company_name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'website' => 'nullable|url|max:255',
+        ]);
+        
+        // Criar perfil empresa
+        $company = $user->createProfile('company', $validated);
+        
+        // Definir empresa como perfil ativo
+        session(['active_role' => 'company']);
+        
+        return redirect()->route('profile.edit')->with('success', 'Perfil de empresa criado com sucesso!');
+    }
+
+    /**
+     * Create a new freelancer profile for the user.
+     */
+    private function createFreelancerProfile(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Verificar se já tem perfil freelancer
+        if ($user->freelancer) {
+            return redirect()->route('profile.edit')->with('error', 'Você já possui um perfil de freelancer.');
+        }
+        
+        $validated = $request->validate([
+            'bio' => 'nullable|string|max:1000',
+            'portfolio_url' => 'nullable|url|max:255',
+            'hourly_rate' => 'nullable|numeric|min:0|max:9999.99',
+        ]);
+        
+        // Criar perfil freelancer
+        $freelancer = $user->createProfile('freelancer', $validated);
+        
+        // Definir freelancer como perfil ativo
+        session(['active_role' => 'freelancer']);
+        
+        return redirect()->route('profile.edit')->with('success', 'Perfil de freelancer criado com sucesso!');
+    }
+
+    /**
+     * Update profile image (freelancer photo or company logo).
+     */
+    public function updateImage(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $profileType = $request->input('profile_type');
+        
+        $request->validate([
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'profile_type' => 'required|in:freelancer,company'
+        ]);
+        
+        if ($profileType === 'freelancer') {
+            $freelancer = $user->freelancer;
+            if (!$freelancer) {
+                return redirect()->route('profile.edit')->with('error', 'Perfil de freelancer não encontrado.');
+            }
+            
+            // Remove imagem anterior se existir
+            if ($freelancer->profile_photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->profile_photo);
+            }
+            
+            // Upload nova imagem
+            $imagePath = $request->file('profile_image')->store('profile_photos', 'public');
+            $freelancer->update(['profile_photo' => $imagePath]);
+            
+            return redirect()->route('profile.edit')->with('success', 'Foto de perfil atualizada com sucesso!');
+        }
+        
+        if ($profileType === 'company') {
+            $company = $user->company;
+            if (!$company) {
+                return redirect()->route('profile.edit')->with('error', 'Perfil de empresa não encontrado.');
+            }
+            
+            // Remove logo anterior se existir
+            if ($company->profile_photo) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($company->profile_photo);
+            }
+            
+            // Upload novo logo
+            $logoPath = $request->file('profile_image')->store('profile_photos', 'public');
+            $company->update(['profile_photo' => $logoPath]);
+            
+            return redirect()->route('profile.edit')->with('success', 'Logo da empresa atualizado com sucesso!');
+        }
+        
+        return redirect()->route('profile.edit')->with('error', 'Tipo de perfil inválido.');
+    }
+
+    /**
+     * Delete profile image (freelancer photo or company logo).
+     */
+    public function deleteImage(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $profileType = $request->input('profile_type');
+        
+        $request->validate([
+            'profile_type' => 'required|in:freelancer,company'
+        ]);
+        
+        if ($profileType === 'freelancer') {
+            $freelancer = $user->freelancer;
+            if (!$freelancer || !$freelancer->profile_photo) {
+                return redirect()->route('profile.edit')->with('error', 'Nenhuma foto de perfil encontrada.');
+            }
+            
+            // Remove arquivo do storage
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->profile_photo);
+            
+            // Remove referência do banco
+            $freelancer->update(['profile_photo' => null]);
+            
+            return redirect()->route('profile.edit')->with('success', 'Foto de perfil removida com sucesso!');
+        }
+        
+        if ($profileType === 'company') {
+            $company = $user->company;
+            if (!$company || !$company->profile_photo) {
+                return redirect()->route('profile.edit')->with('error', 'Nenhum logo encontrado.');
+            }
+            
+            // Remove arquivo do storage
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($company->profile_photo);
+            
+            // Remove referência do banco
+            $company->update(['profile_photo' => null]);
+            
+            return redirect()->route('profile.edit')->with('success', 'Logo da empresa removido com sucesso!');
+        }
+        
+        return redirect()->route('profile.edit')->with('error', 'Tipo de perfil inválido.');
+    }
+
+    /**
+     * Upload de currículo para freelancer
+     */
+    public function uploadCv(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Verificar se o usuário tem perfil de freelancer
+        if (!$user->freelancer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Apenas freelancers podem fazer upload de currículo.'
+            ], 403);
+        }
+
+        // Validar o arquivo
+        $request->validate([
+            'cv' => 'required|mimes:pdf,doc,docx|max:10240', // 10MB máximo
+        ]);
+
+        $freelancer = $user->freelancer;
+
+        try {
+            // Remover currículo anterior se existir
+            if ($freelancer->cv_path) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_path);
+            }
+
+            // Salvar novo currículo
+            $cvPath = $request->file('cv')->store('cvs', 'public');
+            
+            // Atualizar no banco de dados
+            $freelancer->update(['cv_path' => $cvPath]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Currículo enviado com sucesso!',
+                'cv_path' => $cvPath
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao fazer upload do currículo: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Deletar currículo do freelancer
+     */
+    public function deleteCv(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Verificar se o usuário tem perfil de freelancer
+        if (!$user->freelancer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Apenas freelancers podem remover currículo.'
+            ], 403);
+        }
+
+        $freelancer = $user->freelancer;
+
+        try {
+            // Verificar se existe currículo
+            if (!$freelancer->cv_path) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Nenhum currículo encontrado.'
+                ], 404);
+            }
+
+            // Remover arquivo do storage
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_path);
+            
+            // Remover referência do banco
+            $freelancer->update(['cv_path' => null]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Currículo removido com sucesso!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao remover currículo: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

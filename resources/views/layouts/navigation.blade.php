@@ -1,48 +1,79 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+<!-- Header de Navegação Trampix -->
+<nav class="trampix-navbar navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top">
     <div class="container">
-        <!-- Logo -->
-        <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ route('welcome') }}">
-            <img src="{{ asset('storage/img/logo_trampix.png') }}" alt="Trampix Logo" class="h-10 object-contain me-2" style="height: 2.5rem;">
-            <span>Trampix</span>
-        </a>
+        <div class="d-flex justify-content-between align-items-center w-100">
+            
+            <!-- Logo (Esquerda) -->
+            <div class="trampix-logo-section">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url('/') }}">
+                    <img src="{{ asset('storage/img/logo_trampix.png') }}" 
+                         alt="Trampix Logo" 
+                         class="trampix-logo-img me-2">
+                    <span class="trampix-logo-text">Trampix</span>
+                </a>
+            </div>
 
-        <!-- Toggle button para mobile -->
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+            <!-- Toggle button para mobile -->
+            <button class="navbar-toggler d-lg-none" 
+                    type="button" 
+                    data-bs-toggle="collapse" 
+                    data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" 
+                    aria-expanded="false" 
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-        <!-- Menu principal -->
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <!-- Links da esquerda -->
-            <ul class="navbar-nav me-auto">
-                <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
-                        <i class="fas fa-search me-1"></i>
-                        Vagas
-                    </a>
-                </li>
-                
-                @auth
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                            <i class="fas fa-tachometer-alt me-1"></i>
-                            Dashboard
-                        </a>
-                    </li>
+            <!-- Menu principal (Centro e Direita) -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="d-flex justify-content-between align-items-center w-100">
                     
-                    @can('isFreelancer')
-                        <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('applications.index') ? 'active' : '' }}" href="{{ route('applications.index') }}">
-                                <i class="fas fa-file-alt me-1"></i>
-                                Minhas Candidaturas
-                            </a>
-                        </li>
-                    @endcan
-                @endauth
-            </ul>
+                    <!-- Links principais (Centro) -->
+                    <div class="trampix-nav-center d-flex">
+                        <ul class="navbar-nav d-flex flex-row gap-3">
+                            <li class="nav-item">
+                                <a class="nav-link trampix-nav-link {{ request()->routeIs('home') ? 'active' : '' }}" 
+                                   href="{{ route('home') }}">
+                                    <i class="fas fa-search me-1"></i>
+                                    Vagas
+                                </a>
+                            </li>
+                            
+                            @auth
+                                <li class="nav-item">
+                                    <a class="nav-link trampix-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" 
+                                       href="{{ route('dashboard') }}">
+                                        <i class="fas fa-tachometer-alt me-1"></i>
+                                        Dashboard
+                                    </a>
+                                </li>
+                                
+                                @can('isFreelancer')
+                                    <li class="nav-item">
+                                        <a class="nav-link trampix-nav-link {{ request()->routeIs('applications.index') ? 'active' : '' }}" 
+                                           href="{{ route('applications.index') }}">
+                                            <i class="fas fa-file-alt me-1"></i>
+                                            Minhas Candidaturas
+                                        </a>
+                                    </li>
+                                @endcan
+                                
+                                @can('isCompany')
+                                    <li class="nav-item">
+                                        <a class="nav-link trampix-nav-link {{ request()->routeIs('job_vacancies.index') ? 'active' : '' }}" 
+                                           href="{{ route('job_vacancies.index') }}">
+                                            <i class="fas fa-briefcase me-1"></i>
+                                            Minhas Vagas
+                                        </a>
+                                    </li>
+                                @endcan
+                            @endauth
+                        </ul>
+                    </div>
 
-            <!-- Links da direita -->
-            <ul class="navbar-nav">
+                    <!-- Menu de usuário (Direita) -->
+                    <div class="trampix-nav-right">
+                        <ul class="navbar-nav">
                 @auth
                     <!-- Menu de Perfil Redesenhado -->
                     <li class="nav-item dropdown" 
@@ -210,8 +241,11 @@
                             Registrar
                         </a>
                     </li>
-                @endauth
-            </ul>
+                        @endauth
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </nav>
@@ -225,6 +259,60 @@
     --trampix-light-gray: #F3F3F3;
     --trampix-red: #FF4C4C;
     --trampix-dark-gray: #4A4A4A;
+}
+
+/* Logo Trampix */
+.trampix-logo-section {
+    flex-shrink: 0;
+}
+
+.trampix-logo-img {
+    height: 40px;
+    width: auto;
+    object-fit: contain;
+    max-width: 150px;
+}
+
+.trampix-logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--trampix-purple);
+}
+
+.navbar-brand {
+    margin-right: 0;
+    padding: 0.5rem 0;
+}
+
+/* Navbar principal */
+.trampix-navbar {
+    min-height: 70px;
+    padding: 0.5rem 0;
+}
+
+.trampix-nav-center {
+    flex: 1;
+    justify-content: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.trampix-nav-right {
+    flex-shrink: 0;
+}
+
+.trampix-nav-link {
+    color: var(--trampix-black);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.trampix-nav-link:hover,
+.trampix-nav-link.active {
+    color: var(--trampix-purple);
+    background-color: rgba(143, 63, 247, 0.1);
 }
 
 /* Botão Principal do Perfil */

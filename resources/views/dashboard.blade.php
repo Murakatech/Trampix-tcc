@@ -1,3 +1,7 @@
+@php
+use Illuminate\Support\Facades\Gate;
+@endphp
+
 @extends('layouts.app')
 
 @section('header')
@@ -12,11 +16,11 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-12">
+            <!-- Dashboard Principal -->
             <div class="card">
                 <div class="card-body">
-                    <h3 class="h5 fw-bold mb-4">Bem-vindo, {{ auth()->user()->name }}!</h3>
                     
-                    @can('isAdmin')
+                    @if(Gate::allows('isAdmin'))
                         <div class="mb-4">
                             <h4 class="h6 text-muted mb-3">
                                 <i class="fas fa-cog me-2"></i>Área Administrativa
@@ -62,9 +66,9 @@
                                 </div>
                             </div>
                         </div>
-                    @endcan
+                    @endif
                     
-                    @can('isCompany')
+                    @if(Gate::allows('isCompany'))
                         <div class="mb-4">
                             <h4 class="h6 text-muted mb-3">
                                 <i class="fas fa-briefcase me-2"></i>Área da Empresa
@@ -97,9 +101,9 @@
                                 </div>
                             </div>
                         </div>
-                    @endcan
+                    @endif
                     
-                    @can('isFreelancer')
+                    @if(Gate::allows('isFreelancer'))
                         <div class="mb-4">
                             <h4 class="h6 text-muted mb-3">
                                 <i class="fas fa-user me-2"></i>Área do Freelancer
@@ -132,7 +136,7 @@
                                 </div>
                             </div>
                         </div>
-                    @endcan
+                    @endif
                     
                     {{-- Link para Styleguide (desenvolvimento) --}}
                     <div class="mt-4 pt-3 border-top">

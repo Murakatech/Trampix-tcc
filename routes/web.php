@@ -50,17 +50,26 @@ Route::get('/profiles/{user}', [ProfileController::class, 'show'])->name('profil
 
 // Perfil / dashboard
 Route::middleware('auth')->group(function () {
+    // Nova rota para configurações de conta
+    Route::get('/profile/account', [ProfileController::class, 'account'])->name('profile.account');
+    Route::patch('/profile/account', [ProfileController::class, 'updateAccount'])->name('profile.account.update');
+    
+    // Rota principal do perfil (baseada no active_role)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    // Permitir seções específicas na edição unificada (conta, freelancer, company)
-    Route::get('/profile/{section}', [ProfileController::class, 'edit'])
-        ->where('section', 'account|freelancer|company')
-        ->name('profile.edit.section');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Rotas para upload de foto de perfil
     Route::post('/profile/photo/upload', [ProfilePhotoController::class, 'upload'])->name('profile.photo.upload');
     Route::delete('/profile/photo/delete', [ProfilePhotoController::class, 'delete'])->name('profile.photo.delete');
+    
+    // Rotas para imagens de perfil (freelancer e empresa)
+    Route::patch('/profile/image', [ProfileController::class, 'updateImage'])->name('profile.image.update');
+    Route::delete('/profile/image', [ProfileController::class, 'deleteImage'])->name('profile.image.delete');
+    
+    // Rotas para upload de currículo
+    Route::post('/profile/cv/upload', [ProfileController::class, 'uploadCv'])->name('profile.cv.upload');
+    Route::delete('/profile/cv/delete', [ProfileController::class, 'deleteCv'])->name('profile.cv.delete');
     
     // Rotas para perfis de freelancer
     Route::get('/freelancers/profile', [FreelancerController::class, 'showOwn'])->name('freelancers.profile');
