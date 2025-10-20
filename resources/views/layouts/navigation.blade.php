@@ -44,82 +44,155 @@
             <!-- Links da direita -->
             <ul class="navbar-nav">
                 @auth
-                    <!-- Novo cabeçalho com avatar + nome + dropdown -->
-                    <li class="nav-item dropdown">
-                        <div class="d-flex align-items-center justify-content-center">
-                            <div class="position-relative dropdown">
-                                <button class="btn p-2 border-0 bg-transparent dropdown-toggle d-flex align-items-center gap-2" 
-                                        type="button" 
-                                        id="profileDropdown" 
-                                        data-bs-toggle="dropdown" 
-                                        aria-expanded="false"
-                                        style="box-shadow: none;">
-                                    @php
-                                        $activeProfile = null;
-                                        $profilePhoto = null;
-                                        
-                                        if (auth()->user()->freelancer) {
-                                            $activeProfile = auth()->user()->freelancer;
-                                            $profilePhoto = $activeProfile->profile_photo;
-                                        } elseif (auth()->user()->company) {
-                                            $activeProfile = auth()->user()->company;
-                                            $profilePhoto = $activeProfile->profile_photo;
-                                        }
-                                    @endphp
-                                    
+                    <!-- Menu de Perfil Redesenhado -->
+                    <li class="nav-item dropdown" 
+                        x-data="{ 
+                            open: false,
+                            toggle() { this.open = !this.open },
+                            close() { this.open = false }
+                        }"
+                        x-on:click.away="close()"
+                        x-on:keydown.escape="close()">
+                        
+                        <!-- Botão do Perfil -->
+                        <button class="trampix-profile-btn d-flex align-items-center gap-2 border-0 bg-transparent p-2 rounded-3"
+                                type="button"
+                                x-on:click="toggle()"
+                                x-bind:aria-expanded="open"
+                                aria-haspopup="true"
+                                role="button"
+                                tabindex="0">
+                            
+                            @php
+                                $activeProfile = null;
+                                $profilePhoto = null;
+                                $userRole = 'Usuário';
+                                
+                                if (auth()->user()->freelancer) {
+                                    $activeProfile = auth()->user()->freelancer;
+                                    $profilePhoto = $activeProfile->profile_photo;
+                                    $userRole = 'Freelancer';
+                                } elseif (auth()->user()->company) {
+                                    $activeProfile = auth()->user()->company;
+                                    $profilePhoto = $activeProfile->profile_photo;
+                                    $userRole = 'Empresa';
+                                }
+                            @endphp
+                            
+                            <!-- Avatar -->
+                            <div class="trampix-avatar position-relative">
+                                @if($profilePhoto)
+                                    <img src="{{ asset('storage/' . $profilePhoto) }}" 
+                                         alt="Foto de {{ auth()->user()->name }}" 
+                                         class="trampix-avatar-img">
+                                @else
+                                    <div class="trampix-avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                @endif
+                                
+                                <!-- Indicador de status online -->
+                                <div class="trampix-status-indicator"></div>
+                            </div>
+                            
+                            <!-- Informações do usuário (desktop) -->
+                            <div class="trampix-user-info d-none d-lg-block text-start">
+                                <div class="trampix-user-name">{{ auth()->user()->name }}</div>
+                                <div class="trampix-user-role">{{ $userRole }}</div>
+                            </div>
+                            
+                            <!-- Ícone de seta -->
+                            <i class="fas fa-chevron-down trampix-chevron" 
+                               x-bind:class="{ 'rotate-180': open }"></i>
+                        </button>
+
+                        <!-- Menu Dropdown -->
+                        <div class="trampix-dropdown-menu"
+                             x-show="open"
+                             x-transition:enter="transition ease-out duration-200"
+                             x-transition:enter-start="opacity-0 transform scale-95"
+                             x-transition:enter-end="opacity-1 transform scale-100"
+                             x-transition:leave="transition ease-in duration-150"
+                             x-transition:leave-start="opacity-1 transform scale-100"
+                             x-transition:leave-end="opacity-0 transform scale-95"
+                             x-cloak>
+                            
+                            <!-- Header do menu -->
+                            <div class="trampix-dropdown-header">
+                                <div class="d-flex align-items-center gap-3">
                                     @if($profilePhoto)
                                         <img src="{{ asset('storage/' . $profilePhoto) }}" 
-                                             alt="Foto de Perfil" 
-                                             class="rounded-circle border-2 shadow-sm hover:shadow-md transition-all duration-300"
-                                             style="width: 40px; height: 40px; object-fit: cover; border-color: #8b5cf6;">
+                                             alt="Foto de {{ auth()->user()->name }}" 
+                                             class="trampix-dropdown-avatar">
                                     @else
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm hover:shadow-md transition-all duration-300"
-                                             style="width: 40px; height: 40px; background-color: #8b5cf6; border: 2px solid #8b5cf6;">
-                                            <i class="fas fa-user text-white" style="font-size: 16px;"></i>
+                                        <div class="trampix-dropdown-avatar-placeholder">
+                                            <i class="fas fa-user"></i>
                                         </div>
                                     @endif
                                     
-                                    <span class="text-sm text-gray-700 font-semibold d-none d-md-inline" 
-                                          style="font-size: 14px; color: #374151; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                        {{ auth()->user()->name }}
-                                    </span>
-                                    
-                                    <i class="fas fa-chevron-down text-muted" style="font-size: 12px;"></i>
-                                </button>
-
-                                <!-- Dropdown Menu -->
-                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" 
-                                    aria-labelledby="profileDropdown"
-                                    style="border-radius: 16px; min-width: 180px; margin-top: 8px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);">
-                                    <li>
-                                        <a class="dropdown-item d-flex align-items-center py-2 px-3 hover-item" 
-                                           href="{{ route('profiles.show', auth()->user()) }}"
-                                           style="border-radius: 12px; margin: 4px; transition: all 0.3s ease;">
-                                            <i class="fas fa-eye me-2" style="color: #8b5cf6; width: 16px;"></i>
-                                            Ver Perfil Profissional
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item d-flex align-items-center py-2 px-3 hover-item" 
-                                           href="{{ route('profile.edit') }}"
-                                           style="border-radius: 12px; margin: 4px; transition: all 0.3s ease;">
-                                            <i class="fas fa-cog me-2" style="color: #10b981; width: 16px;"></i>
-                                            Configurações
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider my-2"></li>
-                                    <li>
-                                        <form method="POST" action="{{ route('logout') }}" class="m-0">
-                                            @csrf
-                                            <button type="submit" 
-                                                    class="dropdown-item d-flex align-items-center py-2 px-3 hover-item w-100 border-0 bg-transparent text-start"
-                                                    style="border-radius: 12px; margin: 4px; transition: all 0.3s ease;">
-                                                <i class="fas fa-sign-out-alt me-2" style="color: #ef4444; width: 16px;"></i>
-                                                Sair
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
+                                    <div>
+                                        <div class="trampix-dropdown-name">{{ auth()->user()->name }}</div>
+                                        <div class="trampix-dropdown-email">{{ auth()->user()->email }}</div>
+                                        <div class="trampix-dropdown-role">{{ $userRole }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Divisor -->
+                            <div class="trampix-dropdown-divider"></div>
+                            
+                            <!-- Itens do menu -->
+                            <div class="trampix-dropdown-items">
+                                <a href="{{ route('profiles.show', auth()->user()) }}" 
+                                   class="trampix-dropdown-item"
+                                   x-on:click="close()">
+                                    <i class="fas fa-eye trampix-item-icon" style="color: var(--trampix-purple);"></i>
+                                    <div class="trampix-item-content">
+                                        <div class="trampix-item-title">Ver Perfil Profissional</div>
+                                        <div class="trampix-item-subtitle">Visualizar perfil público</div>
+                                    </div>
+                                </a>
+                                
+                                <a href="{{ route('profile.edit') }}" 
+                                   class="trampix-dropdown-item"
+                                   x-on:click="close()">
+                                    <i class="fas fa-cog trampix-item-icon" style="color: var(--trampix-green);"></i>
+                                    <div class="trampix-item-content">
+                                        <div class="trampix-item-title">Configurações</div>
+                                        <div class="trampix-item-subtitle">Editar perfil e preferências</div>
+                                    </div>
+                                </a>
+                                
+                                @can('isFreelancer')
+                                    <a href="{{ route('applications.index') }}" 
+                                       class="trampix-dropdown-item"
+                                       x-on:click="close()">
+                                        <i class="fas fa-file-alt trampix-item-icon" style="color: #007bff;"></i>
+                                        <div class="trampix-item-content">
+                                            <div class="trampix-item-title">Minhas Candidaturas</div>
+                                            <div class="trampix-item-subtitle">Acompanhar aplicações</div>
+                                        </div>
+                                    </a>
+                                @endcan
+                            </div>
+                            
+                            <!-- Divisor -->
+                            <div class="trampix-dropdown-divider"></div>
+                            
+                            <!-- Logout -->
+                            <div class="trampix-dropdown-footer">
+                                <form method="POST" action="{{ route('logout') }}" class="w-100">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="trampix-logout-btn w-100"
+                                            x-on:click="close()">
+                                        <i class="fas fa-sign-out-alt trampix-item-icon" style="color: var(--trampix-red);"></i>
+                                        <div class="trampix-item-content">
+                                            <div class="trampix-item-title">Sair</div>
+                                            <div class="trampix-item-subtitle">Encerrar sessão</div>
+                                        </div>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </li>
@@ -144,95 +217,372 @@
 </nav>
 
 <style>
-.profile-photo-nav:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+/* Variáveis CSS do Design System Trampix */
+:root {
+    --trampix-purple: #8F3FF7;
+    --trampix-green: #B9FF66;
+    --trampix-black: #191A23;
+    --trampix-light-gray: #F3F3F3;
+    --trampix-red: #FF4C4C;
+    --trampix-dark-gray: #4A4A4A;
 }
 
-.profile-nav-link:hover .text-dark {
-    color: #0d6efd !important;
+/* Botão Principal do Perfil */
+.trampix-profile-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
 }
 
-.profile-nav-link {
+.trampix-profile-btn:hover {
+    background-color: rgba(143, 63, 247, 0.05) !important;
+    transform: translateY(-1px);
+}
+
+.trampix-profile-btn:focus {
+    outline: 2px solid var(--trampix-purple);
+    outline-offset: 2px;
+}
+
+/* Avatar Principal */
+.trampix-avatar {
+    width: 44px;
+    height: 44px;
+}
+
+.trampix-avatar-img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--trampix-purple);
     transition: all 0.3s ease;
 }
 
-.profile-nav-link:hover {
-    transform: translateY(-2px);
+.trampix-avatar-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--trampix-purple), #a855f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    border: 3px solid var(--trampix-purple);
+    transition: all 0.3s ease;
 }
 
-.hover-item:hover {
-    background-color: #f8fafc !important;
-    color: #8b5cf6 !important;
-    transform: translateX(2px);
+.trampix-profile-btn:hover .trampix-avatar-img,
+.trampix-profile-btn:hover .trampix-avatar-placeholder {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(143, 63, 247, 0.3);
 }
 
-.dropdown-toggle::after {
-    display: none !important;
+/* Indicador de Status Online */
+.trampix-status-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background-color: var(--trampix-green);
+    border: 2px solid white;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
 }
 
-.dropdown-menu {
-    animation: fadeInDown 0.3s ease-out;
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(185, 255, 102, 0.7); }
+    70% { box-shadow: 0 0 0 6px rgba(185, 255, 102, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(185, 255, 102, 0); }
 }
 
-@keyframes fadeInDown {
+/* Informações do Usuário */
+.trampix-user-info {
+    max-width: 140px;
+}
+
+.trampix-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--trampix-black);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.trampix-user-role {
+    font-size: 12px;
+    color: var(--trampix-dark-gray);
+    line-height: 1.2;
+}
+
+/* Ícone Chevron */
+.trampix-chevron {
+    font-size: 12px;
+    color: var(--trampix-dark-gray);
+    transition: all 0.3s ease;
+}
+
+.rotate-180 {
+    transform: rotate(180deg);
+}
+
+/* Menu Dropdown */
+.trampix-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 1050;
+    min-width: 320px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(143, 63, 247, 0.1);
+    margin-top: 8px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+/* Header do Dropdown */
+.trampix-dropdown-header {
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(143, 63, 247, 0.05), rgba(185, 255, 102, 0.05));
+    border-bottom: 1px solid rgba(143, 63, 247, 0.1);
+}
+
+.trampix-dropdown-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--trampix-purple);
+}
+
+.trampix-dropdown-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--trampix-purple), #a855f7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    border: 2px solid var(--trampix-purple);
+}
+
+.trampix-dropdown-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--trampix-black);
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.trampix-dropdown-email {
+    font-size: 13px;
+    color: var(--trampix-dark-gray);
+    line-height: 1.2;
+    margin-bottom: 4px;
+}
+
+.trampix-dropdown-role {
+    font-size: 12px;
+    color: var(--trampix-purple);
+    font-weight: 600;
+    background-color: rgba(143, 63, 247, 0.1);
+    padding: 2px 8px;
+    border-radius: 12px;
+    display: inline-block;
+}
+
+/* Divisor */
+.trampix-dropdown-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(143, 63, 247, 0.2), transparent);
+    margin: 0 20px;
+}
+
+/* Itens do Menu */
+.trampix-dropdown-items {
+    padding: 12px 8px;
+}
+
+.trampix-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--trampix-black);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.trampix-dropdown-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(143, 63, 247, 0.05), transparent);
+    transition: left 0.5s ease;
+}
+
+.trampix-dropdown-item:hover::before {
+    left: 100%;
+}
+
+.trampix-dropdown-item:hover {
+    background-color: rgba(143, 63, 247, 0.05);
+    transform: translateX(4px);
+    color: var(--trampix-purple);
+    text-decoration: none;
+}
+
+.trampix-item-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.trampix-dropdown-item:hover .trampix-item-icon {
+    transform: scale(1.1);
+}
+
+.trampix-item-content {
+    flex: 1;
+}
+
+.trampix-item-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.trampix-item-subtitle {
+    font-size: 12px;
+    color: var(--trampix-dark-gray);
+    line-height: 1.2;
+}
+
+.trampix-dropdown-item:hover .trampix-item-subtitle {
+    color: rgba(143, 63, 247, 0.7);
+}
+
+/* Footer do Dropdown */
+.trampix-dropdown-footer {
+    padding: 8px;
+    background-color: rgba(255, 76, 76, 0.02);
+}
+
+.trampix-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    color: var(--trampix-red);
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+}
+
+.trampix-logout-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 76, 76, 0.05), transparent);
+    transition: left 0.5s ease;
+}
+
+.trampix-logout-btn:hover::before {
+    left: 100%;
+}
+
+.trampix-logout-btn:hover {
+    background-color: rgba(255, 76, 76, 0.05);
+    transform: translateX(4px);
+    color: var(--trampix-red);
+}
+
+.trampix-logout-btn:hover .trampix-item-icon {
+    transform: scale(1.1);
+}
+
+/* Responsividade */
+@media (max-width: 991.98px) {
+    .trampix-dropdown-menu {
+        min-width: 280px;
+        right: -20px;
+    }
+    
+    .trampix-dropdown-header {
+        padding: 16px;
+    }
+    
+    .trampix-dropdown-name {
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .trampix-dropdown-menu {
+        min-width: 260px;
+        right: -40px;
+    }
+    
+    .trampix-user-info {
+        display: none !important;
+    }
+}
+
+/* Acessibilidade */
+.trampix-dropdown-item:focus,
+.trampix-logout-btn:focus {
+    outline: 2px solid var(--trampix-purple);
+    outline-offset: 2px;
+}
+
+/* Animações de entrada */
+@keyframes slideInDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-20px) scale(0.95);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
-/* Garantir visibilidade do botão de engrenagem */
-    .navbar .dropdown-toggle {
-        visibility: visible !important;
-        opacity: 1 !important;
-        display: flex !important;
-        cursor: pointer;
-    }
-    
-    .navbar .dropdown-toggle.btn {
-        padding: 0.5rem 0.75rem;
-        color: rgba(0,0,0,.55);
-    }
-    
-    .navbar .dropdown-toggle.btn:hover {
-        color: rgba(0,0,0,.7);
-    }
-    
-    .navbar .dropdown-toggle .fas.fa-cog {
-        font-size: 1.2rem;
-        color: #6c757d;
-        transition: color 0.3s ease;
-    }
-    
-    .navbar .dropdown-toggle:hover .fas.fa-cog {
-        color: #007bff;
-    }
+/* Alpine.js cloak */
+[x-cloak] {
+    display: none !important;
+}
 
-/* Melhorar visibilidade do dropdown */
-    .dropdown-menu {
-        border: 1px solid #dee2e6;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-        min-width: 200px;
-        z-index: 1050;
-    }
-    
-    /* Animação do ícone de seta */
-    .rotate-180 {
-        transform: rotate(180deg);
-    }
-    
-    .fas.fa-chevron-down {
-        transition: transform 0.3s ease;
-        font-size: 0.8rem;
-    }
-    
-    /* Posicionamento relativo para o dropdown */
-    .nav-item {
-        position: relative;
-    }
+/* Posicionamento relativo para o dropdown */
+.nav-item.dropdown {
+    position: relative;
+}
 </style>
