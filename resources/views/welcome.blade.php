@@ -22,7 +22,7 @@
             <div class="container mx-auto px-6 py-4">
                 <nav class="flex items-center justify-between">
                     <a href="{{ route('welcome') }}" class="flex items-center space-x-2 text-xl font-bold text-purple-600">
-                        <img src="{{ asset('storage/img/logo.svg') }}" alt="Trampix Logo" class="h-10 object-contain">
+                        <img src="{{ asset('storage/img/logo_trampix.png') }}" alt="Trampix Logo" class="h-10 object-contain">
                         <span>Trampix</span>
                     </a>
                     
@@ -401,7 +401,7 @@
                 <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
                     <div>
                         <div class="flex items-center space-x-2 text-xl font-bold text-green-500 mb-4">
-                            <img src="{{ asset('storage/img/logo.svg') }}" alt="Trampix Logo" class="h-10 object-contain">
+                            <img src="{{ asset('storage/img/logo_trampix.png') }}" alt="Trampix Logo" class="h-10 object-contain">
                             <span>Trampix</span>
                         </div>
                         <p class="text-gray-400 leading-relaxed">

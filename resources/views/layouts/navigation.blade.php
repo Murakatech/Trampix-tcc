@@ -2,7 +2,7 @@
     <div class="container">
         <!-- Logo -->
         <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ route('welcome') }}">
-            <img src="{{ asset('storage/img/logo.svg') }}" alt="Trampix Logo" class="h-10 object-contain me-2" style="height: 2.5rem;">
+            <img src="{{ asset('storage/img/logo_trampix.png') }}" alt="Trampix Logo" class="h-10 object-contain me-2" style="height: 2.5rem;">
             <span>Trampix</span>
         </a>
 
