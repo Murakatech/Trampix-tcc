@@ -61,8 +61,8 @@ class AuthenticatedSessionController extends Controller
             }
         }
         
-        // Se tem ambos os perfis e não tem sessão ativa, vai para seleção
-        return redirect()->route('select-role.show');
+        // Se tem ambos os perfis e não tem sessão ativa, vai para dashboard
+        return redirect()->route('dashboard');
     }
 
     /**

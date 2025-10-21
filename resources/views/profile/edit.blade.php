@@ -82,13 +82,47 @@
                                 Criar Perfil de Empresa
                             </button>
                         @else
-                            <form method="post" action="{{ route('role.switch') }}" class="inline">
-                                @csrf
-                                <input type="hidden" name="role" value="company">
-                                <button type="submit" class="btn-trampix-secondary">
+                            <!-- Dropdown para Trocar Perfil -->
+                            <div class="relative inline-block" x-data="{ open: false }" @click.away="open = false">
+                                <button @click="open = !open" class="btn-trampix-secondary flex items-center gap-2">
                                     Trocar Perfil Profissional
+                                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
                                 </button>
-                            </form>
+                                
+                                <div x-show="open" 
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 transform scale-95"
+                                     x-transition:enter-end="opacity-100 transform scale-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 transform scale-100"
+                                     x-transition:leave-end="opacity-0 transform scale-95"
+                                     class="absolute right-0 mt-2 w-64 trampix-card shadow-lg z-50">
+                                    
+                                    <!-- Opção ativa (desabilitada) -->
+                                    <div class="px-4 py-3 text-sm text-gray-500 border-b border-gray-200">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            Continuar no perfil de Freelancer
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Opção para trocar -->
+                                    <form method="post" action="{{ route('profile.switch-role') }}">
+                                        @csrf
+                                        <input type="hidden" name="role" value="company">
+                                        <button type="submit" class="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                            </svg>
+                                            Ir para perfil de Empresa
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         @endif
                     @else
                         @if(!$user->freelancer)
@@ -96,13 +130,47 @@
                                 Criar Perfil Freelancer
                             </button>
                         @else
-                            <form method="post" action="{{ route('role.switch') }}" class="inline">
-                                @csrf
-                                <input type="hidden" name="role" value="freelancer">
-                                <button type="submit" class="btn-trampix-secondary">
+                            <!-- Dropdown para Trocar Perfil -->
+                            <div class="relative inline-block" x-data="{ open: false }" @click.away="open = false">
+                                <button @click="open = !open" class="btn-trampix-secondary flex items-center gap-2">
                                     Trocar Perfil Profissional
+                                    <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
                                 </button>
-                            </form>
+                                
+                                <div x-show="open" 
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 transform scale-95"
+                                     x-transition:enter-end="opacity-100 transform scale-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 transform scale-100"
+                                     x-transition:leave-end="opacity-0 transform scale-95"
+                                     class="absolute right-0 mt-2 w-64 trampix-card shadow-lg z-50">
+                                    
+                                    <!-- Opção ativa (desabilitada) -->
+                                    <div class="px-4 py-3 text-sm text-gray-500 border-b border-gray-200">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            Continuar no perfil de Empresa
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Opção para trocar -->
+                                    <form method="post" action="{{ route('profile.switch-role') }}">
+                                        @csrf
+                                        <input type="hidden" name="role" value="freelancer">
+                                        <button type="submit" class="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2">
+                                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                            </svg>
+                                            Ir para perfil de Freelancer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         @endif
                     @endif
                 </div>
@@ -115,11 +183,32 @@
                         <div class="relative">
                             @if(session('active_role') === 'freelancer')
                                 @if(isset($freelancer) && $freelancer->profile_photo)
-                                    <img class="h-24 w-24 rounded-full object-cover border-4 border-white shadow-lg" 
-                                         src="{{ asset('storage/' . $freelancer->profile_photo) }}" 
-                                         alt="Foto do perfil">
+                                    <div x-data="{ open: false }">
+                                        <!-- Miniatura circular com foto real -->
+                                        <div @click="open = true" class="cursor-pointer h-24 w-24 rounded-full overflow-hidden shadow-lg">
+                                            <img src="{{ asset('storage/' . $freelancer->profile_photo) }}" 
+                                                 alt="Foto de perfil" 
+                                                 class="h-full w-full object-cover object-center">
+                                        </div>
+                                        
+                                        <!-- Preview ampliado -->
+                                        <div x-show="open" 
+                                             x-transition:enter="transition ease-out duration-300"
+                                             x-transition:enter-start="opacity-0 scale-95"
+                                             x-transition:enter-end="opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-200"
+                                             x-transition:leave-start="opacity-100 scale-100"
+                                             x-transition:leave-end="opacity-0 scale-95"
+                                             @click.away="open = false" 
+                                             @keydown.escape.window="open = false" 
+                                             class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50"
+                                             style="display: none;">
+                                            <img src="{{ asset('storage/' . $freelancer->profile_photo) }}" 
+                                                 class="max-h-[80vh] max-w-[80vw] rounded-lg shadow-2xl object-contain transition">
+                                        </div>
+                                    </div>
                                 @else
-                                    <div class="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
+                                    <div class="h-24 w-24 rounded-full overflow-hidden shadow bg-gray-200 flex items-center justify-center">
                                         <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
@@ -127,11 +216,32 @@
                                 @endif
                             @else
                                 @if(isset($company) && $company->profile_photo)
-                                    <img class="h-24 w-24 rounded-lg object-cover border-4 border-white shadow-lg" 
-                                         src="{{ asset('storage/' . $company->profile_photo) }}" 
-                                         alt="Logo da empresa">
+                                    <div x-data="{ open: false }">
+                                        <!-- Miniatura retangular com logo real -->
+                                        <div @click="open = true" class="cursor-pointer h-24 w-24 rounded-lg overflow-hidden shadow-lg">
+                                            <img src="{{ asset('storage/' . $company->profile_photo) }}" 
+                                                 alt="Logo da empresa" 
+                                                 class="h-full w-full object-cover object-center">
+                                        </div>
+                                        
+                                        <!-- Preview ampliado -->
+                                        <div x-show="open" 
+                                             x-transition:enter="transition ease-out duration-300"
+                                             x-transition:enter-start="opacity-0 scale-95"
+                                             x-transition:enter-end="opacity-100 scale-100"
+                                             x-transition:leave="transition ease-in duration-200"
+                                             x-transition:leave-start="opacity-100 scale-100"
+                                             x-transition:leave-end="opacity-0 scale-95"
+                                             @click.away="open = false" 
+                                             @keydown.escape.window="open = false" 
+                                             class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50"
+                                             style="display: none;">
+                                            <img src="{{ asset('storage/' . $company->profile_photo) }}" 
+                                                 class="max-h-[80vh] max-w-[80vw] rounded-lg shadow-2xl object-contain transition">
+                                        </div>
+                                    </div>
                                 @else
-                                    <div class="h-24 w-24 rounded-lg bg-gray-200 flex items-center justify-center border-4 border-white shadow-lg">
+                                    <div class="h-24 w-24 rounded-lg overflow-hidden shadow bg-gray-200 flex items-center justify-center">
                                         <svg class="h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H9m0 0H5m0 0h2M7 7h10M7 10h10M7 13h10"></path>
                                         </svg>
@@ -159,34 +269,31 @@
                         
                         <!-- Controles de Imagem -->
                         <div class="space-y-4">
-                            <div class="flex space-x-3">
-                                <button type="button" 
-                                        onclick="openPhotoEditor('{{ (session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) ? asset('storage/' . $freelancer->profile_photo) : ((session('active_role') === 'company' && isset($company) && $company->profile_photo) ? asset('storage/' . $company->profile_photo) : '') }}')"
-                                        class="btn-trampix-primary">
-                                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                                    </svg>
-                                    @if((session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) || 
-                                        (session('active_role') === 'company' && isset($company) && $company->profile_photo))
-                                        Editar {{ session('active_role') === 'freelancer' ? 'Foto' : 'Logo' }}
-                                    @else
-                                        Adicionar {{ session('active_role') === 'freelancer' ? 'Foto' : 'Logo' }}
-                                    @endif
-                                </button>
-                                
+                            <button type="button" 
+                                    onclick="openPhotoEditor('{{ (session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) ? asset('storage/' . $freelancer->profile_photo) : ((session('active_role') === 'company' && isset($company) && $company->profile_photo) ? asset('storage/' . $company->profile_photo) : '') }}')"
+                                    class="btn-trampix-primary">
+                                <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                                </svg>
                                 @if((session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) || 
                                     (session('active_role') === 'company' && isset($company) && $company->profile_photo))
-                                    <form method="post" action="{{ route('profile.image.delete') }}" class="inline">
-                                        @csrf
-                                        @method('delete')
-                                        <input type="hidden" name="profile_type" value="{{ session('active_role') }}">
-                                        <button type="submit" class="btn-trampix-secondary text-red-600 border-red-300 hover:bg-red-50" 
-                                                onclick="return confirm('Tem certeza que deseja remover a imagem?')">
-                                            <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                        Remover Imagem
+                                    Editar {{ session('active_role') === 'freelancer' ? 'Foto' : 'Logo' }}
+                                @else
+                                    Adicionar {{ session('active_role') === 'freelancer' ? 'Foto' : 'Logo' }}
+                                @endif
+                            </button>
+                            
+                            @if((session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) || 
+                                (session('active_role') === 'company' && isset($company) && $company->profile_photo))
+                                <form method="POST" action="{{ route('profile.image.delete') }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <input type="hidden" name="profile_type" value="{{ session('active_role') }}">
+                                    <button type="submit" 
+                                            class="mt-2 text-sm text-red-600 hover:text-red-700 hover:underline transition"
+                                            onclick="return confirm('Tem certeza que deseja remover a {{ session('active_role') === 'freelancer' ? 'foto' : 'logo' }}?')">
+                                        Remover {{ session('active_role') === 'freelancer' ? 'Foto' : 'Logo' }}
                                     </button>
                                 </form>
                             @endif
@@ -529,7 +636,228 @@ document.addEventListener('DOMContentLoaded', function() {
 <x-photo-editor :type="session('active_role')" />
 
 <!-- Scripts dos Componentes -->
-<script src="{{ asset('js/photo-editor.js') }}"></script>
+<script>
+// Editor de Foto Simplificado
+let currentImage = null;
+let isDragging = false;
+let dragStart = { x: 0, y: 0 };
+let currentPosition = { x: 0, y: 0 };
+let currentScale = 1;
+
+// Função para abrir o editor de fotos
+function openPhotoEditor(currentImageUrl = null) {
+    const modal = document.getElementById('photoEditorModal');
+    const imagePreview = document.getElementById('imagePreview');
+    const imagePlaceholder = document.getElementById('imagePlaceholder');
+    const imageControls = document.getElementById('imageControls');
+    const confirmButton = document.getElementById('confirmButton');
+    
+    if (currentImageUrl) {
+        imagePreview.src = currentImageUrl;
+        imagePreview.style.display = 'block';
+        imagePlaceholder.style.display = 'none';
+        imageControls.style.display = 'block';
+        currentImage = currentImageUrl;
+        
+        // Habilitar botão de confirmação
+        confirmButton.disabled = false;
+        confirmButton.classList.remove('opacity-50', 'cursor-not-allowed');
+        
+        // Configurar drag and drop
+        setupImageDragging();
+    } else {
+        imagePreview.style.display = 'none';
+        imagePlaceholder.style.display = 'flex';
+        imageControls.style.display = 'none';
+        currentImage = null;
+        
+        // Desabilitar botão de confirmação
+        confirmButton.disabled = true;
+        confirmButton.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+    
+    modal.classList.remove('hidden');
+    resetPosition();
+}
+
+// Função para fechar o editor de fotos
+function closePhotoEditor() {
+    const modal = document.getElementById('photoEditorModal');
+    modal.classList.add('hidden');
+    
+    // Reset do input de arquivo
+    const input = document.getElementById('photoEditorInput');
+    input.value = '';
+    
+    // Reset das transformações
+    resetPosition();
+}
+
+// Função para carregar imagem para edição
+function loadImageForEditing(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const imagePreview = document.getElementById('imagePreview');
+            const imagePlaceholder = document.getElementById('imagePlaceholder');
+            const imageControls = document.getElementById('imageControls');
+            const confirmButton = document.getElementById('confirmButton');
+            
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+            imagePlaceholder.style.display = 'none';
+            imageControls.style.display = 'block';
+            
+            currentImage = e.target.result;
+            resetPosition();
+            
+            // Habilitar botão de confirmação
+            confirmButton.disabled = false;
+            confirmButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            
+            // Configurar drag and drop
+            setupImageDragging();
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Configurar funcionalidade de arrastar
+function setupImageDragging() {
+    const imagePreview = document.getElementById('imagePreview');
+    
+    // Mouse events
+    imagePreview.addEventListener('mousedown', startDrag);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', endDrag);
+    
+    // Touch events para mobile
+    imagePreview.addEventListener('touchstart', startDragTouch);
+    document.addEventListener('touchmove', dragTouch);
+    document.addEventListener('touchend', endDrag);
+}
+
+function startDrag(e) {
+    isDragging = true;
+    dragStart.x = e.clientX - currentPosition.x;
+    dragStart.y = e.clientY - currentPosition.y;
+    e.preventDefault();
+}
+
+function startDragTouch(e) {
+    isDragging = true;
+    const touch = e.touches[0];
+    dragStart.x = touch.clientX - currentPosition.x;
+    dragStart.y = touch.clientY - currentPosition.y;
+    e.preventDefault();
+}
+
+function drag(e) {
+    if (!isDragging) return;
+    
+    currentPosition.x = e.clientX - dragStart.x;
+    currentPosition.y = e.clientY - dragStart.y;
+    
+    // Limitar movimento dentro da área circular
+    const maxMove = 50;
+    currentPosition.x = Math.max(-maxMove, Math.min(maxMove, currentPosition.x));
+    currentPosition.y = Math.max(-maxMove, Math.min(maxMove, currentPosition.y));
+    
+    updateImageTransform();
+    e.preventDefault();
+}
+
+function dragTouch(e) {
+    if (!isDragging) return;
+    
+    const touch = e.touches[0];
+    currentPosition.x = touch.clientX - dragStart.x;
+    currentPosition.y = touch.clientY - dragStart.y;
+    
+    // Limitar movimento dentro da área circular
+    const maxMove = 50;
+    currentPosition.x = Math.max(-maxMove, Math.min(maxMove, currentPosition.x));
+    currentPosition.y = Math.max(-maxMove, Math.min(maxMove, currentPosition.y));
+    
+    updateImageTransform();
+    e.preventDefault();
+}
+
+function endDrag() {
+    isDragging = false;
+}
+
+// Função para atualizar transformações da imagem
+function updateImageTransform() {
+    const imagePreview = document.getElementById('imagePreview');
+    if (!imagePreview || imagePreview.style.display === 'none') return;
+    
+    // Aplicar transformações
+    const transform = `translate(${currentPosition.x}px, ${currentPosition.y}px) scale(${currentScale})`;
+    imagePreview.style.transform = transform;
+}
+
+// Funções de escala
+function scaleImage(delta) {
+    currentScale = Math.max(0.8, Math.min(2, currentScale + delta));
+    const slider = document.getElementById('scaleSlider');
+    if (slider) {
+        slider.value = currentScale;
+    }
+    updateImageTransform();
+}
+
+// Função para resetar posição
+function resetPosition() {
+    currentPosition = { x: 0, y: 0 };
+    currentScale = 1;
+    
+    const slider = document.getElementById('scaleSlider');
+    if (slider) {
+        slider.value = 1;
+    }
+    
+    updateImageTransform();
+}
+
+// Função para confirmar mudanças
+function confirmPhotoChanges() {
+    const input = document.getElementById('photoEditorInput');
+    const form = document.getElementById('photoEditorForm');
+    
+    if (!input.files || !input.files[0]) {
+        alert('Por favor, selecione uma imagem primeiro.');
+        return;
+    }
+    
+    // Preencher campos ocultos com as transformações
+    document.getElementById('finalPositionX').value = currentPosition.x;
+    document.getElementById('finalPositionY').value = currentPosition.y;
+    document.getElementById('finalScale').value = currentScale;
+    
+    // Copiar arquivo para o input do formulário
+    const finalInput = document.getElementById('finalImageInput');
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(input.files[0]);
+    finalInput.files = dataTransfer.files;
+    
+    // Enviar formulário
+    form.submit();
+}
+
+// Event listener para o slider de escala
+document.addEventListener('DOMContentLoaded', function() {
+    const scaleSlider = document.getElementById('scaleSlider');
+    if (scaleSlider) {
+        scaleSlider.addEventListener('input', function() {
+            currentScale = parseFloat(this.value);
+            updateImageTransform();
+        });
+    }
+});
+</script>
 <script src="{{ asset('js/cv-uploader.js') }}"></script>
 
 <style>

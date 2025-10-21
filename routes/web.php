@@ -59,6 +59,13 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
+    // Rota para trocar perfil
+    Route::post('/profile/switch-role', [ProfileController::class, 'switchRole'])->name('profile.switch-role');
+    
+    // Rotas para exclusão de perfis específicos
+    Route::delete('/profile/freelancer', [ProfileController::class, 'destroyFreelancerProfile'])->name('profile.freelancer.destroy');
+    Route::delete('/profile/company', [ProfileController::class, 'destroyCompanyProfile'])->name('profile.company.destroy');
+    
     // Rotas para upload de foto de perfil
     Route::post('/profile/photo/upload', [ProfilePhotoController::class, 'upload'])->name('profile.photo.upload');
     Route::delete('/profile/photo/delete', [ProfilePhotoController::class, 'delete'])->name('profile.photo.delete');

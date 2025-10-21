@@ -191,7 +191,7 @@
                         </div>
                     </a>
 
-                    <a href="{{ route('home') }}" class="trampix-card hover:scale-[1.02] transition">
+                    <a href="http://trampix.test/vagas/" class="trampix-card hover:scale-[1.02] transition">
                         <div class="flex items-center">
                             <i class="fas fa-search text-green-500 text-2xl mr-3"></i>
                             <div>

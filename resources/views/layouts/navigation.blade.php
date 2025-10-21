@@ -5,7 +5,7 @@
             
             <!-- Logo (Esquerda) -->
             <div class="trampix-logo-section">
-                <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url('/') }}">
+                <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ auth()->check() ? route('dashboard') : url('/') }}">
                     <img src="{{ asset('storage/img/logo_trampix.png') }}" 
                          alt="Trampix Logo" 
                          class="trampix-logo-img me-2">
@@ -60,8 +60,8 @@
                                 
                                 @can('isCompany')
                                     <li class="nav-item">
-                                        <a class="nav-link trampix-nav-link {{ request()->routeIs('job_vacancies.index') ? 'active' : '' }}" 
-                                           href="{{ route('job_vacancies.index') }}">
+                                        <a class="nav-link trampix-nav-link {{ request()->routeIs('vagas.index') ? 'active' : '' }}" 
+                                           href="{{ route('vagas.index') }}">
                                             <i class="fas fa-briefcase me-1"></i>
                                             Minhas Vagas
                                         </a>

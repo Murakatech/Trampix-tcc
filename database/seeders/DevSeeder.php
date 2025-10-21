@@ -14,12 +14,14 @@ class DevSeeder extends Seeder
 {
     public function run(): void
     {
+        $securePassword = 'Trampix@123'; // atende aos requisitos
+
         // ADMIN
         $admin = User::updateOrCreate(
             ['email' => 'admin@trampix.com'],
             [
                 'name' => 'Administrador',
-                'password' => Hash::make('123456'),
+                'password' => Hash::make($securePassword),
                 'role' => 'admin',
                 'email_verified_at' => now(),
             ]
@@ -146,7 +148,7 @@ class DevSeeder extends Seeder
                 ['email' => $data['user']['email']],
                 [
                     'name' => $data['user']['name'],
-                    'password' => Hash::make('123456'),
+                    'password' => Hash::make($securePassword),
                     'role' => 'company',
                     'email_verified_at' => now(),
                 ]
@@ -186,7 +188,7 @@ class DevSeeder extends Seeder
             ['email' => 'freelancer@trampix.com'],
             [
                 'name' => 'Ana Rodrigues',
-                'password' => Hash::make('123456'),
+                'password' => Hash::make($securePassword),
                 'role' => 'freelancer',
                 'email_verified_at' => now(),
             ]
@@ -221,9 +223,9 @@ class DevSeeder extends Seeder
         }
 
         echo "✅ DevSeeder executado com sucesso!\n";
-        echo "📧 Admin: admin@trampix.com | Senha: 123456\n";
-        echo "🏢 Empresas diversas criadas (restaurante, agência, oficina, hotel)\n";
-        echo "👤 Freelancer: freelancer@trampix.com | Senha: 123456\n";
+        echo "📧 Admin: admin@trampix.com | Senha: Trampix@123\n";
+        echo "👤 Freelancer: freelancer@trampix.com | Senha: Trampix@123\n";
+        echo "🏢 Empresas criadas com mesma senha de acesso.\n";
         echo "📊 Vagas e candidaturas criadas automaticamente.\n";
     }
 }

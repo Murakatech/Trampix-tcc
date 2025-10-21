@@ -20,8 +20,21 @@ class ProfileController extends Controller
         $freelancer = $user->freelancer;
         $company = $user->company;
 
-        // Carregar vagas recentes da empresa (se houver)
-        if ($company) {
+        // Determinar perfil ativo baseado na sessão (para o próprio usuário) ou disponibilidade
+        $activeRole = null;
+        if (auth()->check() && auth()->id() === $user->id) {
+            $activeRole = session('active_role');
+        } else {
+            // Para visualização externa, priorizar empresa se disponível
+            if ($company) {
+                $activeRole = 'company';
+            } elseif ($freelancer) {
+                $activeRole = 'freelancer';
+            }
+        }
+
+        // Carregar vagas recentes apenas se o perfil ativo for empresa
+        if ($activeRole === 'company' && $company) {
             $company->load(['vacancies' => function($query) {
                 $query->where('status', 'active')->latest()->take(5);
             }]);
@@ -52,9 +65,9 @@ class ProfileController extends Controller
         $user = $request->user();
         $activeRole = session('active_role');
         
-        // Se não há active_role definido, redirecionar para seleção
+        // Se não há active_role definido, redirecionar para dashboard
         if (!$activeRole) {
-            return redirect()->route('select-role.show');
+            return redirect()->route('dashboard');
         }
         
         // Carregar apenas o perfil ativo
@@ -109,7 +122,7 @@ class ProfileController extends Controller
         }
         
         if (!$activeRole) {
-            return redirect()->route('select-role.show');
+            return redirect()->route('dashboard');
         }
 
         if ($activeRole === 'freelancer') {
@@ -440,5 +453,124 @@ class ProfileController extends Controller
                 'message' => 'Erro ao remover currículo: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Switch between user roles (freelancer/company)
+     */
+    public function switchRole(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'role' => 'required|in:freelancer,company'
+        ]);
+
+        $user = auth()->user();
+        $targetRole = $request->input('role');
+
+        // Verificar se o usuário tem o perfil solicitado
+        if ($targetRole === 'freelancer' && !$user->freelancer) {
+            return redirect()->back()->with('error', 'Você não possui um perfil de freelancer.');
+        }
+
+        if ($targetRole === 'company' && !$user->company) {
+            return redirect()->back()->with('error', 'Você não possui um perfil de empresa.');
+        }
+
+        // Atualizar a sessão com o novo papel ativo
+        session(['active_role' => $targetRole]);
+
+        return redirect()->back()->with('success', 'Perfil alterado com sucesso!');
+    }
+
+    /**
+     * Delete the user's freelancer profile.
+     */
+    public function destroyFreelancerProfile(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('freelancerDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+        
+        // Verificar se o usuário tem perfil de freelancer
+        if (!$user->freelancer) {
+            return redirect()->back()->with('error', 'Você não possui um perfil de freelancer.');
+        }
+
+        $freelancer = $user->freelancer;
+
+        // Verificar se há candidaturas pendentes
+        if ($freelancer->applications()->whereIn('status', ['pending', 'reviewing'])->exists()) {
+            return redirect()->back()->with('error', 'Não é possível excluir o perfil. Há candidaturas pendentes.');
+        }
+
+        // Remover CV do storage se existir
+        if ($freelancer->cv_path) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_path);
+        }
+
+        // Remover foto de perfil se existir
+        if ($freelancer->profile_photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->profile_photo);
+        }
+
+        // Excluir o perfil
+        $freelancer->delete();
+
+        // Se o perfil ativo era freelancer, limpar a sessão
+        if (session('active_role') === 'freelancer') {
+            session()->forget('active_role');
+        }
+
+        return redirect()->route('profile.account')->with('success', 'Perfil de freelancer excluído com sucesso!');
+    }
+
+    /**
+     * Delete the user's company profile.
+     */
+    public function destroyCompanyProfile(Request $request): RedirectResponse
+    {
+        $request->validateWithBag('companyDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+        
+        // Verificar se o usuário tem perfil de empresa
+        if (!$user->company) {
+            return redirect()->back()->with('error', 'Você não possui um perfil de empresa.');
+        }
+
+        $company = $user->company;
+
+        // Verificar se há vagas ativas
+        if ($company->vacancies()->where('status', 'active')->exists()) {
+            return redirect()->back()->with('error', 'Não é possível excluir o perfil. Há vagas ativas vinculadas a esta empresa.');
+        }
+
+        // Verificar se há candidaturas pendentes em vagas da empresa
+        $pendingApplications = \App\Models\Application::whereHas('vacancy', function($query) use ($company) {
+            $query->where('company_id', $company->id);
+        })->whereIn('status', ['pending', 'reviewing'])->exists();
+
+        if ($pendingApplications) {
+            return redirect()->back()->with('error', 'Não é possível excluir o perfil. Há candidaturas pendentes em suas vagas.');
+        }
+
+        // Remover foto de perfil se existir
+        if ($company->profile_photo) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($company->profile_photo);
+        }
+
+        // Excluir o perfil
+        $company->delete();
+
+        // Se o perfil ativo era empresa, limpar a sessão
+        if (session('active_role') === 'company') {
+            session()->forget('active_role');
+        }
+
+        return redirect()->route('profile.account')->with('success', 'Perfil de empresa excluído com sucesso!');
     }
 }

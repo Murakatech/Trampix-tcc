@@ -2,18 +2,45 @@
 
 @section('content')
 <div class="container py-4">
+    @php
+        // Determinar o perfil ativo baseado na sessão ou no que está disponível
+        $activeRole = null;
+        $activeProfile = null;
+        $displayName = $user->name;
+        
+        if (auth()->check() && auth()->id() === $user->id) {
+            // Para o próprio usuário, usar a sessão active_role
+            $activeRole = session('active_role');
+        } else {
+            // Para visualização externa, mostrar o primeiro perfil disponível
+            if ($company) {
+                $activeRole = 'company';
+            } elseif ($freelancer) {
+                $activeRole = 'freelancer';
+            }
+        }
+        
+        // Definir perfil ativo e nome de exibição
+        if ($activeRole === 'company' && $company) {
+            $activeProfile = $company;
+            $displayName = $company->company_name ?? $user->name;
+        } elseif ($activeRole === 'freelancer' && $freelancer) {
+            $activeProfile = $freelancer;
+            $displayName = $user->name;
+        }
+    @endphp
+
     {{-- Cabeçalho dinâmico --}}
     <div class="row mb-4">
         <div class="col-12 d-flex align-items-center justify-content-between">
             <div>
                 <h2 class="h3 mb-1">
-                    {{ $user->name }}
+                    {{ $displayName }}
                 </h2>
                 <div>
-                    @if(isset($freelancer) && $freelancer)
+                    @if($activeRole === 'freelancer')
                         <span class="badge bg-primary">Freelancer</span>
-                    @endif
-                    @if(isset($company) && $company)
+                    @elseif($activeRole === 'company')
                         <span class="badge bg-secondary">Empresa</span>
                     @endif
                 </div>
@@ -36,18 +63,13 @@
             <div class="row g-4">
                 <div class="col-md-3 text-center">
                     @php
-                        $photo = null;
-                        if(isset($freelancer) && $freelancer && $freelancer->profile_photo){
-                            $photo = $freelancer->profile_photo;
-                        } elseif(isset($company) && $company && $company->profile_photo){
-                            $photo = $company->profile_photo;
-                        }
+                        $photo = $activeProfile->profile_photo ?? null;
                     @endphp
                     @if($photo)
                         <img src="{{ asset('storage/' . $photo) }}" alt="Foto/Logo" class="img-thumbnail" style="width: 200px; height: 200px; object-fit: cover;">
                     @else
                         <div class="bg-light d-flex align-items-center justify-content-center" style="width: 200px; height: 200px; border-radius: 8px;">
-                            @if(isset($company) && $company)
+                            @if($activeRole === 'company')
                                 <i class="fas fa-building fa-4x text-muted"></i>
                             @else
                                 <i class="fas fa-user fa-4x text-muted"></i>
@@ -63,101 +85,98 @@
                         <span>{{ $user->email }}</span>
                     </div>
 
-                    {{-- Bloco Freelancer --}}
-                    @if(isset($freelancer) && $freelancer)
-                        @if($freelancer->bio)
+                    {{-- Informações específicas do perfil ativo --}}
+                    @if($activeRole === 'freelancer' && $activeProfile)
+                        @if($activeProfile->bio)
                             <div class="mb-3">
                                 <strong>Bio:</strong>
-                                <p class="mb-0">{{ $freelancer->bio }}</p>
+                                <p class="mb-0">{{ $activeProfile->bio }}</p>
                             </div>
                         @endif
 
                         <div class="row">
-                            @if($freelancer->location)
+                            @if($activeProfile->location)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Localização:</strong> {{ $freelancer->location }}
+                                    <strong>Localização:</strong> {{ $activeProfile->location }}
                                 </div>
                             @endif
-                            @if($freelancer->phone)
+                            @if($activeProfile->phone)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Telefone:</strong> {{ $freelancer->phone }}
+                                    <strong>Telefone:</strong> {{ $activeProfile->phone }}
                                 </div>
                             @endif
-                            @if($freelancer->hourly_rate)
+                            @if($activeProfile->hourly_rate)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Valor por Hora:</strong> R$ {{ number_format($freelancer->hourly_rate, 2, ',', '.') }}
+                                    <strong>Valor por Hora:</strong> R$ {{ number_format($activeProfile->hourly_rate, 2, ',', '.') }}
                                 </div>
                             @endif
-                            @if($freelancer->availability)
+                            @if($activeProfile->availability)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Disponibilidade:</strong> {{ $freelancer->availability }}
+                                    <strong>Disponibilidade:</strong> {{ $activeProfile->availability }}
                                 </div>
                             @endif
                         </div>
 
-                        @if($freelancer->portfolio_url)
+                        @if($activeProfile->portfolio_url)
                             <div class="mb-3">
                                 <strong>Portfólio:</strong>
-                                <a href="{{ $freelancer->portfolio_url }}" target="_blank" class="text-primary">Ver Portfólio</a>
+                                <a href="{{ $activeProfile->portfolio_url }}" target="_blank" class="text-primary">Ver Portfólio</a>
                             </div>
                         @endif
 
-                        @if($freelancer->cv_url)
+                        @if($activeProfile->cv_url)
                             <div class="mb-3">
                                 <strong>Currículo:</strong>
-                                <a href="{{ route('freelancers.download-cv', $freelancer) }}" class="btn btn-sm btn-outline-primary">
+                                <a href="{{ route('freelancers.download-cv', $activeProfile) }}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-download"></i> Baixar CV
                                 </a>
                             </div>
                         @endif
-                    @endif
-
-                    {{-- Bloco Empresa --}}
-                    @if(isset($company) && $company)
+                    @elseif($activeRole === 'company' && $activeProfile)
                         <div class="row">
-                            @if($company->cnpj)
+                            @if($activeProfile->cnpj)
                                 <div class="col-md-6 mb-2">
-                                    <strong>CNPJ:</strong> {{ $company->cnpj }}
+                                    <strong>CNPJ:</strong> {{ $activeProfile->cnpj }}
                                 </div>
                             @endif
-                            @if($company->sector)
+                            @if($activeProfile->sector)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Setor:</strong> {{ $company->sector }}
+                                    <strong>Setor:</strong> {{ $activeProfile->sector }}
                                 </div>
                             @endif
-                            @if($company->location)
+                            @if($activeProfile->location)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Localização:</strong> {{ $company->location }}
+                                    <strong>Localização:</strong> {{ $activeProfile->location }}
                                 </div>
                             @endif
-                            @if($company->phone)
+                            @if($activeProfile->phone)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Telefone:</strong> {{ $company->phone }}
+                                    <strong>Telefone:</strong> {{ $activeProfile->phone }}
                                 </div>
                             @endif
-                            @if($company->employees_count)
+                            @if($activeProfile->employees_count)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Funcionários:</strong> {{ $company->employees_count }}
+                                    <strong>Funcionários:</strong> {{ $activeProfile->employees_count }}
                                 </div>
                             @endif
-                            @if($company->founded_year)
+                            @if($activeProfile->founded_year)
                                 <div class="col-md-6 mb-2">
-                                    <strong>Fundada em:</strong> {{ $company->founded_year }}
+                                    <strong>Fundada em:</strong> {{ $activeProfile->founded_year }}
                                 </div>
                             @endif
                         </div>
 
-                        @if($company->description)
+                        @if($activeProfile->description)
                             <div class="mb-3">
                                 <strong>Sobre a empresa:</strong>
-                                <p class="mb-0">{{ $company->description }}</p>
+                                <p class="mb-0">{{ $activeProfile->description }}</p>
                             </div>
                         @endif
 
-                        @if($company->website)
+                        @if($activeProfile->website)
                             <div class="mb-3">
                                 <strong>Website:</strong> 
-                                <a href="{{ $company->website }}" target="_blank" class="text-primary">{{ $company->website }}</a>
+                                <a href="{{ $activeProfile->website }}" target="_blank" class="text-primary">{{ $activeProfile->website }}</a>
                             </div>
                         @endif
                     @endif
@@ -168,30 +187,29 @@
                     <div class="d-flex flex-wrap gap-2">
                         @auth
                             @if(auth()->id() === $user->id)
-                                @if(isset($freelancer) && $freelancer)
-                                    <a href="{{ route('profile.edit') }}" class="btn btn-primary">
-                                        <i class="fas fa-user-cog"></i> Configurar Conta
-                                    </a>
+                                {{-- Botão único de configurar conta --}}
+                                <a href="{{ route('profile.edit') }}" class="btn btn-primary">
+                                    <i class="fas fa-user-cog"></i> Configurar Conta
+                                </a>
+                                
+                                {{-- Ações específicas do perfil ativo --}}
+                                @if($activeRole === 'freelancer')
                                     <a href="{{ route('applications.index') }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-briefcase"></i> Minhas Candidaturas
                                     </a>
                                     <a href="{{ route('home') }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-search"></i> Buscar Vagas
                                     </a>
-                                @endif
-                                @if(isset($company) && $company)
-                                    <a href="{{ route('profile.edit') }}" class="btn btn-primary">
-                                        <i class="fas fa-user-cog"></i> Configurar Conta
-                                    </a>
-                                    <a href="{{ route('companies.vacancies', $company) }}" class="btn btn-outline-secondary">
+                                @elseif($activeRole === 'company' && $activeProfile)
+                                    <a href="{{ route('companies.vacancies', $activeProfile) }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-briefcase"></i> Minhas Vagas
                                     </a>
                                 @endif
                             @else
-                                {{-- Visualização de empresa sobre freelancer --}}
-                                @if(isset($freelancer) && $freelancer && auth()->user() && auth()->user()->isCompany())
-                                    @if($freelancer->cv_url)
-                                        <a href="{{ route('freelancers.download-cv', $freelancer) }}" class="btn btn-primary">
+                                {{-- Visualização externa --}}
+                                @if($activeRole === 'freelancer' && $activeProfile && auth()->user() && auth()->user()->isCompany())
+                                    @if($activeProfile->cv_url)
+                                        <a href="{{ route('freelancers.download-cv', $activeProfile) }}" class="btn btn-primary">
                                             <i class="fas fa-download"></i> Baixar CV
                                         </a>
                                     @endif
@@ -211,12 +229,12 @@
     </div>
 
     {{-- Vagas recentes da empresa --}}
-    @if(isset($company) && $company && $company->relationLoaded('vacancies') && $company->vacancies->count() > 0)
+    @if($activeRole === 'company' && $activeProfile && $activeProfile->relationLoaded('vacancies') && $activeProfile->vacancies->count() > 0)
         <div class="card mt-4">
             <div class="card-body">
                 <h4 class="mb-3"><i class="fas fa-briefcase"></i> Vagas Recentes</h4>
                 <div class="row">
-                    @foreach($company->vacancies as $vacancy)
+                    @foreach($activeProfile->vacancies as $vacancy)
                         <div class="col-md-6 mb-3">
                             <div class="card h-100">
                                 <div class="card-body">
