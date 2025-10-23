@@ -42,6 +42,22 @@ Route::get('/styleguide', fn () => view('styleguide'))
     ->middleware(['auth'])
     ->name('styleguide');
 
+// Teste da Sidebar Minimalista
+Route::get('/sidebar-test', fn () => view('sidebar-test'))
+    ->name('sidebar-test');
+
+// Sidebar Minimalista (versão mais simples)
+Route::get('/sidebar-minimal', fn () => view('sidebar-minimal'))
+    ->name('sidebar-minimal');
+
+// Sidebar com Componentes
+Route::get('/sidebar-components', fn () => view('sidebar-components'))
+    ->name('sidebar-components');
+
+// Página de Demonstração das Sidebars
+Route::get('/sidebar-demo', fn () => view('sidebar-demo'))
+    ->name('sidebar-demo');
+
 // Público
 Route::resource('vagas', JobVacancyController::class)->only(['index','show']);
 Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
