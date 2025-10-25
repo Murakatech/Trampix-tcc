@@ -6,6 +6,9 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\FreelancerController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\ProfilePhotoController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\FreelancerDashboardController;
+use App\Http\Controllers\CompanyDashboardController;
 use Illuminate\Support\Facades\Route;
 
 // garante que {vaga} só aceite números
@@ -16,10 +19,12 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-// Rota de compatibilidade para componentes que ainda usam route('home')
-Route::get('/home', function () {
-    return redirect()->route('welcome');
-})->name('home');
+// Rotas de Dashboard Pós-Login
+Route::middleware(['auth'])->group(function () {
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+    Route::get('/freelancer/dashboard', [FreelancerDashboardController::class, 'index'])->name('freelancer.dashboard');
+    Route::get('/company/dashboard', [CompanyDashboardController::class, 'index'])->name('company.dashboard');
+});
 
 // Protegido (auth + empresa) — registre ANTES
 Route::middleware(['auth','can:isCompany'])->group(function () {
@@ -77,6 +82,9 @@ Route::middleware('auth')->group(function () {
     
     // Rota para trocar perfil
     Route::post('/profile/switch-role', [ProfileController::class, 'switchRole'])->name('profile.switch-role');
+    
+    // Rota para obter dados do perfil freelancer em JSON
+    Route::get('/profile/freelancer', [ProfileController::class, 'showFreelancerProfile'])->name('profile.freelancer.show');
     
     // Rotas para exclusão de perfis específicos
     Route::delete('/profile/freelancer', [ProfileController::class, 'destroyFreelancerProfile'])->name('profile.freelancer.destroy');

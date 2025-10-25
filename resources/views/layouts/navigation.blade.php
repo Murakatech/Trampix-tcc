@@ -32,8 +32,8 @@
                     <div class="trampix-nav-center d-flex">
                         <ul class="navbar-nav d-flex flex-row gap-3">
                             <li class="nav-item">
-                                <a class="nav-link trampix-nav-link {{ request()->routeIs('home') ? 'active' : '' }}" 
-                                   href="{{ route('home') }}">
+                                <a class="nav-link trampix-nav-link {{ request()->routeIs('vagas.index') ? 'active' : '' }}" 
+                                   href="{{ route('vagas.index') }}">
                                     <i class="fas fa-search me-1"></i>
                                     Vagas
                                 </a>
@@ -41,10 +41,10 @@
                             
                             @auth
                                 <li class="nav-item">
-                                    <a class="nav-link trampix-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" 
-                                       href="{{ route('dashboard') }}">
-                                        <i class="fas fa-tachometer-alt me-1"></i>
-                                        Dashboard
+                                    <a class="nav-link trampix-nav-link {{ request()->routeIs('home', 'dashboard', 'freelancer.dashboard', 'company.dashboard') ? 'active' : '' }}" 
+                                       href="{{ route('home') }}">
+                                        <i class="fas fa-home me-1"></i>
+                                        Início
                                     </a>
                                 </li>
                                 

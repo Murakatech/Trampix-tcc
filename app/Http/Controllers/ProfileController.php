@@ -573,4 +573,69 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.account')->with('success', 'Perfil de empresa excluído com sucesso!');
     }
+
+    /**
+     * Retorna dados do perfil freelancer em formato JSON
+     */
+    public function showFreelancerProfile(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Verificar se o usuário está autenticado
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuário não autenticado.'
+            ], 401);
+        }
+
+        // Verificar se o usuário tem perfil de freelancer
+        if (!$user->freelancer) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Perfil de freelancer não encontrado.'
+            ], 404);
+        }
+
+        $freelancer = $user->freelancer;
+
+        // Carregar estatísticas de candidaturas
+        $applications = \App\Models\Application::where('freelancer_id', $freelancer->id);
+        $applicationsStats = [
+            'total' => $applications->count(),
+            'pending' => $applications->where('status', 'pending')->count(),
+            'accepted' => $applications->where('status', 'accepted')->count(),
+            'rejected' => $applications->where('status', 'rejected')->count(),
+        ];
+
+        // Dados do perfil freelancer
+        $profileData = [
+            'success' => true,
+            'data' => [
+                'id' => $freelancer->id,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
+                'profile' => [
+                    'bio' => $freelancer->bio,
+                    'skills' => $freelancer->skills,
+                    'experience' => $freelancer->experience,
+                    'hourly_rate' => $freelancer->hourly_rate,
+                    'availability' => $freelancer->availability,
+                    'profile_photo' => $freelancer->profile_photo ? asset('storage/' . $freelancer->profile_photo) : null,
+                    'cv_path' => $freelancer->cv_path ? asset('storage/' . $freelancer->cv_path) : null,
+                    'portfolio_url' => $freelancer->portfolio_url,
+                    'linkedin_url' => $freelancer->linkedin_url,
+                    'github_url' => $freelancer->github_url,
+                ],
+                'statistics' => $applicationsStats,
+                'created_at' => $freelancer->created_at,
+                'updated_at' => $freelancer->updated_at,
+            ]
+        ];
+
+        return response()->json($profileData, 200);
+    }
 }
