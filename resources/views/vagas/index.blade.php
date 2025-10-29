@@ -1,11 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('header')
-<div class="bg-white shadow-sm border-bottom">
-    <div class="container py-3">
-        <h1 class="trampix-h2 mb-0">Vagas Disponíveis</h1>
-    </div>
-</div>
+<h1 class="text-2xl font-bold text-gray-900">Vagas Disponíveis</h1>
 @endsection
 
 @section('content')

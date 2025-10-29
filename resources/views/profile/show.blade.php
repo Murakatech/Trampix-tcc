@@ -1,4 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
+
+@section('header')
+<h1 class="text-2xl font-bold text-gray-900">Perfil do Usuário</h1>
+@endsection
 
 @section('content')
 <div class="container py-4">

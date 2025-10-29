@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('header')
-    <h2 class="h4 mb-0">Minhas Candidaturas</h2>
+<h1 class="text-2xl font-bold text-gray-900">Minhas Candidaturas</h1>
 @endsection
 
 @section('content')

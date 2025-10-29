@@ -109,23 +109,123 @@
                 background: white;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             }
+
+            /* Sidebar styles */
+            .trampix-sidebar {
+                background: white;
+                border-right: 1px solid #e5e7eb;
+                box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s ease;
+            }
+
+            .sidebar-card {
+                background: transparent;
+                border: none;
+                border-radius: 12px;
+                padding: 16px;
+                margin: 8px 12px;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                color: var(--trampix-dark-gray);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                cursor: pointer;
+            }
+
+            .sidebar-card:hover {
+                background: var(--trampix-light-gray);
+                color: var(--trampix-purple);
+                transform: translateX(4px);
+                text-decoration: none;
+            }
+
+            .sidebar-card.active {
+                background: linear-gradient(135deg, var(--trampix-purple), #a855f7);
+                color: white;
+                box-shadow: 0 4px 12px rgba(143, 63, 247, 0.3);
+            }
+
+            .sidebar-card.active:hover {
+                background: linear-gradient(135deg, #7c3aed, var(--trampix-purple));
+                color: white;
+                transform: translateX(4px);
+            }
+
+            .sidebar-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+                transition: all 0.3s ease;
+            }
+
+            .sidebar-card:not(.active) .sidebar-icon {
+                background: var(--trampix-light-gray);
+                color: var(--trampix-purple);
+            }
+
+            .sidebar-card.active .sidebar-icon {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+            }
+
+            .sidebar-card:hover:not(.active) .sidebar-icon {
+                background: var(--trampix-purple);
+                color: white;
+            }
+
+            .sidebar-text {
+                font-weight: 500;
+                font-size: 14px;
+            }
+
+            /* Sidebar behavior - same for all screen sizes */
+            .trampix-sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 40;
+                height: 100vh;
+                top: 0;
+                width: 280px;
+                transition: transform 0.3s ease-in-out;
+            }
+            
+            .trampix-sidebar.sidebar-open {
+                transform: translateX(0);
+            }
         </style>
     </head>
     <body>
         <!-- Main Content -->
         <div class="min-h-screen bg-gray-50">
             
-            <!-- Top Navigation Bar -->
-            <header class="bg-white shadow-sm border-b sticky top-0 z-30">
+            <!-- Sidebar -->
+            <x-sidebar />
+
+            <!-- Main Content Area -->
+            <div class="w-full flex flex-col">
+                <!-- Top Navigation Bar -->
+                <header class="bg-white shadow-sm border-b sticky top-0 z-30">
                 <div class="px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between items-center h-16">
-                        <!-- Logo Section -->
+                        <!-- Menu Toggle & Logo -->
                         <div class="flex items-center space-x-3">
-                            <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-briefcase text-white text-xl"></i>
-                            </div>
-                            <div>
-                                <h2 class="text-purple-600 font-bold text-xl">Trampix</h2>
+                            <!-- Sidebar Toggle -->
+                            <button class="p-2 rounded-lg text-gray-600 hover:text-purple-600 hover:bg-gray-100 transition-colors" 
+                                    onclick="toggleSidebar()">
+                                <i class="fas fa-bars text-lg"></i>
+                            </button>
+                            
+                            <!-- Logo -->
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-briefcase text-white text-sm"></i>
+                                </div>
+                                <h2 class="text-purple-600 font-bold text-lg">Trampix</h2>
                             </div>
                         </div>
 
@@ -194,18 +294,46 @@
                 </div>
             </header>
 
-            <!-- Page Content -->
-            <main class="p-4 sm:p-6 lg:p-8">
-                @if(isset($slot))
-                    {{ $slot }}
-                @else
-                    @yield('content')
-                @endif
-            </main>
+                <!-- Page Content -->
+                <main class="flex-1 p-4 sm:p-6 lg:p-8">
+                    @if(isset($slot))
+                        {{ $slot }}
+                    @else
+                        @yield('content')
+                    @endif
+                </main>
+            </div>
         </div>
 
         <!-- Bootstrap 5 JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- Sidebar Toggle Script -->
+        <script>
+            function toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('sidebar-open');
+            }
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const toggleButton = event.target.closest('[onclick="toggleSidebar()"]');
+                
+                if (!sidebar.contains(event.target) && !toggleButton && sidebar.classList.contains('sidebar-open')) {
+                    sidebar.classList.remove('sidebar-open');
+                }
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                const sidebar = document.getElementById('sidebar');
+                
+                if (window.innerWidth >= 768) {
+                    sidebar.classList.remove('sidebar-open');
+                }
+            });
+        </script>
         
         <!-- Custom Scripts -->
         @stack('scripts')

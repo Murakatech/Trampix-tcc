@@ -1,23 +1,19 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('header')
-<div class="bg-white shadow-sm border-b border-gray-200">
-    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Editar Perfil</h1>
-                <p class="mt-1 text-sm text-gray-600">
-                    Perfil ativo: 
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        @if(session('active_role') === 'freelancer')
-                            Freelancer
-                        @else
-                            Empresa
-                        @endif
-                    </span>
-                </p>
-            </div>
-        </div>
+<div class="flex items-center justify-between">
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Editar Perfil</h1>
+        <p class="mt-1 text-sm text-gray-600">
+            Perfil ativo: 
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                @if(session('active_role') === 'freelancer')
+                    Freelancer
+                @else
+                    Empresa
+                @endif
+            </span>
+        </p>
     </div>
 </div>
 @endsection

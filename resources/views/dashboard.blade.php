@@ -9,75 +9,50 @@
 @endsection
 
 @section('content')
-<!-- Menu de Navegação Horizontal -->
-<div class="bg-white rounded-lg shadow-sm border mb-8 p-4">
-    <div class="flex flex-wrap gap-4 justify-center">
-        <!-- Dashboard Home -->
-        <a href="{{ route('dashboard') }}" class="btn-trampix-{{ request()->routeIs('dashboard') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-tachometer-alt mr-2"></i>
-            Dashboard
+<!-- Navegação Principal por Cards -->
+<div class="mb-8">
+    <h2 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+        <i class="fas fa-compass text-purple-500 mr-2"></i> Navegação Rápida
+    </h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <!-- Buscar Vagas - Sempre visível -->
+        <a href="{{ route('vagas.index') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('vagas.index') ? 'ring-2 ring-purple-500' : '' }}">
+            <i class="fas fa-search text-purple-500 text-2xl mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Buscar Vagas</p>
         </a>
 
-        <!-- Buscar Vagas -->
-        <a href="{{ route('vagas.index') }}" class="btn-trampix-{{ request()->routeIs('vagas.index') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-search mr-2"></i>
-            Buscar Vagas
+        <!-- Ver Perfil - Sempre visível -->
+        <a href="{{ route('profiles.show', auth()->user()) }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('profiles.show') ? 'ring-2 ring-purple-500' : '' }}">
+            <i class="fas fa-user-circle text-blue-500 text-2xl mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Ver Perfil</p>
         </a>
 
-        @if(Gate::allows('isAdmin'))
-        <!-- Links ADMIN -->
-        <a href="{{ route('admin.freelancers') }}" class="btn-trampix-{{ request()->routeIs('admin.freelancers') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-users mr-2"></i>
-            Freelancers
+        <!-- Editar Perfil - Sempre visível -->
+        <a href="{{ route('profile.edit') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('profile.edit') ? 'ring-2 ring-purple-500' : '' }}">
+            <i class="fas fa-edit text-green-500 text-2xl mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Editar Perfil</p>
         </a>
-        
-        <a href="{{ route('admin.companies') }}" class="btn-trampix-{{ request()->routeIs('admin.companies') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-building mr-2"></i>
-            Empresas
-        </a>
-        
-        <a href="{{ route('admin.applications') }}" class="btn-trampix-{{ request()->routeIs('admin.applications') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-clipboard-list mr-2"></i>
-            Candidaturas
-        </a>
-        @endif
 
         @if(Gate::allows('isCompany'))
-        <!-- Links EMPRESA -->
-        <a href="{{ route('vagas.create') }}" class="btn-trampix-{{ request()->routeIs('vagas.create') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-plus mr-2"></i>
-            Nova Vaga
-        </a>
-        
-        <a href="{{ route('vagas.index') }}" class="btn-trampix-{{ request()->routeIs('vagas.index') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-list mr-2"></i>
-            Minhas Vagas
+        <!-- Nova Vaga - Empresa -->
+        <a href="{{ route('vagas.create') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('vagas.create') ? 'ring-2 ring-purple-500' : '' }}">
+            <i class="fas fa-plus-circle text-green-500 text-2xl mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Nova Vaga</p>
         </a>
         @endif
 
         @if(Gate::allows('isFreelancer'))
-        <!-- Links FREELANCER -->
-        <a href="{{ route('applications.index') }}" class="btn-trampix-{{ request()->routeIs('applications.index') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-clipboard-list mr-2"></i>
-            Minhas Candidaturas
+        <!-- Candidaturas - Freelancer -->
+        <a href="{{ route('applications.index') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('applications.index') ? 'ring-2 ring-purple-500' : '' }}">
+            <i class="fas fa-clipboard-list text-blue-500 text-2xl mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Candidaturas</p>
         </a>
         @endif
 
-        <!-- Links PERFIL -->
-        <a href="{{ route('profiles.show', auth()->user()) }}" class="btn-trampix-{{ request()->routeIs('profiles.show') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-user-circle mr-2"></i>
-            Ver Perfil
-        </a>
-        
-        <a href="{{ route('profile.edit') }}" class="btn-trampix-{{ request()->routeIs('profile.edit') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-edit mr-2"></i>
-            Editar Perfil
-        </a>
-
-        <!-- Styleguide -->
-        <a href="{{ route('styleguide') }}" class="btn-trampix-{{ request()->routeIs('styleguide') ? 'primary' : 'secondary' }} text-sm">
-            <i class="fas fa-palette mr-2"></i>
-            Styleguide
+        <!-- Styleguide - Sempre visível -->
+        <a href="{{ route('styleguide') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('styleguide') ? 'ring-2 ring-purple-500' : '' }}">
+            <i class="fas fa-palette text-orange-500 text-2xl mb-2"></i>
+            <p class="text-sm font-medium text-gray-900">Styleguide</p>
         </a>
     </div>
 </div>
@@ -91,32 +66,38 @@
                 <i class="fas fa-cog text-purple-500 mr-2"></i> Área Administrativa
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <a href="{{ route('admin.freelancers') }}" class="trampix-card hover:scale-[1.02] transition">
+                <a href="{{ route('admin.freelancers') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
-                        <i class="fas fa-users text-purple-500 text-2xl mr-3"></i>
+                        <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
+                            <i class="fas fa-users text-purple-600 text-xl"></i>
+                        </div>
                         <div>
-                            <p class="font-bold text-gray-900">Freelancers</p>
-                            <p class="text-sm text-gray-500">Gerenciar freelancers</p>
+                            <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Freelancers</p>
+                            <p class="text-sm text-gray-500">Gerenciar freelancers cadastrados</p>
                         </div>
                     </div>
                 </a>
 
-                <a href="{{ route('admin.companies') }}" class="trampix-card hover:scale-[1.02] transition">
+                <a href="{{ route('admin.companies') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
-                        <i class="fas fa-building text-green-500 text-2xl mr-3"></i>
+                        <div class="bg-green-100 p-3 rounded-full mr-4 group-hover:bg-green-200 transition-colors">
+                            <i class="fas fa-building text-green-600 text-xl"></i>
+                        </div>
                         <div>
-                            <p class="font-bold text-gray-900">Empresas</p>
-                            <p class="text-sm text-gray-500">Gerenciar empresas</p>
+                            <p class="font-bold text-gray-900 group-hover:text-green-600 transition-colors">Empresas</p>
+                            <p class="text-sm text-gray-500">Gerenciar empresas cadastradas</p>
                         </div>
                     </div>
                 </a>
 
-                <a href="{{ route('admin.applications') }}" class="trampix-card hover:scale-[1.02] transition">
+                <a href="{{ route('admin.applications') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
-                        <i class="fas fa-clipboard-list text-blue-500 text-2xl mr-3"></i>
+                        <div class="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+                        </div>
                         <div>
-                            <p class="font-bold text-gray-900">Candidaturas</p>
-                            <p class="text-sm text-gray-500">Ver todas candidaturas</p>
+                            <p class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Candidaturas</p>
+                            <p class="text-sm text-gray-500">Monitorar todas candidaturas</p>
                         </div>
                     </div>
                 </a>
@@ -131,22 +112,26 @@
                 <i class="fas fa-briefcase text-green-500 mr-2"></i> Área da Empresa
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <a href="{{ route('vagas.create') }}" class="trampix-card hover:scale-[1.02] transition">
+                <a href="{{ route('vagas.create') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
-                        <i class="fas fa-plus-circle text-green-500 text-2xl mr-3"></i>
+                        <div class="bg-green-100 p-3 rounded-full mr-4 group-hover:bg-green-200 transition-colors">
+                            <i class="fas fa-plus-circle text-green-600 text-xl"></i>
+                        </div>
                         <div>
-                            <p class="font-bold text-gray-900">Nova Vaga</p>
-                            <p class="text-sm text-gray-500">Criar nova vaga</p>
+                            <p class="font-bold text-gray-900 group-hover:text-green-600 transition-colors">Nova Vaga</p>
+                            <p class="text-sm text-gray-500">Criar nova oportunidade</p>
                         </div>
                     </div>
                 </a>
 
-                <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-[1.02] transition">
+                <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
-                        <i class="fas fa-list text-blue-500 text-2xl mr-3"></i>
+                        <div class="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-list text-blue-600 text-xl"></i>
+                        </div>
                         <div>
-                            <p class="font-bold text-gray-900">Minhas Vagas</p>
-                            <p class="text-sm text-gray-500">Gerenciar vagas</p>
+                            <p class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Minhas Vagas</p>
+                            <p class="text-sm text-gray-500">Gerenciar vagas publicadas</p>
                         </div>
                     </div>
                 </a>
@@ -161,21 +146,25 @@
                 <i class="fas fa-user text-blue-500 mr-2"></i> Área do Freelancer
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <a href="{{ route('applications.index') }}" class="trampix-card hover:scale-[1.02] transition">
+                <a href="{{ route('applications.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
-                        <i class="fas fa-clipboard-list text-blue-500 text-2xl mr-3"></i>
+                        <div class="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
+                            <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
+                        </div>
                         <div>
-                            <p class="font-bold text-gray-900">Minhas Candidaturas</p>
-                            <p class="text-sm text-gray-500">Ver candidaturas</p>
+                            <p class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Minhas Candidaturas</p>
+                            <p class="text-sm text-gray-500">Acompanhar candidaturas</p>
                         </div>
                     </div>
                 </a>
 
-                <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-[1.02] transition">
+                <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
-                        <i class="fas fa-search text-green-500 text-2xl mr-3"></i>
+                        <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
+                            <i class="fas fa-search text-purple-600 text-xl"></i>
+                        </div>
                         <div>
-                            <p class="font-bold text-gray-900">Buscar Vagas</p>
+                            <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Buscar Vagas</p>
                             <p class="text-sm text-gray-500">Encontrar oportunidades</p>
                         </div>
                     </div>
@@ -184,13 +173,13 @@
         </section>
     @endif
 
-    {{-- Ferramentas de Desenvolvimento --}}
+    {{-- Informações do Sistema --}}
     <section class="pt-6 border-t border-gray-200">
-        <div class="flex justify-between items-center">
-            <small class="text-gray-500">Ferramentas de Desenvolvimento</small>
-            <a href="{{ route('styleguide') }}" class="btn-trampix-secondary text-sm">
-                <i class="fas fa-palette mr-1"></i> Ver Styleguide
-            </a>
+        <div class="text-center">
+            <small class="text-gray-500">
+                <i class="fas fa-info-circle mr-1"></i>
+                Dashboard Trampix - Navegação intuitiva sem botões tradicionais
+            </small>
         </div>
     </section>
 

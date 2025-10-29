@@ -1,10 +1,13 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">
-            <i class="fas fa-clipboard-list mr-2"></i>
-            Administração - Candidaturas
-        </h2>
-    </x-slot>
+@extends('layouts.dashboard')
+
+@section('header')
+<h1 class="text-2xl font-bold text-gray-900">
+    <i class="fas fa-clipboard-list mr-2"></i>
+    Administração - Candidaturas
+</h1>
+@endsection
+
+@section('content')
 
     <div class="p-6">
         {{-- Estatísticas --}}
@@ -160,4 +163,4 @@
             </div>
         @endif
     </div>
-</x-app-layout>
+@endsection
