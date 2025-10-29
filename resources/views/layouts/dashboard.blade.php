@@ -15,6 +15,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/js/dark-mode.js'])
 
         <!-- Custom Styles -->
         @stack('styles')
@@ -115,7 +116,7 @@
                 background: white;
                 border-right: 1px solid #e5e7eb;
                 box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
-                transition: all 0.3s ease;
+                transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             }
 
             .sidebar-card {
@@ -124,7 +125,7 @@
                 border-radius: 12px;
                 padding: 16px;
                 margin: 8px 12px;
-                transition: all 0.3s ease;
+                transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
                 text-decoration: none;
                 color: var(--trampix-dark-gray);
                 display: flex;
@@ -136,7 +137,7 @@
             .sidebar-card:hover {
                 background: var(--trampix-light-gray);
                 color: var(--trampix-purple);
-                transform: translateX(4px);
+                transform: translateX(8px);
                 text-decoration: none;
             }
 
@@ -149,7 +150,7 @@
             .sidebar-card.active:hover {
                 background: linear-gradient(135deg, #7c3aed, var(--trampix-purple));
                 color: white;
-                transform: translateX(4px);
+                transform: translateX(8px);
             }
 
             .sidebar-icon {
@@ -160,7 +161,7 @@
                 align-items: center;
                 justify-content: center;
                 font-size: 18px;
-                transition: all 0.3s ease;
+                transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             }
 
             .sidebar-card:not(.active) .sidebar-icon {
@@ -181,114 +182,137 @@
             .sidebar-text {
                 font-weight: 500;
                 font-size: 14px;
+                transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             }
 
-            /* Sidebar behavior - same for all screen sizes */
+            /* Sidebar behavior - always visible, pushes content */
             .trampix-sidebar {
-                transform: translateX(-100%);
-                position: fixed;
-                z-index: 40;
-                height: 100vh;
-                top: 0;
-                width: 280px;
-                transition: transform 0.3s ease-in-out;
-            }
-            
-            .trampix-sidebar.sidebar-open {
-                transform: translateX(0);
+                position: relative;
+                z-index: 10;
+                min-height: 100vh;
+                flex-shrink: 0;
+                transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             }
         </style>
     </head>
-    <body>
-        <!-- Main Content -->
-        <div class="min-h-screen bg-gray-50">
-            
-            <!-- Sidebar -->
+    <body class="bg-gray-50 font-sans antialiased">
+        
+        <div class="flex min-h-screen">
+            <!-- Sidebar Component -->
             <x-sidebar />
-
-            <!-- Main Content Area -->
-            <div class="w-full flex flex-col">
+            
+            <!-- Main Content -->
+            <div class="flex-1 transition-all duration-700" style="transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);">
+                
                 <!-- Top Navigation Bar -->
-                <header class="bg-white shadow-sm border-b sticky top-0 z-30">
+                <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
                 <div class="px-4 sm:px-6 lg:px-8">
                     <div class="flex justify-between items-center h-16">
-                        <!-- Menu Toggle & Logo -->
-                        <div class="flex items-center space-x-3">
-                            <!-- Sidebar Toggle -->
-                            <button class="p-2 rounded-lg text-gray-600 hover:text-purple-600 hover:bg-gray-100 transition-colors" 
-                                    onclick="toggleSidebar()">
-                                <i class="fas fa-bars text-lg"></i>
-                            </button>
-                            
-                            <!-- Logo -->
-                            <div class="flex items-center space-x-2">
-                                <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-briefcase text-white text-sm"></i>
-                                </div>
-                                <h2 class="text-purple-600 font-bold text-lg">Trampix</h2>
-                            </div>
-                        </div>
-
-                        <!-- Page Title -->
-                        <div class="flex-1 px-4 text-center">
-                            @if(isset($header))
-                                {{ $header }}
-                            @elseif (View::hasSection('header'))
-                                @yield('header')
+                        <!-- Page Title or Welcome Message -->
+                        <div class="flex-1 text-center">
+                            @if(request()->routeIs('dashboard'))
+                                <h1 class="text-lg font-medium text-gray-900">
+                                    Bem-vindo {{ Auth::user()->name }}
+                                </h1>
+                            @else
+                                @if(isset($header))
+                                    <h1 class="text-lg font-medium text-gray-900">{{ $header }}</h1>
+                                @elseif (View::hasSection('header'))
+                                    <h1 class="text-lg font-medium text-gray-900">@yield('header')</h1>
+                                @else
+                                    <h1 class="text-lg font-medium text-gray-900">
+                                        @switch(true)
+                                            @case(request()->routeIs('vagas.*'))
+                                                Vagas
+                                                @break
+                                            @case(request()->routeIs('profile.*'))
+                                                Perfil
+                                                @break
+                                            @case(request()->routeIs('profiles.*'))
+                                                Perfil
+                                                @break
+                                            @case(request()->routeIs('applications.*'))
+                                                Candidaturas
+                                                @break
+                                            @case(request()->routeIs('admin.*'))
+                                                Administração
+                                                @break
+                                            @case(request()->routeIs('companies.*'))
+                                                Empresas
+                                                @break
+                                            @case(request()->routeIs('freelancers.*'))
+                                                Freelancers
+                                                @break
+                                            @case(request()->routeIs('styleguide'))
+                                                Styleguide
+                                                @break
+                                            @default
+                                                Trampix
+                                        @endswitch
+                                    </h1>
+                                @endif
                             @endif
                         </div>
 
-                        <!-- Right Side Actions -->
-                        <div class="flex items-center space-x-4">
-                            <!-- User Profile -->
-                            @php
-                                $activeProfile = null;
-                                $profilePhoto = null;
+                        <!-- Profile Icon with Dropdown -->
+                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                            <!-- Profile Photo Button -->
+                            <button 
+                                @click="open = !open"
+                                @keydown.escape="open = false"
+                                class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 touch-manipulation"
+                                aria-label="Menu do perfil"
+                                aria-expanded="false"
+                                :aria-expanded="open.toString()"
+                            >
+                                @if(Auth::user()->profile_photo_path)
+                                    <img 
+                                        src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
+                                        alt="Foto de perfil de {{ Auth::user()->name }}"
+                                        class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white shadow-sm"
+                                    >
+                                @else
+                                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-xs sm:text-sm">
+                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                    </div>
+                                @endif
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div 
+                                x-show="open"
+                                x-transition:enter="transition ease-out duration-200"
+                                x-transition:enter-start="opacity-0 scale-95"
+                                x-transition:enter-end="opacity-100 scale-100"
+                                x-transition:leave="transition ease-in duration-150"
+                                x-transition:leave-start="opacity-100 scale-100"
+                                x-transition:leave-end="opacity-0 scale-95"
+                                class="absolute right-0 mt-2 w-44 sm:w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
+                                role="menu"
+                                aria-orientation="vertical"
+                                aria-labelledby="profile-menu-button"
+                            >
+                                <!-- Profile Link -->
+                                <a 
+                                    href="{{ route('profile.edit') }}" 
+                                    class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150 touch-manipulation"
+                                    role="menuitem"
+                                    @click="open = false"
+                                >
+                                    <div class="w-4 h-4 mr-3 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    </div>
+                                    <span class="truncate">Visualizar Perfil</span>
+                                </a>
+
+                                <!-- Divider for future options -->
+                                <hr class="my-1 border-gray-200">
                                 
-                                if (auth()->user()->freelancer) {
-                                    $activeProfile = auth()->user()->freelancer;
-                                    $profilePhoto = $activeProfile->profile_photo;
-                                } elseif (auth()->user()->company) {
-                                    $activeProfile = auth()->user()->company;
-                                    $profilePhoto = $activeProfile->profile_photo;
-                                }
-                            @endphp
-                            
-                            <div class="flex items-center space-x-3">
-                                <div class="w-8 h-8 rounded-full overflow-hidden border-2 border-gray-200">
-                                    @if($profilePhoto)
-                                        <img src="{{ asset('storage/' . $profilePhoto) }}" 
-                                             alt="Foto de Perfil" 
-                                             class="w-full h-full object-cover">
-                                    @else
-                                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
-                                            <i class="fas fa-user text-gray-400 text-xs"></i>
-                                        </div>
-                                    @endif
-                                </div>
-                                <div class="hidden md:block">
-                                    <p class="text-gray-900 font-medium text-sm">{{ Auth::user()->name }}</p>
+                                <!-- Placeholder for future options -->
+                                <div class="px-3 sm:px-4 py-2 text-xs text-gray-400 italic">
+                                    Mais opções em breve...
                                 </div>
                             </div>
-                            
-                            <!-- Notifications -->
-                            <button class="p-2 rounded-lg text-gray-600 hover:text-purple-600 hover:bg-gray-100 transition-colors">
-                                <i class="fas fa-bell text-lg"></i>
-                            </button>
-                            
-                            <!-- Profile Link -->
-                            <a href="{{ route('profiles.show', auth()->user()) }}" 
-                               class="p-2 rounded-lg text-gray-600 hover:text-purple-600 hover:bg-gray-100 transition-colors">
-                                <i class="fas fa-user-circle text-lg"></i>
-                            </a>
-                            
-                            <!-- Logout -->
-                            <form method="POST" action="{{ route('logout') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="p-2 rounded-lg text-gray-600 hover:text-red-600 hover:bg-gray-100 transition-colors">
-                                    <i class="fas fa-sign-out-alt text-lg"></i>
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -307,33 +331,6 @@
 
         <!-- Bootstrap 5 JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        
-        <!-- Sidebar Toggle Script -->
-        <script>
-            function toggleSidebar() {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.classList.toggle('sidebar-open');
-            }
-
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', function(event) {
-                const sidebar = document.getElementById('sidebar');
-                const toggleButton = event.target.closest('[onclick="toggleSidebar()"]');
-                
-                if (!sidebar.contains(event.target) && !toggleButton && sidebar.classList.contains('sidebar-open')) {
-                    sidebar.classList.remove('sidebar-open');
-                }
-            });
-
-            // Handle window resize
-            window.addEventListener('resize', function() {
-                const sidebar = document.getElementById('sidebar');
-                
-                if (window.innerWidth >= 768) {
-                    sidebar.classList.remove('sidebar-open');
-                }
-            });
-        </script>
         
         <!-- Custom Scripts -->
         @stack('scripts')

@@ -8,7 +8,12 @@
 >
     <!-- Cabeçalho da Sidebar -->
     <div class="p-6 border-b border-gray-200">
-        <h2 class="text-lg font-semibold text-gray-800">{{ $title }}</h2>
+        <div class="flex items-center space-x-2 mb-2">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-bars text-white text-sm"></i>
+            </div>
+            <h2 class="text-lg font-semibold text-gray-800">{{ $title }}</h2>
+        </div>
         @if($description)
             <p class="text-sm text-gray-500 mt-1">{{ $description }}</p>
         @endif

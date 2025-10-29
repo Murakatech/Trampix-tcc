@@ -5,57 +5,19 @@
 @extends('layouts.dashboard')
 
 @section('header')
-<h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+@php
+    $userName = auth()->user()->name;
+    if (auth()->user()->isCompany() && auth()->user()->company) {
+        $userName = auth()->user()->company->name;
+    } elseif (auth()->user()->isFreelancer() && auth()->user()->freelancer) {
+        $userName = auth()->user()->name;
+    }
+@endphp
+<h1 class="text-2xl font-bold text-gray-900 text-center mb-8">Bem vindo, {{ $userName }}!</h1>
 @endsection
 
 @section('content')
-<!-- Navegação Principal por Cards -->
-<div class="mb-8">
-    <h2 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-        <i class="fas fa-compass text-purple-500 mr-2"></i> Navegação Rápida
-    </h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        <!-- Buscar Vagas - Sempre visível -->
-        <a href="{{ route('vagas.index') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('vagas.index') ? 'ring-2 ring-purple-500' : '' }}">
-            <i class="fas fa-search text-purple-500 text-2xl mb-2"></i>
-            <p class="text-sm font-medium text-gray-900">Buscar Vagas</p>
-        </a>
 
-        <!-- Ver Perfil - Sempre visível -->
-        <a href="{{ route('profiles.show', auth()->user()) }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('profiles.show') ? 'ring-2 ring-purple-500' : '' }}">
-            <i class="fas fa-user-circle text-blue-500 text-2xl mb-2"></i>
-            <p class="text-sm font-medium text-gray-900">Ver Perfil</p>
-        </a>
-
-        <!-- Editar Perfil - Sempre visível -->
-        <a href="{{ route('profile.edit') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('profile.edit') ? 'ring-2 ring-purple-500' : '' }}">
-            <i class="fas fa-edit text-green-500 text-2xl mb-2"></i>
-            <p class="text-sm font-medium text-gray-900">Editar Perfil</p>
-        </a>
-
-        @if(Gate::allows('isCompany'))
-        <!-- Nova Vaga - Empresa -->
-        <a href="{{ route('vagas.create') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('vagas.create') ? 'ring-2 ring-purple-500' : '' }}">
-            <i class="fas fa-plus-circle text-green-500 text-2xl mb-2"></i>
-            <p class="text-sm font-medium text-gray-900">Nova Vaga</p>
-        </a>
-        @endif
-
-        @if(Gate::allows('isFreelancer'))
-        <!-- Candidaturas - Freelancer -->
-        <a href="{{ route('applications.index') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('applications.index') ? 'ring-2 ring-purple-500' : '' }}">
-            <i class="fas fa-clipboard-list text-blue-500 text-2xl mb-2"></i>
-            <p class="text-sm font-medium text-gray-900">Candidaturas</p>
-        </a>
-        @endif
-
-        <!-- Styleguide - Sempre visível -->
-        <a href="{{ route('styleguide') }}" class="trampix-card text-center hover:scale-105 transition-all duration-300 {{ request()->routeIs('styleguide') ? 'ring-2 ring-purple-500' : '' }}">
-            <i class="fas fa-palette text-orange-500 text-2xl mb-2"></i>
-            <p class="text-sm font-medium text-gray-900">Styleguide</p>
-        </a>
-    </div>
-</div>
 
 <div class="space-y-8">
 
@@ -108,9 +70,50 @@
     {{-- Seção EMPRESA --}}
     @if(Gate::allows('isCompany'))
         <section>
-            <h2 class="text-xl font-semibold text-gray-700 mb-6 flex items-center">
-                <i class="fas fa-briefcase text-green-500 mr-2"></i> Área da Empresa
-            </h2>
+            @php
+                $company = auth()->user()->company;
+                $totalVagas = $company ? $company->vacancies()->count() : 0;
+                $vagasAtivas = $company ? $company->vacancies()->where('status', 'active')->count() : 0;
+                $totalAplicacoes = $company ? \App\Models\Application::whereIn('job_vacancy_id', $company->vacancies->pluck('id'))->count() : 0;
+                $aplicacoesPendentes = $company ? \App\Models\Application::whereIn('job_vacancy_id', $company->vacancies->pluck('id'))->where('status', 'pending')->count() : 0;
+            @endphp
+
+            <!-- Resumo Estatísticas -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="trampix-card text-center">
+                    <div class="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-briefcase text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900">{{ $totalVagas }}</h3>
+                    <p class="text-sm text-gray-500">Total de Vagas</p>
+                </div>
+
+                <div class="trampix-card text-center">
+                    <div class="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900">{{ $vagasAtivas }}</h3>
+                    <p class="text-sm text-gray-500">Vagas Ativas</p>
+                </div>
+
+                <div class="trampix-card text-center">
+                    <div class="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-users text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900">{{ $totalAplicacoes }}</h3>
+                    <p class="text-sm text-gray-500">Total Aplicações</p>
+                </div>
+
+                <div class="trampix-card text-center">
+                    <div class="bg-orange-100 p-4 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
+                        <i class="fas fa-clock text-orange-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-gray-900">{{ $aplicacoesPendentes }}</h3>
+                    <p class="text-sm text-gray-500">Pendentes</p>
+                </div>
+            </div>
+
+            <!-- Ações Rápidas -->
             <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 <a href="{{ route('vagas.create') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
@@ -124,7 +127,7 @@
                     </div>
                 </a>
 
-                <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
+                <a href="{{ route('company.vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
                     <div class="flex items-center">
                         <div class="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
                             <i class="fas fa-list text-blue-600 text-xl"></i>
@@ -135,7 +138,53 @@
                         </div>
                     </div>
                 </a>
+
+                <a href="{{ route('applications.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
+                    <div class="flex items-center">
+                        <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
+                            <i class="fas fa-clipboard-list text-purple-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Ver Aplicações</p>
+                            <p class="text-sm text-gray-500">Candidatos às suas vagas</p>
+                        </div>
+                    </div>
+                </a>
             </div>
+
+            <!-- Vagas Recentes -->
+            @if($company && $company->vacancies()->exists())
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-clock text-blue-500 mr-2"></i> Vagas Recentes
+                </h3>
+                <div class="space-y-4">
+                    @foreach($company->vacancies()->latest()->take(3)->get() as $vaga)
+                    <div class="trampix-card">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-gray-900">{{ $vaga->title }}</h4>
+                                <p class="text-sm text-gray-500">{{ Str::limit($vaga->description, 100) }}</p>
+                                <div class="flex items-center mt-2 space-x-4">
+                                    <span class="text-xs px-2 py-1 rounded-full {{ $vaga->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                        {{ ucfirst($vaga->status) }}
+                                    </span>
+                                    <span class="text-xs text-gray-500">
+                                        {{ $vaga->applications()->count() }} candidatos
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <a href="{{ route('vagas.show', $vaga) }}" class="btn-trampix-secondary text-sm">
+                                    Ver Detalhes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </section>
     @endif
 
@@ -158,17 +207,31 @@
                     </div>
                 </a>
 
-                <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
-                    <div class="flex items-center">
-                        <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
-                            <i class="fas fa-search text-purple-600 text-xl"></i>
+                @can('isCompany')
+                    <a href="{{ route('company.vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
+                                <i class="fas fa-briefcase text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Minhas Vagas</p>
+                                <p class="text-sm text-gray-500">Gerenciar vagas da empresa</p>
+                            </div>
                         </div>
-                        <div>
-                            <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Buscar Vagas</p>
-                            <p class="text-sm text-gray-500">Encontrar oportunidades</p>
+                    </a>
+                @else
+                    <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
+                        <div class="flex items-center">
+                            <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
+                                <i class="fas fa-search text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Buscar Vagas</p>
+                                <p class="text-sm text-gray-500">Encontrar oportunidades</p>
+                            </div>
                         </div>
-                    </div>
-                </a>
+                    </a>
+                @endcan
             </div>
         </section>
     @endif

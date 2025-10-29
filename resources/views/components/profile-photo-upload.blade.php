@@ -13,7 +13,7 @@
                 @else
                     <div class="bg-light d-flex align-items-center justify-content-center mb-3" 
                          style="width: 150px; height: 150px; border-radius: 8px;">
-                        <i class="fas fa-user fa-3x text-muted"></i>
+                        <span class="text-muted">Sem foto</span>
                     </div>
                 @endif
                 
@@ -24,7 +24,7 @@
                         <input type="hidden" name="profile_type" value="{{ $profileType }}">
                         <button type="submit" class="btn btn-outline-danger btn-sm" 
                                 onclick="return confirm('Tem certeza que deseja remover a foto?')">
-                            <i class="fas fa-trash"></i> Remover
+                            Remover
                         </button>
                     </form>
                 @endif
@@ -51,7 +51,6 @@
                     </div>
                     
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-upload"></i> 
                         {{ $profilePhoto ? 'Atualizar Foto' : 'Enviar Foto' }}
                     </button>
                 </form>

@@ -3,15 +3,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center w-100">
             
-            <!-- Logo (Esquerda) -->
-            <div class="trampix-logo-section">
-                <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ auth()->check() ? route('dashboard') : url('/') }}">
-                    <img src="{{ asset('storage/img/logo_trampix.png') }}" 
-                         alt="Trampix Logo" 
-                         class="trampix-logo-img me-2">
-                    <span class="trampix-logo-text">Trampix</span>
-                </a>
-            </div>
+
 
             <!-- Toggle button para mobile -->
             <button class="navbar-toggler d-lg-none" 
@@ -34,7 +26,6 @@
                             <li class="nav-item">
                                 <a class="nav-link trampix-nav-link {{ request()->routeIs('vagas.index') ? 'active' : '' }}" 
                                    href="{{ route('vagas.index') }}">
-                                    <i class="fas fa-search me-1"></i>
                                     Vagas
                                 </a>
                             </li>
@@ -43,7 +34,6 @@
                                 <li class="nav-item">
                                     <a class="nav-link trampix-nav-link {{ request()->routeIs('home', 'dashboard', 'freelancer.dashboard', 'company.dashboard') ? 'active' : '' }}" 
                                        href="{{ route('home') }}">
-                                        <i class="fas fa-home me-1"></i>
                                         Início
                                     </a>
                                 </li>
@@ -52,7 +42,6 @@
                                     <li class="nav-item">
                                         <a class="nav-link trampix-nav-link {{ request()->routeIs('applications.index') ? 'active' : '' }}" 
                                            href="{{ route('applications.index') }}">
-                                            <i class="fas fa-file-alt me-1"></i>
                                             Minhas Candidaturas
                                         </a>
                                     </li>
@@ -62,7 +51,6 @@
                                     <li class="nav-item">
                                         <a class="nav-link trampix-nav-link {{ request()->routeIs('vagas.index') ? 'active' : '' }}" 
                                            href="{{ route('vagas.index') }}">
-                                            <i class="fas fa-briefcase me-1"></i>
                                             Minhas Vagas
                                         </a>
                                     </li>
@@ -71,74 +59,11 @@
                         </ul>
                     </div>
 
-                    <!-- Menu de usuário (Direita) -->
-                    <div class="trampix-nav-right">
-                        <ul class="navbar-nav">
-                @auth
-                    @php
-                        $activeProfile = null;
-                        $profilePhoto = null;
-                        
-                        if (auth()->user()->freelancer) {
-                            $activeProfile = auth()->user()->freelancer;
-                            $profilePhoto = $activeProfile->profile_photo;
-                        } elseif (auth()->user()->company) {
-                            $activeProfile = auth()->user()->company;
-                            $profilePhoto = $activeProfile->profile_photo;
-                        }
-                    @endphp
-                    
-                    <!-- Novo cabeçalho com avatar circular + nome + dropdown -->
-                    <li class="nav-item">
-                        <div class="flex items-center justify-end space-x-4">
-                            <div class="text-center relative group">
-                                <button class="focus:outline-none">
-                                    <img src="{{ asset('storage/' . ($profilePhoto ?? 'default-profile.png')) }}" 
-                                         alt="Foto de Perfil" 
-                                         class="rounded-full w-12 h-12 object-cover border-2 border-trampix-primary shadow-sm hover:shadow-md transition">
-                                </button>
-
-                                <p class="text-sm text-gray-700 mt-1 font-semibold truncate w-24 mx-auto">
-                                    {{ auth()->user()->name }}
-                                </p>
-
-                                <!-- Dropdown -->
-                                <div class="hidden group-hover:block absolute right-0 mt-2 w-44 bg-white rounded-2xl shadow-lg z-50 border">
-                                    <a href="{{ route('profiles.show', auth()->user()) }}" 
-                                       class="block px-4 py-2 text-gray-700 hover:bg-trampix-light hover:text-trampix-primary transition">
-                                        Ver Perfil Profissional
-                                    </a>
-                                    
-                                    <div class="border-t border-gray-100"></div>
-                                    
-                                    <form method="POST" action="{{ route('logout') }}">
-                                        @csrf
-                                        <button type="submit" 
-                                                class="w-full text-left block px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition">
-                                            Sair
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                @else
-                    <!-- Links para visitantes -->
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">
-                            <i class="fas fa-sign-in-alt me-1"></i>
-                            Entrar
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary ms-2" href="{{ route('register') }}">
-                            <i class="fas fa-user-plus me-1"></i>
-                            Registrar
-                        </a>
-                    </li>
-                        @endauth
-                        </ul>
+                    <!-- Toggle do Modo Escuro (Direita) -->
+                    <div class="trampix-nav-right d-flex align-items-center">
+                        <x-dark-mode-toggle />
                     </div>
+
                 </div>
             </div>
         </div>

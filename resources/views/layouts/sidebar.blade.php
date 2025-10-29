@@ -24,8 +24,7 @@
                     class="hidden lg:block p-1.5 rounded-md hover:bg-gray-100 transition-colors" 
                     @click="toggleDesktop()" 
                     aria-label="Colapsar sidebar">
-                <i class="fa-solid fa-angles-left text-gray-500 text-sm transition-transform" 
-                   :class="{ 'rotate-180': collapsed }"></i>
+                ←
             </button>
         </div>
     </div>
@@ -34,6 +33,11 @@
 
     <!-- Grupos por papel ativo - mostra SOMENTE o grupo do papel atual -->
     <nav class="py-3 overflow-y-auto h-[calc(100vh-5rem)]">
+        <!-- Dashboard - comum para todos os papéis -->
+        <x-sidebar-item href="{{ route('dashboard') }}" :active="request()->is('dashboard')" icon="fa-solid fa-house">Dashboard</x-sidebar-item>
+        
+        <hr class="my-3">
+        
         @if($role === 'freelancer')
             <x-sidebar-item href="{{ url('/vagas') }}" :active="request()->is('vagas*')" icon="fa-solid fa-magnifying-glass">Buscar Vagas</x-sidebar-item>
             <x-sidebar-item href="{{ url('/my-applications') }}" :active="request()->is('my-applications*')" icon="fa-solid fa-file-lines">Minhas Candidaturas</x-sidebar-item>
@@ -60,8 +64,8 @@
         <hr class="my-3">
         <form method="POST" action="{{ route('logout') }}" class="px-2">
             @csrf
-            <button @click="close()" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-50">
-                <i class="fa-solid fa-right-from-bracket w-5 text-gray-500"></i>
+            <button @click="close()" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-50 text-red-600 hover:bg-red-50">
+                <i class="fa-solid fa-right-from-bracket text-sm"></i>
                 <span class="text-sm font-medium">Sair</span>
             </button>
         </form>

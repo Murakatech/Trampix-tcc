@@ -96,4 +96,20 @@ class User extends Authenticatable
     {
         $this->notify(new ResetPasswordNotification($token));
     }
+
+    /**
+     * Accessor para obter o caminho da foto de perfil do perfil ativo
+     */
+    public function getProfilePhotoPathAttribute()
+    {
+        if ($this->isFreelancer() && $this->freelancer && $this->freelancer->profile_photo) {
+            return $this->freelancer->profile_photo;
+        }
+        
+        if ($this->isCompany() && $this->company && $this->company->profile_photo) {
+            return $this->company->profile_photo;
+        }
+        
+        return null;
+    }
 }

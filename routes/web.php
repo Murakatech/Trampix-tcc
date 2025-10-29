@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\FreelancerController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CompanyVacancyController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\FreelancerDashboardController;
@@ -30,6 +31,11 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth','can:isCompany'])->group(function () {
     Route::resource('vagas', \App\Http\Controllers\JobVacancyController::class)
         ->only(['create','store','edit','update','destroy']);
+    
+    // Rotas específicas para vagas da empresa
+    Route::get('/company/vagas', [CompanyVacancyController::class, 'index'])->name('company.vagas.index');
+    Route::get('/company/vagas/{vaga}', [CompanyVacancyController::class, 'show'])->name('company.vagas.show');
+    Route::patch('/company/vagas/{vaga}/toggle-status', [CompanyVacancyController::class, 'toggleStatus'])->name('company.vagas.toggle-status');
     
     Route::get('/job-vacancies/{id}/applications', [ApplicationController::class, 'byVacancy'])
         ->name('applications.byVacancy');

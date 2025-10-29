@@ -18,7 +18,12 @@
         >
             <!-- Cabeçalho da Sidebar -->
             <div class="p-6 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-800">Trampix</h2>
+                <div class="flex items-center space-x-2 mb-2">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-cube text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-800">Trampix</h2>
+                </div>
                 <p class="text-sm text-gray-500 mt-1">Sidebar Minimalista</p>
             </div>
             
