@@ -319,6 +319,34 @@
                             @enderror
                         </div>
 
+                        <!-- Categorias de Serviços -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Categorias de Serviços</label>
+                            <p class="text-sm text-gray-600 mb-4">Selecione as áreas em que você atua como prestador de serviços:</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
+                                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
+                                        <input type="checkbox" 
+                                               name="service_categories[]" 
+                                               value="{{ $category->id }}"
+                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                               {{ in_array($category->id, old('service_categories', $freelancer->serviceCategories->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
+                                        <div class="ml-3 flex items-center">
+                                            @if($category->icon)
+                                                <i class="{{ $category->icon }} text-gray-600 mr-2"></i>
+                                            @endif
+                                            <span class="text-sm font-medium text-gray-700">{{ $category->name }}</span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            
+                            @error('service_categories')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="portfolio_url" class="block text-sm font-medium text-gray-700">URL do Portfólio</label>
@@ -688,6 +716,23 @@ function closePhotoEditor() {
     // Reset das transformações
     resetPosition();
 }
+
+// Função para fechar o modal ao clicar no backdrop
+function closePhotoEditorOnBackdrop(event) {
+    if (event.target === event.currentTarget) {
+        closePhotoEditor();
+    }
+}
+
+// Adicionar listener para ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('photoEditorModal');
+        if (modal && !modal.classList.contains('hidden')) {
+            closePhotoEditor();
+        }
+    }
+});
 
 // Função para carregar imagem para edição
 function loadImageForEditing(input) {

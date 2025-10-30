@@ -27,6 +27,8 @@ class FreelancerUpdateRequest extends FormRequest
             'remove_cv' => 'nullable|boolean',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'is_active' => 'nullable|boolean',
+            'service_categories' => 'nullable|array|max:10',
+            'service_categories.*' => 'exists:service_categories,id',
         ];
     }
 

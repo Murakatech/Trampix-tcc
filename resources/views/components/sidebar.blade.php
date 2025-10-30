@@ -17,7 +17,7 @@
     <div class="p-4 border-b border-gray-200">
         <div class="flex items-center space-x-3">
             <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-th-large text-white text-lg"></i>
+                <img src="{{ asset('storage/img/logo_trampix.png') }}" alt="Trampix Logo" class="h-8 w-auto object-contain">
             </div>
             <div 
                 x-show="expanded"
@@ -37,8 +37,20 @@
     <!-- Navigation Cards -->
     <nav class="py-4">
         <!-- Dashboard Home -->
-        <a href="{{ route('dashboard') }}" 
-           class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('dashboard') ? 'bg-purple-100 text-purple-600' : '' }}">
+        @php
+            $dashboardRoute = 'dashboard';
+            $isActive = request()->routeIs('dashboard');
+            
+            if (auth()->user()->isFreelancer()) {
+                $dashboardRoute = 'freelancer.dashboard';
+                $isActive = request()->routeIs('freelancer.dashboard');
+            } elseif (auth()->user()->isCompany()) {
+                $dashboardRoute = 'company.dashboard';
+                $isActive = request()->routeIs('company.dashboard');
+            }
+        @endphp
+        <a href="{{ route($dashboardRoute) }}" 
+           class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ $isActive ? 'bg-purple-100 text-purple-600' : '' }}">
             <i class="fa-solid fa-house text-lg flex-shrink-0"></i>
             <span 
                 x-show="expanded"
@@ -110,7 +122,7 @@
 
             <a href="{{ route('admin.applications') }}" 
                class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('admin.applications') ? 'bg-purple-100 text-purple-600' : '' }}">
-                <i class="fa-solid fa-file-lines text-lg flex-shrink-0"></i>
+                <x-icons.candidaturas class="w-5 h-5 flex-shrink-0" />
                 <span 
                     x-show="expanded"
                     x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
@@ -167,6 +179,7 @@
             
             <a href="{{ route('applications.index') }}" 
                class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('applications.index') ? 'bg-purple-100 text-purple-600' : '' }}">
+                <i class="fa-solid fa-file-lines text-lg flex-shrink-0"></i>
                 <span 
                     x-show="expanded"
                     x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
@@ -175,48 +188,82 @@
                     x-transition:leave="transition-opacity duration-200 ease-in-out"
                     x-transition:leave-start="opacity-100"
                     x-transition:leave-end="opacity-0"
-                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Candidaturas</span>
+                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Minhas Candidaturas</span>
+            </a>
+
+            <a href="{{ route('profile.edit') }}" 
+               class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('profile.edit') ? 'bg-purple-100 text-purple-600' : '' }}">
+                <i class="fa-solid fa-user-edit text-lg flex-shrink-0"></i>
+                <span 
+                    x-show="expanded"
+                    x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity duration-200 ease-in-out"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Meu Perfil</span>
             </a>
         @endcan
 
-        <!-- Profile Section -->
-        <div 
-            x-show="expanded"
-            x-transition:enter="transition-opacity duration-300 ease-in-out delay-100"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity duration-200 ease-in-out"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="px-4 py-2 mt-6">
-            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Perfil</h3>
-        </div>
-        
-        <a href="{{ route('profiles.show', auth()->user()) }}" 
-           class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('profiles.show') ? 'bg-purple-100 text-purple-600' : '' }}">
-            <span 
+        @can('isCompany')
+            <!-- Company Section -->
+            <div 
                 x-show="expanded"
-                x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
+                x-transition:enter="transition-opacity duration-300 ease-in-out delay-100"
                 x-transition:enter-start="opacity-0"
                 x-transition:enter-end="opacity-100"
                 x-transition:leave="transition-opacity duration-200 ease-in-out"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
-                class="ml-3 font-medium whitespace-nowrap overflow-hidden">Ver Perfil</span>
-        </a>
+                class="px-4 py-2 mt-6">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Empresa</h3>
+            </div>
+            
+            <a href="{{ route('vagas.create') }}" 
+               class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('vagas.create') ? 'bg-purple-100 text-purple-600' : '' }}">
+                <i class="fa-solid fa-plus text-lg flex-shrink-0"></i>
+                <span 
+                    x-show="expanded"
+                    x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity duration-200 ease-in-out"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Criar Vaga</span>
+            </a>
 
-        <a href="{{ route('profile.edit') }}" 
-           class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('profile.edit') ? 'bg-purple-100 text-purple-600' : '' }}">
-            <span 
-                x-show="expanded"
-                x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition-opacity duration-200 ease-in-out"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
-                class="ml-3 font-medium whitespace-nowrap overflow-hidden">Editar Perfil</span>
-        </a>
+            <a href="{{ route('vagas.index') }}" 
+               class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('vagas.index') ? 'bg-purple-100 text-purple-600' : '' }}">
+                <i class="fa-solid fa-briefcase text-lg flex-shrink-0"></i>
+                <span 
+                    x-show="expanded"
+                    x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity duration-200 ease-in-out"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Minhas Vagas</span>
+            </a>
+
+            <a href="{{ route('profile.edit') }}" 
+               class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('profile.edit') ? 'bg-purple-100 text-purple-600' : '' }}">
+                <i class="fa-solid fa-building-user text-lg flex-shrink-0"></i>
+                <span 
+                    x-show="expanded"
+                    x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity duration-200 ease-in-out"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Perfil da Empresa</span>
+            </a>
+        @endcan
+
+
 
         <!-- Development Tools -->
         <div 

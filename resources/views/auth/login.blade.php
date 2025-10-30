@@ -4,7 +4,7 @@
 
     <div class="space-y-6">
         <header class="text-center">
-            <h1 class="text-2xl font-bold text-gray-900">Bem-vindo de volta</h1>
+            <h1 class="text-2xl font-bold text-gray-900">Bem-Vindo de Volta</h1>
             <p class="mt-1 text-sm text-gray-600">Entre para continuar sua jornada no Trampix</p>
         </header>
 

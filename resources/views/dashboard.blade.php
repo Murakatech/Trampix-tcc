@@ -13,7 +13,7 @@
         $userName = auth()->user()->name;
     }
 @endphp
-<h1 class="text-2xl font-bold text-gray-900 text-center mb-8">Bem vindo, {{ $userName }}!</h1>
+<h1 class="text-2xl font-bold text-gray-900 text-center mb-8">Bem-Vindo, {{ ucfirst($userName) }}!</h1>
 @endsection
 
 @section('content')
@@ -188,53 +188,7 @@
         </section>
     @endif
 
-    {{-- Seção FREELANCER --}}
-    @if(Gate::allows('isFreelancer'))
-        <section>
-            <h2 class="text-xl font-semibold text-gray-700 mb-6 flex items-center">
-                <i class="fas fa-user text-blue-500 mr-2"></i> Área do Freelancer
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <a href="{{ route('applications.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
-                    <div class="flex items-center">
-                        <div class="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
-                            <i class="fas fa-clipboard-list text-blue-600 text-xl"></i>
-                        </div>
-                        <div>
-                            <p class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Minhas Candidaturas</p>
-                            <p class="text-sm text-gray-500">Acompanhar candidaturas</p>
-                        </div>
-                    </div>
-                </a>
 
-                @can('isCompany')
-                    <a href="{{ route('company.vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
-                        <div class="flex items-center">
-                            <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
-                                <i class="fas fa-briefcase text-purple-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Minhas Vagas</p>
-                                <p class="text-sm text-gray-500">Gerenciar vagas da empresa</p>
-                            </div>
-                        </div>
-                    </a>
-                @else
-                    <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
-                        <div class="flex items-center">
-                            <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
-                                <i class="fas fa-search text-purple-600 text-xl"></i>
-                            </div>
-                            <div>
-                                <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Buscar Vagas</p>
-                                <p class="text-sm text-gray-500">Encontrar oportunidades</p>
-                            </div>
-                        </div>
-                    </a>
-                @endcan
-            </div>
-        </section>
-    @endif
 
     {{-- Informações do Sistema --}}
     <section class="pt-6 border-t border-gray-200">

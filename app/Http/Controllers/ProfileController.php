@@ -74,6 +74,10 @@ class ProfileController extends Controller
         $profile = null;
         if ($activeRole === 'freelancer') {
             $profile = $user->freelancer;
+            // Carregar categorias se o freelancer existir
+            if ($profile) {
+                $profile->load('serviceCategories');
+            }
         } elseif ($activeRole === 'company') {
             $profile = $user->company;
         }
@@ -82,6 +86,7 @@ class ProfileController extends Controller
             'user' => $user,
             'activeRole' => $activeRole,
             'profile' => $profile,
+            'freelancer' => $profile, // Para compatibilidade com a view
             'hasFreelancer' => $user->isFreelancer(),
             'hasCompany' => $user->isCompany(),
         ]);
@@ -161,6 +166,21 @@ class ProfileController extends Controller
                 $freelancer->update($validated);
             } else {
                 $freelancer = $user->createProfile('freelancer', $validated);
+            }
+
+            // Processar categorias de serviços
+            if ($request->has('service_categories')) {
+                $categoryIds = $request->input('service_categories', []);
+                // Validar que as categorias existem e estão ativas
+                $validCategoryIds = \App\Models\ServiceCategory::whereIn('id', $categoryIds)
+                    ->where('is_active', true)
+                    ->pluck('id')
+                    ->toArray();
+                
+                $freelancer->serviceCategories()->sync($validCategoryIds);
+            } else {
+                // Se nenhuma categoria foi selecionada, remover todas
+                $freelancer->serviceCategories()->detach();
             }
 
             return Redirect::route('profile.edit')->with('success', 'Perfil de freelancer atualizado com sucesso!');

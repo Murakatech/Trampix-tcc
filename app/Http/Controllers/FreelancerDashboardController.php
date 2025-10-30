@@ -29,24 +29,97 @@ class FreelancerDashboardController extends Controller
             'rejected' => $applications->where('status', 'rejected')->count(),
         ];
 
-        // Vagas recentes/recomendadas (últimas 6 vagas)
-        $recentJobs = JobVacancy::where('status', 'open')
+        // Candidaturas recentes do freelancer (últimas 7)
+        $recentApplications = Application::where('freelancer_id', $freelancer->id)
+            ->with(['jobVacancy.serviceCategory', 'jobVacancy.company'])
             ->orderBy('created_at', 'desc')
-            ->limit(6)
+            ->limit(7)
             ->get();
 
-        // Candidaturas recentes do freelancer
-        $recentApplications = Application::where('freelancer_id', $freelancer->id)
-            ->with('jobVacancy')
+        // Vagas recomendadas baseadas nas categorias do freelancer
+        $freelancerCategories = $freelancer->serviceCategories->pluck('id')->toArray();
+        
+        $recommendedJobs = JobVacancy::where('status', 'open')
+            ->when(!empty($freelancerCategories), function ($query) use ($freelancerCategories) {
+                return $query->whereIn('service_category_id', $freelancerCategories);
+            })
+            ->whereNotIn('id', function ($query) use ($freelancer) {
+                $query->select('job_vacancy_id')
+                    ->from('applications')
+                    ->where('freelancer_id', $freelancer->id);
+            })
+            ->with(['serviceCategory', 'company'])
             ->orderBy('created_at', 'desc')
-            ->limit(5)
+            ->limit(7)
             ->get();
+
+        // Se não há vagas nas categorias do freelancer, buscar vagas gerais
+        if ($recommendedJobs->isEmpty()) {
+            $recommendedJobs = JobVacancy::where('status', 'open')
+                ->whereNotIn('id', function ($query) use ($freelancer) {
+                    $query->select('job_vacancy_id')
+                        ->from('applications')
+                        ->where('freelancer_id', $freelancer->id);
+                })
+                ->with(['serviceCategory', 'company'])
+                ->orderBy('created_at', 'desc')
+                ->limit(7)
+                ->get();
+        }
 
         return view('freelancer.dashboard', compact(
             'freelancer',
             'applicationsStats',
-            'recentJobs',
+            'recommendedJobs',
             'recentApplications'
         ));
+    }
+
+    /**
+     * Endpoint AJAX para atualizações em tempo real
+     */
+    public function getUpdates()
+    {
+        $user = auth()->user();
+        $freelancer = $user->freelancer;
+
+        if (!$freelancer) {
+            return response()->json(['error' => 'Freelancer não encontrado'], 404);
+        }
+
+        // Estatísticas atualizadas
+        $applications = Application::where('freelancer_id', $freelancer->id);
+        $applicationsStats = [
+            'total' => $applications->count(),
+            'pending' => $applications->where('status', 'pending')->count(),
+            'accepted' => $applications->where('status', 'accepted')->count(),
+            'rejected' => $applications->where('status', 'rejected')->count(),
+        ];
+
+        // Verificar se há novas candidaturas (últimas 24 horas)
+        $newApplicationsCount = Application::where('freelancer_id', $freelancer->id)
+            ->where('created_at', '>=', now()->subDay())
+            ->count();
+
+        // Verificar se há novas vagas recomendadas (últimas 24 horas)
+        $freelancerCategories = $freelancer->serviceCategories->pluck('id')->toArray();
+        $newRecommendedJobsCount = JobVacancy::where('status', 'open')
+            ->when(!empty($freelancerCategories), function ($query) use ($freelancerCategories) {
+                return $query->whereIn('service_category_id', $freelancerCategories);
+            })
+            ->where('created_at', '>=', now()->subDay())
+            ->whereNotIn('id', function ($query) use ($freelancer) {
+                $query->select('job_vacancy_id')
+                    ->from('applications')
+                    ->where('freelancer_id', $freelancer->id);
+            })
+            ->count();
+
+        return response()->json([
+            'applicationsStats' => $applicationsStats,
+            'newApplicationsCount' => $newApplicationsCount,
+            'newRecommendedJobsCount' => $newRecommendedJobsCount,
+            'lastUpdate' => now()->format('H:i:s')
+        ]);
     }
 }

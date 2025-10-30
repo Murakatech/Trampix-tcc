@@ -1,255 +1,447 @@
 @extends('layouts.dashboard')
 
-@section('header')
-<h1 class="text-2xl font-bold text-gray-900">
-    <i class="fas fa-user text-purple-600 mr-2"></i>
-    Dashboard Freelancer
-</h1>
-@endsection
+@push('styles')
+<style>
+    /* Animações personalizadas para o dashboard */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes pulse-glow {
+        0%, 100% {
+            box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+        }
+        50% {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+        }
+    }
+    
+    /* Classes para animações */
+    .animate-slide-up {
+        animation: slideInUp 0.6s ease-out;
+    }
+    
+    .animate-slide-left {
+        animation: slideInLeft 0.5s ease-out;
+    }
+    
+    .animate-slide-right {
+        animation: slideInRight 0.5s ease-out;
+    }
+    
+    .pulse-glow {
+        animation: pulse-glow 2s infinite;
+    }
+    
+    /* Hover effects aprimorados */
+    .trampix-card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Indicador de loading suave */
+    .loading-indicator {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .loading-indicator::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    
+    /* Transições suaves para status badges */
+    .status-badge {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .status-badge:hover {
+        transform: scale(1.05);
+        filter: brightness(1.1);
+    }
+</style>
+@endpush
+
+@section('header', 'Dashboard Freelancer')
 
 @section('content')
-<div class="space-y-8">
-    
-    <!-- Cabeçalho de Boas-vindas -->
-    <div class="bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg p-6 text-white">
+<!-- Welcome Message -->
+<div class="mb-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold mb-2">
-                    Olá, {{ $freelancer->user->name }}! 👋
-                </h2>
-                <p class="text-purple-100">
-                    Bem-vindo ao seu painel de freelancer. Aqui você pode acompanhar suas candidaturas e encontrar novas oportunidades.
-                </p>
+                <h2 class="text-2xl font-bold text-gray-900">Bem-vindo de volta, {{ ucwords($freelancer->user->name) }}!</h2>
+                <p class="text-gray-600 mt-1">Aqui está um resumo das suas atividades recentes</p>
             </div>
-            <div class="hidden md:block">
-                <i class="fas fa-laptop-code text-6xl text-purple-300"></i>
+            <div class="flex items-center space-x-4">
+                <div class="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
+                    <span class="text-green-700 font-medium">{{ $applicationsStats['total'] }} Candidaturas</span>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Resumo de Candidaturas -->
-    <section>
-        <h3 class="text-xl font-semibold text-gray-700 mb-6 flex items-center">
-            <i class="fas fa-chart-bar text-purple-500 mr-2"></i>
-            Resumo das Candidaturas
-        </h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Total -->
-            <div class="trampix-card text-center">
-                <div class="text-3xl font-bold text-purple-600 mb-2">{{ $applicationsStats['total'] }}</div>
-                <div class="text-gray-600 font-medium">Total</div>
-                <i class="fas fa-clipboard-list text-purple-300 text-2xl mt-2"></i>
-            </div>
-            
-            <!-- Em Andamento -->
-            <div class="trampix-card text-center">
-                <div class="text-3xl font-bold text-blue-600 mb-2">{{ $applicationsStats['pending'] }}</div>
-                <div class="text-gray-600 font-medium">Em Andamento</div>
-                <i class="fas fa-clock text-blue-300 text-2xl mt-2"></i>
-            </div>
-            
-            <!-- Aceitas -->
-            <div class="trampix-card text-center">
-                <div class="text-3xl font-bold text-green-600 mb-2">{{ $applicationsStats['accepted'] }}</div>
-                <div class="text-gray-600 font-medium">Aceitas</div>
-                <i class="fas fa-check-circle text-green-300 text-2xl mt-2"></i>
-            </div>
-            
-            <!-- Rejeitadas -->
-            <div class="trampix-card text-center">
-                <div class="text-3xl font-bold text-red-600 mb-2">{{ $applicationsStats['rejected'] }}</div>
-                <div class="text-gray-600 font-medium">Rejeitadas</div>
-                <i class="fas fa-times-circle text-red-300 text-2xl mt-2"></i>
-            </div>
-        </div>
-    </section>
-
-    <!-- Barra de Busca -->
-    <section>
-        <div class="trampix-card">
-            <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-                <i class="fas fa-search text-purple-500 mr-2"></i>
-                Buscar Vagas
-            </h3>
-            
-            <form action="{{ route('vagas.index') }}" method="GET" class="space-y-4">
-                <div class="flex flex-col md:flex-row gap-4">
-                    <div class="flex-1">
-                        <input type="text" 
-                               name="search" 
-                               placeholder="Digite palavras-chave, cargo ou empresa..."
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                               value="{{ request('search') }}">
-                    </div>
-                    <button type="submit" class="btn-trampix-primary px-8">
-                        <i class="fas fa-search mr-2"></i>
-                        Buscar
-                    </button>
-                </div>
-                
-                <!-- Filtros -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <select name="area" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                        <option value="">Todas as áreas</option>
-                        <option value="tecnologia">Tecnologia</option>
-                        <option value="design">Design</option>
-                        <option value="marketing">Marketing</option>
-                        <option value="redacao">Redação</option>
-                        <option value="consultoria">Consultoria</option>
-                    </select>
-                    
-                    <select name="nivel" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                        <option value="">Todos os níveis</option>
-                        <option value="junior">Júnior</option>
-                        <option value="pleno">Pleno</option>
-                        <option value="senior">Sênior</option>
-                    </select>
-                    
-                    <select name="localidade" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                        <option value="">Todas as localidades</option>
-                        <option value="remoto">Remoto</option>
-                        <option value="presencial">Presencial</option>
-                        <option value="hibrido">Híbrido</option>
-                    </select>
-                </div>
-            </form>
-        </div>
-    </section>
-
-    <!-- Vagas Recentes/Recomendadas -->
-    <section>
-        <div class="flex justify-between items-center mb-6">
-            <h3 class="text-xl font-semibold text-gray-700 flex items-center">
-                <i class="fas fa-star text-yellow-500 mr-2"></i>
-                Vagas Recomendadas
-            </h3>
-            <a href="{{ route('vagas.index') }}" class="btn-trampix-secondary">
-                <i class="fas fa-eye mr-2"></i>
-                Ver todas as vagas
-            </a>
-        </div>
-        
-        @if($recentJobs->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                @foreach($recentJobs as $job)
-                    <a href="{{ route('vagas.show', $job) }}" class="trampix-card hover:scale-[1.02] transition-transform">
-                        <div class="flex justify-between items-start mb-3">
-                            <h4 class="font-bold text-gray-900 text-lg">{{ $job->title }}</h4>
-                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                                {{ ucfirst($job->status) }}
-                            </span>
-                        </div>
-                        
-                        <p class="text-gray-600 mb-3 line-clamp-2">{{ Str::limit($job->description, 100) }}</p>
-                        
-                        <div class="flex justify-between items-center text-sm text-gray-500">
-                            <span>
-                                <i class="fas fa-building mr-1"></i>
-                                {{ $job->company->name }}
-                            </span>
-                            <span>
-                                <i class="fas fa-calendar mr-1"></i>
-                                {{ $job->created_at->diffForHumans() }}
-                            </span>
-                        </div>
-                        
-                        @if($job->salary_min && $job->salary_max)
-                            <div class="mt-3 text-purple-600 font-semibold">
-                                R$ {{ number_format($job->salary_min, 0, ',', '.') }} - R$ {{ number_format($job->salary_max, 0, ',', '.') }}
-                            </div>
-                        @endif
-                    </a>
-                @endforeach
-            </div>
-        @else
-            <div class="trampix-card text-center py-8">
-                <i class="fas fa-briefcase text-gray-300 text-4xl mb-4"></i>
-                <p class="text-gray-500">Nenhuma vaga disponível no momento.</p>
-                <a href="{{ route('vagas.index') }}" class="btn-trampix-primary mt-4">
-                    <i class="fas fa-search mr-2"></i>
-                    Explorar Vagas
-                </a>
-            </div>
-        @endif
-    </section>
-
-    <!-- Candidaturas Recentes -->
-    @if($recentApplications->count() > 0)
-        <section>
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold text-gray-700 flex items-center">
-                    <i class="fas fa-history text-blue-500 mr-2"></i>
-                    Candidaturas Recentes
-                </h3>
-                <a href="{{ route('applications.index') }}" class="btn-trampix-secondary">
-                    <i class="fas fa-list mr-2"></i>
-                    Ver todas
-                </a>
-            </div>
-            
-            <div class="trampix-card">
-                <div class="space-y-4">
-                    @foreach($recentApplications as $application)
-                        <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-gray-900">{{ $application->jobVacancy->title }}</h4>
-                                <p class="text-sm text-gray-600">{{ $application->jobVacancy->company->name }}</p>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Candidatura enviada em {{ $application->created_at->format('d/m/Y H:i') }}
-                                </p>
-                            </div>
-                            <div class="text-right">
-                                @php
-                                    $statusColors = [
-                                        'pending' => 'bg-yellow-100 text-yellow-800',
-                                        'accepted' => 'bg-green-100 text-green-800',
-                                        'rejected' => 'bg-red-100 text-red-800'
-                                    ];
-                                    $statusLabels = [
-                                        'pending' => 'Em Análise',
-                                        'accepted' => 'Aceita',
-                                        'rejected' => 'Rejeitada'
-                                    ];
-                                @endphp
-                                <span class="px-3 py-1 rounded-full text-xs font-medium {{ $statusColors[$application->status] }}">
-                                    {{ $statusLabels[$application->status] }}
-                                </span>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
-
-    <!-- Links Rápidos -->
-    <section>
-        <h3 class="text-xl font-semibold text-gray-700 mb-6 flex items-center">
-            <i class="fas fa-rocket text-purple-500 mr-2"></i>
-            Ações Rápidas
-        </h3>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <a href="{{ route('vagas.index') }}" class="trampix-card text-center hover:scale-[1.02] transition-transform">
-                <i class="fas fa-search text-purple-500 text-3xl mb-3"></i>
-                <h4 class="font-bold text-gray-900 mb-2">Buscar Vagas</h4>
-                <p class="text-gray-600 text-sm">Encontre novas oportunidades</p>
-            </a>
-            
-            <a href="{{ route('applications.index') }}" class="trampix-card text-center hover:scale-[1.02] transition-transform">
-                <i class="fas fa-clipboard-list text-blue-500 text-3xl mb-3"></i>
-                <h4 class="font-bold text-gray-900 mb-2">Minhas Candidaturas</h4>
-                <p class="text-gray-600 text-sm">Acompanhe suas aplicações</p>
-            </a>
-            
-            <a href="{{ route('profile.edit') }}" class="trampix-card text-center hover:scale-[1.02] transition-transform">
-                <i class="fas fa-user-edit text-green-500 text-3xl mb-3"></i>
-                <h4 class="font-bold text-gray-900 mb-2">Editar Perfil</h4>
-                <p class="text-gray-600 text-sm">Atualize suas informações</p>
-            </a>
-        </div>
-    </section>
-
 </div>
+
+<div>
+        <!-- Resumo de Estatísticas -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="trampix-card bg-blue-50 border-blue-200">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total</p>
+                        <p class="text-2xl font-bold text-blue-600">{{ $applicationsStats['total'] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trampix-card bg-yellow-50 border-yellow-200">
+                <div class="flex items-center">
+                    <div class="p-3 bg-yellow-100 rounded-lg">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Pendentes</p>
+                        <p class="text-2xl font-bold text-yellow-600">{{ $applicationsStats['pending'] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trampix-card bg-green-50 border-green-200">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Aceitas</p>
+                        <p class="text-2xl font-bold text-green-600">{{ $applicationsStats['accepted'] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trampix-card bg-red-50 border-red-200">
+                <div class="flex items-center">
+                    <div class="p-3 bg-red-100 rounded-lg">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Rejeitadas</p>
+                        <p class="text-2xl font-bold text-red-600">{{ $applicationsStats['rejected'] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Principal: Duas Seções -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            
+            <!-- Seção 1: Últimas Aplicações -->
+            <div class="trampix-card hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" id="latest-applications">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-blue-100 rounded-lg mr-3 transition-all duration-300 hover:bg-blue-200 hover:scale-110">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900 transition-colors duration-300 hover:text-blue-600">Últimas Aplicações</h2>
+                        @if($recentApplications->count() > 0)
+                            <span class="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full animate-pulse transition-all duration-300 hover:bg-blue-200">
+                                {{ $recentApplications->count() }} novas
+                            </span>
+                        @endif
+                    </div>
+                    <a href="{{ route('applications.index') }}" class="text-blue-600 hover:text-blue-800 text-sm font-medium transition-all duration-200 hover:scale-105">
+                        Ver Todas →
+                    </a>
+                </div>
+
+                <div class="space-y-4">
+                    @forelse($recentApplications as $index => $application)
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-300 hover:border-blue-300 group transform hover:scale-[1.02] application-card" 
+                             style="animation-delay: {{ $index * 0.1 }}s">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
+                                        {{ Str::limit($application->jobVacancy->title, 40) }}
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        {{ $application->jobVacancy->serviceCategory->name ?? 'Categoria não definida' }}
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-2">
+                                        Aplicado em {{ $application->created_at->format('d/m/Y') }}
+                                    </p>
+                                </div>
+                                <div class="ml-4">
+                                    @switch($application->status)
+                                        @case('pending')
+                                            <span class="status-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Pendente
+                                            </span>
+                                            @break
+                                        @case('accepted')
+                                            <span class="status-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Aceita
+                                            </span>
+                                            @break
+                                        @case('rejected')
+                                            <span class="status-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                Rejeitada
+                                            </span>
+                                            @break
+                                    @endswitch
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-8">
+                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-gray-500">Nenhuma aplicação encontrada</p>
+                            <a href="{{ route('vagas.index') }}" class="btn-trampix-primary mt-4 inline-block">
+                                Buscar Vagas
+                            </a>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Seção 2: Vagas Recomendadas -->
+            <div class="trampix-card hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1" id="recommended-jobs">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-green-100 rounded-lg mr-3 transition-all duration-300 hover:bg-green-200 hover:scale-110">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6"></path>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-bold text-gray-900 transition-colors duration-300 hover:text-green-600">Vagas Recomendadas</h2>
+                        @if($recommendedJobs->count() > 0)
+                            <span class="ml-2 bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full animate-pulse transition-all duration-300 hover:bg-green-200">
+                                {{ $recommendedJobs->count() }} novas
+                            </span>
+                        @endif
+                    </div>
+                    <a href="{{ route('vagas.index') }}" class="text-green-600 hover:text-green-800 text-sm font-medium transition-all duration-200 hover:scale-105">
+                        Ver Todas →
+                    </a>
+                </div>
+
+                <div class="space-y-4">
+                    @forelse($recommendedJobs as $index => $job)
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-300 hover:border-green-300 group transform hover:scale-[1.02] job-card" 
+                             style="animation-delay: {{ $index * 0.1 }}s">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <h3 class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200">
+                                        {{ Str::limit($job->title, 40) }}
+                                    </h3>
+                                    <p class="text-sm text-gray-600 mt-1">
+                                        {{ $job->serviceCategory->name ?? 'Categoria não definida' }}
+                                    </p>
+                                    <div class="flex items-center mt-2 text-xs text-gray-500">
+                                        <svg class="w-3 h-3 mr-1 transition-transform duration-200 hover:scale-110" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Publicado em {{ $job->created_at->format('d/m/Y') }}
+                                    </div>
+                                    @if($job->budget)
+                                        <p class="text-sm font-medium text-green-600 mt-1">
+                                            R$ {{ number_format($job->budget, 2, ',', '.') }}
+                                        </p>
+                                    @endif
+                                </div>
+                                <div class="ml-4 flex flex-col items-end">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-2">
+                                        Recomendada
+                                    </span>
+                                    <a href="{{ route('vagas.show', $job->id) }}" 
+                                       class="btn-trampix-secondary text-xs px-3 py-1 hover:bg-green-600 hover:text-white transition-all duration-200">
+                                        Candidatar-se
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-8">
+                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2-2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6"></path>
+                            </svg>
+                            <p class="text-gray-500">Nenhuma vaga recomendada no momento</p>
+                            <p class="text-sm text-gray-400 mt-1">Complete seu perfil para receber recomendações personalizadas</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<!-- Script para atualizações em tempo real -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let lastUpdateTime = null;
+    
+    // Função para buscar atualizações via AJAX
+    async function fetchUpdates() {
+        try {
+            const response = await fetch('{{ route("freelancer.dashboard.updates") }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                updateDashboardData(data);
+                lastUpdateTime = data.lastUpdate;
+            }
+        } catch (error) {
+            console.log('Erro ao buscar atualizações:', error);
+        }
+    }
+    
+    // Função para atualizar os dados no dashboard
+    function updateDashboardData(data) {
+        // Atualizar estatísticas
+        const stats = data.applicationsStats;
+        document.querySelector('[data-stat="total"] .text-2xl').textContent = stats.total;
+        document.querySelector('[data-stat="pending"] .text-2xl').textContent = stats.pending;
+        document.querySelector('[data-stat="accepted"] .text-2xl').textContent = stats.accepted;
+        document.querySelector('[data-stat="rejected"] .text-2xl').textContent = stats.rejected;
+        
+        // Atualizar contador no header
+        document.querySelector('.bg-green-50 span').textContent = `${stats.total} Candidaturas`;
+        
+        // Atualizar indicadores de novas aplicações
+        const latestAppsIndicator = document.querySelector('#latest-applications .animate-pulse');
+        if (latestAppsIndicator && data.newApplicationsCount > 0) {
+            latestAppsIndicator.textContent = `${data.newApplicationsCount} novas`;
+            latestAppsIndicator.classList.add('animate-pulse');
+        }
+        
+        // Atualizar indicadores de vagas recomendadas
+        const recommendedJobsIndicator = document.querySelector('#recommended-jobs .animate-pulse');
+        if (recommendedJobsIndicator && data.newRecommendedJobsCount > 0) {
+            recommendedJobsIndicator.textContent = `${data.newRecommendedJobsCount} novas`;
+            recommendedJobsIndicator.classList.add('animate-pulse');
+        }
+        
+        // Notificação de atualização removida permanentemente
+    }
+    
+    // Função de notificação de atualização removida permanentemente
+    
+    // Polling para atualizações em tempo real (a cada 60 segundos)
+    setInterval(fetchUpdates, 60000);
+    
+    // Buscar atualizações imediatamente após 5 segundos
+    setTimeout(fetchUpdates, 5000);
+
+    // Animação de entrada para os cards principais
+    const cards = document.querySelectorAll('.trampix-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.5s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+    
+    // Animação de entrada para os cards individuais de aplicações
+    const applicationCards = document.querySelectorAll('.application-card');
+    applicationCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(-20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateX(0)';
+        }, 500 + (index * 150));
+    });
+    
+    // Animação de entrada para os cards individuais de vagas
+    const jobCards = document.querySelectorAll('.job-card');
+    jobCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateX(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.4s ease-out';
+            card.style.opacity = '1';
+            card.style.transform = 'translateX(0)';
+        }, 500 + (index * 150));
+    });
+    
+    // Adicionar atributos data para facilitar atualizações
+    document.querySelector('.grid .trampix-card:nth-child(1)').setAttribute('data-stat', 'total');
+    document.querySelector('.grid .trampix-card:nth-child(2)').setAttribute('data-stat', 'pending');
+    document.querySelector('.grid .trampix-card:nth-child(3)').setAttribute('data-stat', 'accepted');
+    document.querySelector('.grid .trampix-card:nth-child(4)').setAttribute('data-stat', 'rejected');
+});
+</script>
 @endsection

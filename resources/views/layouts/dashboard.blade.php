@@ -212,7 +212,7 @@
                         <div class="flex-1 text-center">
                             @if(request()->routeIs('dashboard'))
                                 <h1 class="text-lg font-medium text-gray-900">
-                                    Bem-vindo {{ Auth::user()->name }}
+                                    Bem-Vindo, {{ ucfirst(Auth::user()->name) }}
                                 </h1>
                             @else
                                 @if(isset($header))

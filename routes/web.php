@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\FreelancerDashboardController;
 use App\Http\Controllers\CompanyDashboardController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 // garante que {vaga} só aceite números
@@ -23,8 +24,17 @@ Route::get('/', function () {
 // Rotas de Dashboard Pós-Login
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    Route::get('/freelancer/dashboard', [FreelancerDashboardController::class, 'index'])->name('freelancer.dashboard');
-    Route::get('/company/dashboard', [CompanyDashboardController::class, 'index'])->name('company.dashboard');
+    
+    // Dashboard específico para freelancers
+    Route::middleware(['can:isFreelancer'])->group(function () {
+        Route::get('/freelancer/dashboard', [FreelancerDashboardController::class, 'index'])->name('freelancer.dashboard');
+        Route::get('/freelancer/dashboard/updates', [FreelancerDashboardController::class, 'getUpdates'])->name('freelancer.dashboard.updates');
+    });
+    
+    // Dashboard específico para empresas
+    Route::middleware(['can:isCompany'])->group(function () {
+        Route::get('/company/dashboard', [CompanyDashboardController::class, 'index'])->name('company.dashboard');
+    });
 });
 
 // Protegido (auth + empresa) — registre ANTES
@@ -44,8 +54,8 @@ Route::middleware(['auth','can:isCompany'])->group(function () {
         ->name('applications.updateStatus');
 });
 
-Route::get('/dashboard', fn () => view('dashboard'))
-    ->middleware(['auth','verified'])
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 // Styleguide (apenas para desenvolvimento)

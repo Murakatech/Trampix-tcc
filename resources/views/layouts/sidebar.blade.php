@@ -40,8 +40,12 @@
         
         @if($role === 'freelancer')
             <x-sidebar-item href="{{ url('/vagas') }}" :active="request()->is('vagas*')" icon="fa-solid fa-magnifying-glass">Buscar Vagas</x-sidebar-item>
-            <x-sidebar-item href="{{ url('/my-applications') }}" :active="request()->is('my-applications*')" icon="fa-solid fa-file-lines">Minhas Candidaturas</x-sidebar-item>
-            <x-sidebar-item href="{{ url('/profiles/'.Auth::id()) }}" :active="request()->is('profiles/*')" icon="fa-solid fa-user">Meu Perfil</x-sidebar-item>
+            <x-sidebar-item href="{{ url('/my-applications') }}" :active="request()->is('my-applications*')">
+                <x-slot name="icon">
+                    <img src="{{ asset('images/candidatura_icon.png') }}" alt="Candidaturas" class="w-4 h-4 object-contain">
+                </x-slot>
+                Minhas Candidaturas
+            </x-sidebar-item>
         @elseif($role === 'company')
             @php
                 $routeExists = function($routeName) {
