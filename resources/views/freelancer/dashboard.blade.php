@@ -215,7 +215,7 @@
                                         {{ Str::limit($application->jobVacancy->title, 40) }}
                                     </h3>
                                     <p class="text-sm text-gray-600 mt-1">
-                                        {{ $application->jobVacancy->serviceCategory->name ?? 'Categoria não definida' }}
+                                        {{ $application->jobVacancy->category ?? 'Categoria não definida' }}
                                     </p>
                                     <p class="text-xs text-gray-500 mt-2">
                                         Aplicado em {{ $application->created_at->format('d/m/Y') }}
@@ -296,7 +296,7 @@
                                         {{ Str::limit($job->title, 40) }}
                                     </h3>
                                     <p class="text-sm text-gray-600 mt-1">
-                                        {{ $job->serviceCategory->name ?? 'Categoria não definida' }}
+                                        {{ $job->category ?? 'Categoria não definida' }}
                                     </p>
                                     <div class="flex items-center mt-2 text-xs text-gray-500">
                                         <svg class="w-3 h-3 mr-1 transition-transform duration-200 hover:scale-110" fill="currentColor" viewBox="0 0 20 20">

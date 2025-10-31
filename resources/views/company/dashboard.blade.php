@@ -75,7 +75,7 @@
         </div>
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <a href="{{ route('job-vacancies.create') }}" class="trampix-card text-center hover:scale-[1.02] transition-transform bg-green-50 border-green-200">
+            <a href="{{ route('vagas.create') }}" class="trampix-card text-center hover:scale-[1.02] transition-transform bg-green-50 border-green-200">
                 <i class="fas fa-plus text-green-500 text-3xl mb-3"></i>
                 <h4 class="font-bold text-gray-900 mb-2">Criar Nova Vaga</h4>
                 <p class="text-gray-600 text-sm">Publique uma nova oportunidade</p>
@@ -102,7 +102,7 @@
                 <i class="fas fa-list text-green-500 mr-2"></i>
                 Minhas Vagas
             </h3>
-            <a href="{{ route('job-vacancies.create') }}" class="btn-trampix-primary">
+            <a href="{{ route('vagas.create') }}" class="btn-trampix-primary">
                 <i class="fas fa-plus mr-2"></i>
                 Criar Nova Vaga
             </a>
@@ -143,19 +143,19 @@
                             </div>
                             
                             <div class="flex flex-col sm:flex-row gap-3 lg:ml-6">
-                                <a href="{{ route('job-vacancies.show', $job) }}" 
+                                <a href="{{ route('vagas.show', $job) }}" 
                                    class="btn-trampix-secondary text-center">
                                     <i class="fas fa-eye mr-2"></i>
                                     Visualizar
                                 </a>
                                 
-                                <a href="{{ route('job-vacancies.edit', $job) }}" 
+                                <a href="{{ route('vagas.edit', $job) }}" 
                                    class="btn-trampix-secondary text-center">
                                     <i class="fas fa-edit mr-2"></i>
                                     Editar
                                 </a>
                                 
-                                <a href="{{ route('applications.job', $job) }}" 
+                                <a href="{{ route('applications.byVacancy', $job) }}" 
                                    class="btn-trampix-primary text-center relative">
                                     <i class="fas fa-users mr-2"></i>
                                     Ver Candidatos
@@ -182,7 +182,7 @@
                 <i class="fas fa-briefcase text-gray-300 text-6xl mb-4"></i>
                 <h4 class="text-xl font-semibold text-gray-600 mb-2">Nenhuma vaga criada ainda</h4>
                 <p class="text-gray-500 mb-6">Comece criando sua primeira vaga para atrair talentos!</p>
-                <a href="{{ route('job-vacancies.create') }}" class="btn-trampix-primary">
+                <a href="{{ route('vagas.create') }}" class="btn-trampix-primary">
                     <i class="fas fa-plus mr-2"></i>
                     Criar Primeira Vaga
                 </a>

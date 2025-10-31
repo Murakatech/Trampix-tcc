@@ -49,6 +49,42 @@ class ApplicationController extends Controller
         return back()->with('success', 'Candidatura enviada com sucesso!');
     }
 
+    // Gerenciar todas as candidaturas da empresa
+    public function manage()
+    {
+        $company = Auth::user()->company;
+        
+        if (!$company) {
+            return redirect()->route('dashboard')->with('error', 'Perfil de empresa não encontrado.');
+        }
+
+        // Buscar todas as candidaturas para vagas da empresa
+        $applications = Application::whereHas('jobVacancy', function($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })
+            ->with(['jobVacancy', 'freelancer.user'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        // Estatísticas das candidaturas
+        $stats = [
+            'total' => Application::whereHas('jobVacancy', function($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->count(),
+            'pending' => Application::whereHas('jobVacancy', function($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->where('status', 'pending')->count(),
+            'accepted' => Application::whereHas('jobVacancy', function($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->where('status', 'accepted')->count(),
+            'rejected' => Application::whereHas('jobVacancy', function($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->where('status', 'rejected')->count(),
+        ];
+
+        return view('applications.manage', compact('applications', 'stats'));
+    }
+
     // Candidatos de uma vaga (empresa dona da vaga)
     public function byVacancy($jobVacancyId)
     {

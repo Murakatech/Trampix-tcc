@@ -42,6 +42,10 @@ Route::middleware(['auth','can:isCompany'])->group(function () {
     Route::resource('vagas', \App\Http\Controllers\JobVacancyController::class)
         ->only(['create','store','edit','update','destroy']);
     
+    // Rota adicional para job-vacancies.create (compatibilidade com dashboard)
+    Route::get('/job-vacancies/create', [JobVacancyController::class, 'create'])
+        ->name('job-vacancies.create');
+    
     // Rotas específicas para vagas da empresa
     Route::get('/company/vagas', [CompanyVacancyController::class, 'index'])->name('company.vagas.index');
     Route::get('/company/vagas/{vaga}', [CompanyVacancyController::class, 'show'])->name('company.vagas.show');
@@ -49,6 +53,9 @@ Route::middleware(['auth','can:isCompany'])->group(function () {
     
     Route::get('/job-vacancies/{id}/applications', [ApplicationController::class, 'byVacancy'])
         ->name('applications.byVacancy');
+    
+    Route::get('/applications/manage', [ApplicationController::class, 'manage'])
+        ->name('applications.manage');
     
     Route::patch('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])
         ->name('applications.updateStatus');

@@ -21,17 +21,19 @@ class CompanyDashboardController extends Controller
         }
 
         // Vagas da empresa com contagem de candidatos
-        $jobVacancies = JobVacancy::where('company_id', $company->id)
+        $jobs = JobVacancy::where('company_id', $company->id)
             ->withCount('applications')
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderByDesc('created_at')
+            ->paginate(5);
 
-        // Estatísticas gerais
-        $stats = [
-            'total_jobs' => $jobVacancies->count(),
-            'open_jobs' => $jobVacancies->where('status', 'open')->count(),
-            'closed_jobs' => $jobVacancies->where('status', 'closed')->count(),
-            'total_applications' => $jobVacancies->sum('applications_count'),
+        // Estatísticas das vagas (jobStats)
+        $jobStats = [
+            'total' => $company->jobVacancies()->count(),
+            'open' => $company->jobVacancies()->where('status', 'open')->count(),
+            'closed' => $company->jobVacancies()->where('status', 'closed')->count(),
+            'total_applications' => Application::whereHas('jobVacancy', function($query) use ($company) {
+                $query->where('company_id', $company->id);
+            })->count(),
         ];
 
         // Candidaturas recentes para vagas da empresa
@@ -45,8 +47,8 @@ class CompanyDashboardController extends Controller
 
         return view('company.dashboard', compact(
             'company',
-            'jobVacancies',
-            'stats',
+            'jobs',
+            'jobStats',
             'recentApplications'
         ));
     }
