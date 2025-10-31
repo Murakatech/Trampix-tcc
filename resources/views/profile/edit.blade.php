@@ -197,10 +197,26 @@
                                              x-transition:leave-end="opacity-0 scale-95"
                                              @click.away="open = false" 
                                              @keydown.escape.window="open = false" 
-                                             class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50"
+                                             class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
                                              style="display: none;">
-                                            <img src="{{ asset('storage/' . $freelancer->profile_photo) }}" 
-                                                 class="max-h-[80vh] max-w-[80vw] rounded-lg shadow-2xl object-contain transition">
+                                            
+                                            <!-- Container da imagem -->
+                                            <div class="relative max-w-full max-h-full">
+                                                <!-- Botão de fechar -->
+                                                <button @click="open = false" 
+                                                        class="absolute -top-12 right-0 bg-white hover:bg-gray-100 text-gray-700 hover:text-gray-900 rounded-full p-2 shadow-lg transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 z-10">
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                    <span class="sr-only">Fechar visualização</span>
+                                                </button>
+                                                
+                                                <!-- Imagem -->
+                                                <img src="{{ asset('storage/' . $freelancer->profile_photo) }}" 
+                                                     alt="Foto de perfil em tela cheia"
+                                                     class="max-h-[85vh] max-w-[85vw] rounded-lg shadow-2xl object-contain transition-transform duration-300"
+                                                     @click.stop>
+                                            </div>
                                         </div>
                                     </div>
                                 @else
@@ -230,10 +246,26 @@
                                              x-transition:leave-end="opacity-0 scale-95"
                                              @click.away="open = false" 
                                              @keydown.escape.window="open = false" 
-                                             class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center z-50"
+                                             class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
                                              style="display: none;">
-                                            <img src="{{ asset('storage/' . $company->profile_photo) }}" 
-                                                 class="max-h-[80vh] max-w-[80vw] rounded-lg shadow-2xl object-contain transition">
+                                            
+                                            <!-- Container da imagem -->
+                                            <div class="relative max-w-full max-h-full">
+                                                <!-- Botão de fechar -->
+                                                <button @click="open = false" 
+                                                        class="absolute -top-12 right-0 bg-white hover:bg-gray-100 text-gray-700 hover:text-gray-900 rounded-full p-2 shadow-lg transition-all duration-200 transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 z-10">
+                                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                    <span class="sr-only">Fechar visualização</span>
+                                                </button>
+                                                
+                                                <!-- Imagem -->
+                                                <img src="{{ asset('storage/' . $company->profile_photo) }}" 
+                                                     alt="Logo da empresa em tela cheia"
+                                                     class="max-h-[85vh] max-w-[85vw] rounded-lg shadow-2xl object-contain transition-transform duration-300"
+                                                     @click.stop>
+                                            </div>
                                         </div>
                                     </div>
                                 @else
@@ -282,13 +314,13 @@
                             
                             @if((session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) || 
                                 (session('active_role') === 'company' && isset($company) && $company->profile_photo))
-                                <form method="POST" action="{{ route('profile.image.delete') }}">
+                                <form method="POST" action="{{ route('profile.image.delete') }}" id="removePhotoForm">
                                     @csrf
                                     @method('DELETE')
                                     <input type="hidden" name="profile_type" value="{{ session('active_role') }}">
-                                    <button type="submit" 
+                                    <button type="button" 
                                             class="mt-2 text-sm text-red-600 hover:text-red-700 hover:underline transition"
-                                            onclick="return confirm('Tem certeza que deseja remover a {{ session('active_role') === 'freelancer' ? 'foto' : 'logo' }}?')">
+                                            onclick="showRemovePhotoConfirmation('{{ session('active_role') === 'freelancer' ? 'foto' : 'logo' }}')">
                                         Remover {{ session('active_role') === 'freelancer' ? 'Foto' : 'Logo' }}
                                     </button>
                                 </form>
@@ -910,4 +942,30 @@ document.addEventListener('DOMContentLoaded', function() {
     @apply border-blue-500 text-blue-600;
 }
 </style>
+
+{{-- Componente de Confirmação --}}
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="removePhotoConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para remover foto/logo
+    function showRemovePhotoConfirmation(photoType) {
+        showActionModal('removePhotoConfirmationModal', {
+            actionType: 'generic',
+            message: `🗑️ Tem certeza que deseja remover a ${photoType}?\n\nEsta ação não pode ser desfeita.`,
+            onConfirm: () => {
+                const form = document.getElementById('removePhotoForm');
+                showNotification(`Removendo ${photoType}...`, 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Remoção cancelada.', 'info');
+            }
+        });
+    }
+</script>
+@endpush
+
 @endsection

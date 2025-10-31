@@ -86,7 +86,7 @@
                     <select name="status" id="status" class="trampix-input">
                         <option value="">Todos os status</option>
                         <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Ativa</option>
-                        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Fechada</option>
+                        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Encerrada</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -225,18 +225,19 @@
                                                 @method('PATCH')
                                                 <button type="submit" 
                                                         class="btn-trampix-warning btn-glow px-3 py-2 text-sm"
-                                                        title="{{ $vaga->status === 'active' ? 'Fechar vaga' : 'Reativar vaga' }}">
+                                                        title="{{ $vaga->status === 'active' ? 'Encerrar vaga' : 'Reativar vaga' }}">
                                                     <i class="fas fa-{{ $vaga->status === 'active' ? 'pause' : 'play' }}"></i>
                                                 </button>
                                             </form>
 
                                             <form action="{{ route('vagas.destroy', $vaga->id) }}" 
-                                                  method="POST" class="d-inline">
+                                                  method="POST" class="d-inline"
+                                                  id="deleteForm-{{ $vaga->id }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" 
+                                                <button type="button" 
                                                         class="btn-trampix-danger btn-glow px-3 py-2 text-sm" 
-                                                        onclick="return confirm('Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita.')"
+                                                        onclick="showDeleteConfirmation({{ $vaga->id }}, '{{ $vaga->titulo }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')"
                                                         title="Excluir vaga">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -259,4 +260,30 @@
         </div>
     @endif
 </div>
+
+{{-- Componente de Confirmação --}}
+<x-action-confirmation 
+    actionType="exclusao" 
+    modalId="deleteConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para excluir vaga
+    function showDeleteConfirmation(vagaId, jobTitle, companyName) {
+        showActionModal('deleteConfirmationModal', {
+            actionType: 'exclusao',
+            message: `🗑️ Tem certeza que deseja excluir a vaga "${jobTitle}" da empresa ${companyName}?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos.`,
+            onConfirm: () => {
+                const form = document.getElementById(`deleteForm-${vagaId}`);
+                showNotification('Excluindo vaga...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Exclusão cancelada.', 'info');
+            }
+        });
+    }
+</script>
+@endpush
+
 @endsection

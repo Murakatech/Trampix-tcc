@@ -167,7 +167,7 @@
                                 <p class="text-sm text-gray-500">{{ Str::limit($vaga->description, 100) }}</p>
                                 <div class="flex items-center mt-2 space-x-4">
                                     <span class="text-xs px-2 py-1 rounded-full {{ $vaga->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                        {{ ucfirst($vaga->status) }}
+                                        {{ $vaga->status === 'active' ? 'Ativa' : 'Encerrada' }}
                                     </span>
                                     <span class="text-xs text-gray-500">
                                         {{ $vaga->applications()->count() }} candidatos

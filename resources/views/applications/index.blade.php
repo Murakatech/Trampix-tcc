@@ -112,10 +112,11 @@
                                                 <form action="{{ route('applications.cancel', $application) }}" 
                                                       method="POST" 
                                                       class="d-inline"
-                                                      onsubmit="return confirm('Tem certeza que deseja cancelar esta candidatura?')">
+                                                      id="cancelForm-{{ $application->id }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            onclick="showCancelConfirmation({{ $application->id }}, '{{ $application->jobVacancy->titulo }}', '{{ $application->jobVacancy->empresa->nome ?? 'Empresa' }}')">
                                                         Cancelar
                                                     </button>
                                                 </form>
@@ -159,4 +160,30 @@
         </div>
     @endif
 </div>
+
+{{-- Componentes de Confirmação --}}
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="cancelConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para cancelar candidatura
+    function showCancelConfirmation(applicationId, jobTitle, companyName) {
+        showActionModal('cancelConfirmationModal', {
+            actionType: 'generic',
+            message: `⚠️ Tem certeza que deseja cancelar sua candidatura para a vaga "${jobTitle}" na empresa ${companyName}?\n\nEsta ação não pode ser desfeita.`,
+            onConfirm: () => {
+                const form = document.getElementById(`cancelForm-${applicationId}`);
+                showNotification('Cancelando candidatura...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Cancelamento cancelado.', 'info');
+            }
+        });
+    }
+</script>
+@endpush
+
 @endsection

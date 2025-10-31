@@ -64,13 +64,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.innerHTML = originalContent;
                 this.disabled = false;
                 
-                // Mostrar modal de confirmação
-                if (confirm(`Deseja visualizar o perfil da empresa ${companyName}?`)) {
-                    showNotification(`Redirecionando para o perfil da ${companyName}...`, 'info');
-                    
-                    // Redirecionamento real para o perfil da empresa
-                    window.location.href = `/companies/${companyId}`;
-                }
+                // Mostrar modal de confirmação personalizado
+                showActionModal('companyProfileModal', {
+                    actionType: 'generic',
+                    message: `Deseja visualizar o perfil da empresa ${companyName}?`,
+                    onConfirm: () => {
+                        showNotification(`Redirecionando para o perfil da ${companyName}...`, 'info');
+                        
+                        // Redirecionamento real para o perfil da empresa
+                        window.location.href = `/companies/${companyId}`;
+                    },
+                    onCancel: () => {
+                        showNotification('Visualização cancelada.', 'info');
+                    }
+                });
                 
             } catch (error) {
                 // Restaurar botão em caso de erro
@@ -115,19 +122,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // Confirmação antes de enviar
-                if (!confirm('Tem certeza que deseja se candidatar a esta vaga?')) {
-                    e.preventDefault();
-                    return;
-                }
-
-                // Adicionar loading ao botão
-                if (submitButton) {
-                    const originalContent = submitButton.innerHTML;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
-                    submitButton.disabled = true;
-                    
-                    // Restaurar botão após timeout (caso algo dê errado)
+                // Confirmação antes de enviar usando modal personalizado
+                e.preventDefault();
+                
+                showActionModal('applicationConfirmationModal', {
+                    actionType: 'candidatura',
+                    jobTitle: '{{ $vaga->titulo }}',
+                    companyName: '{{ $vaga->empresa->nome ?? "Empresa" }}',
+                    message: `Você está prestes a se candidatar à vaga "${'{{ $vaga->titulo }}'}" na empresa "${'{{ $vaga->empresa->nome ?? "Empresa" }}'}". Deseja continuar?`,
+                    onConfirm: () => {
+                        // Adicionar loading ao botão
+                        if (submitButton) {
+                            const originalContent = submitButton.innerHTML;
+                            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+                            submitButton.disabled = true;
+                        }
+                        
+                        // Submeter o formulário
+                        applicationForm.submit();
+                    },
+                    onCancel: () => {
+                        showNotification('Candidatura cancelada.', 'info');
+                    }
+                });
                     setTimeout(() => {
                         submitButton.innerHTML = originalContent;
                         submitButton.disabled = false;
@@ -156,15 +173,19 @@ document.addEventListener('DOMContentLoaded', function() {
         deleteForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const confirmDelete = confirm('⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir esta vaga?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.');
-            
-            if (confirmDelete) {
-                const secondConfirm = confirm('Confirma novamente a exclusão da vaga?');
-                if (secondConfirm) {
+            showActionModal('deleteConfirmationModal', {
+                actionType: 'exclusao',
+                jobTitle: '{{ $vaga->titulo }}',
+                companyName: '{{ $vaga->empresa->nome ?? "Empresa" }}',
+                message: `⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir a vaga "${'{{ $vaga->titulo }}'}"?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.`,
+                onConfirm: () => {
                     showNotification('Excluindo vaga...', 'warning');
-                    this.submit();
+                    deleteForm.submit();
+                },
+                onCancel: () => {
+                    showNotification('Exclusão cancelada.', 'info');
                 }
-            }
+            });
         });
     }
 
@@ -405,15 +426,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const companyId = this.dataset.companyId;
             const companyName = this.dataset.companyName;
             
-            // Por enquanto, vamos mostrar um modal ou redirecionar
-            // Aqui você pode implementar a lógica para mostrar o perfil da empresa
-            if (confirm(`Deseja ver o perfil da empresa ${companyName}?`)) {
-                // Redirecionar para a página de perfil da empresa
-                // window.location.href = `/empresas/${companyId}`;
-                
-                // Por enquanto, vamos mostrar um alerta
-                alert(`Funcionalidade em desenvolvimento.\nEmpresa: ${companyName}\nID: ${companyId}`);
-            }
+            // Mostrar modal de confirmação personalizado
+            showActionModal('companyProfileModal', {
+                actionType: 'generic',
+                message: `Deseja ver o perfil da empresa ${companyName}?`,
+                onConfirm: () => {
+                    // Redirecionar para a página de perfil da empresa
+                    // window.location.href = `/empresas/${companyId}`;
+                    
+                    // Por enquanto, vamos mostrar uma notificação
+                    showNotification(`Funcionalidade em desenvolvimento.\nEmpresa: ${companyName}\nID: ${companyId}`, 'info');
+                },
+                onCancel: () => {
+                    showNotification('Visualização cancelada.', 'info');
+                }
+            });
         });
     });
 
@@ -432,18 +459,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Confirmação antes de enviar candidatura
+    // Confirmação antes de enviar candidatura com modal customizado
     const candidateForm = document.querySelector('form[action*="applications.store"]');
     if (candidateForm) {
         candidateForm.addEventListener('submit', function(e) {
-            const coverLetter = this.querySelector('textarea[name="cover_letter"]').value;
-            const message = coverLetter.trim() 
-                ? 'Tem certeza que deseja enviar sua candidatura com a mensagem personalizada?'
-                : 'Tem certeza que deseja enviar sua candidatura? Você pode adicionar uma mensagem personalizada para se destacar.';
+            e.preventDefault(); // Sempre prevenir o envio inicial
             
-            if (!confirm(message)) {
-                e.preventDefault();
-            }
+            // Usar novo componente ActionConfirmation
+             showActionModal('applicationConfirmationModal', {
+                 actionType: 'candidatura',
+                 jobTitle: '{{ $vaga->titulo }}',
+                 companyName: '{{ $vaga->empresa->nome ?? "Empresa" }}',
+                 message: `Você está prestes a se candidatar à vaga <strong>{{ $vaga->titulo }}</strong> na empresa <strong>{{ $vaga->empresa->nome ?? "Empresa" }}</strong>. Deseja continuar?`,
+                 onConfirm: () => {
+                     // Submeter formulário após confirmação
+                     candidateForm.submit();
+                 },
+                 onCancel: () => {
+                     console.log('Candidatura cancelada pelo usuário');
+                 }
+             });
         });
     }
 });
@@ -451,145 +486,159 @@ document.addEventListener('DOMContentLoaded', function() {
 @endpush
 
 @section('content')
-<div class="space-y-6">
-    {{-- Alerts de sessão --}}
-    @if (session('ok'))
-        <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg shadow-sm" 
-             role="alert" 
-             aria-live="polite">
-            <div class="flex items-center">
-                <i class="fas fa-check-circle mr-3 text-green-600" aria-hidden="true"></i>
-                <span class="font-medium">{{ session('ok') }}</span>
-            </div>
-        </div>
-    @endif
-
-    @if ($errors->any())
-        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-sm" 
-             role="alert" 
-             aria-live="assertive">
-            <div class="flex items-start">
-                <i class="fas fa-exclamation-triangle mr-3 text-red-600 mt-0.5" aria-hidden="true"></i>
-                <div>
-                    <h4 class="font-medium mb-2">Erro na candidatura:</h4>
-                    <ul class="list-disc list-inside space-y-1" role="list">
-                        @foreach ($errors->all() as $error)
-                            <li class="text-sm" role="listitem">{{ $error }}</li>
-                        @endforeach
-                    </ul>
+{{-- Layout Redesenhado com Seção de Aplicação Fixa --}}
+<div class="min-h-screen bg-gray-50">
+    {{-- Container Principal --}}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        
+        {{-- Alerts de sessão --}}
+        @if (session('ok'))
+            <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg shadow-sm mb-6" 
+                 role="alert" 
+                 aria-live="polite">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle mr-3 text-green-600" aria-hidden="true"></i>
+                    <span class="font-medium">{{ session('ok') }}</span>
                 </div>
             </div>
-        </div>
-    @endif
+        @endif
 
-    {{-- Breadcrumb --}}
-    <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-6" 
-         aria-label="Navegação estrutural">
-        <a href="{{ route('vagas.index') }}" 
-           class="hover:text-purple-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded">
-            <i class="fas fa-briefcase mr-1" aria-hidden="true"></i>Vagas
-        </a>
-        <i class="fas fa-chevron-right text-gray-400" aria-hidden="true"></i>
-        <span class="text-gray-900 font-medium" aria-current="page">{{ $vaga->title }}</span>
-    </nav>
+        @if ($errors->any())
+            <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg shadow-sm mb-6" 
+                 role="alert" 
+                 aria-live="assertive">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle mr-3 text-red-600 mt-0.5" aria-hidden="true"></i>
+                    <div>
+                        <h4 class="font-medium mb-2">Erro na candidatura:</h4>
+                        <ul class="list-disc list-inside space-y-1" role="list">
+                            @foreach ($errors->all() as $error)
+                                <li class="text-sm" role="listitem">{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
 
-    {{-- Card Principal da Vaga --}}
-    <main class="trampix-card" role="main" aria-labelledby="job-title">
-        {{-- Header com título e empresa --}}
-        <header class="border-b border-gray-200 pb-6 mb-6">
-            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                <div class="flex-1">
-                    <h1 id="job-title" class="trampix-h1 text-gray-900 mb-4">{{ $vaga->title }}</h1>
+        {{-- Breadcrumb --}}
+        <nav class="flex items-center space-x-2 text-sm text-gray-600 mb-8" 
+             aria-label="Navegação estrutural">
+            <a href="{{ route('vagas.index') }}" 
+               class="hover:text-purple-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded px-2 py-1">
+                <i class="fas fa-briefcase mr-1" aria-hidden="true"></i>Vagas
+            </a>
+            <i class="fas fa-chevron-right text-gray-400" aria-hidden="true"></i>
+            <span class="text-gray-900 font-medium" aria-current="page">{{ $vaga->title }}</span>
+        </nav>
+
+        {{-- Layout Principal: Grid Responsivo --}}
+        <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+            
+            {{-- Conteúdo Principal da Vaga --}}
+            <div class="xl:col-span-3">
+                <main class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" role="main" aria-labelledby="job-title">
                     
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 gap-2 sm:gap-0 mb-4">
-                        <div class="flex items-center text-gray-600" aria-label="Informações da empresa">
-                            <i class="fas fa-building mr-2 text-purple-500" aria-hidden="true"></i>
-                            <span class="font-medium">{{ $vaga->company->name ?? 'Empresa não informada' }}</span>
-                        </div>
-                        
-                        {{-- Botão Ver Perfil da Empresa --}}
-                        @if($vaga->company)
-                            <button type="button" 
-                                    class="btn-trampix-outline company-profile-btn focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
-                                    data-company-id="{{ $vaga->company->id }}"
-                                    data-company-name="{{ $vaga->company->name }}"
-                                    aria-label="Ver perfil da empresa {{ $vaga->company->name }}"
-                                    title="Ver perfil da {{ $vaga->company->name }}">
-                                <i class="fas fa-external-link-alt mr-2" aria-hidden="true"></i>Ver Perfil
-                            </button>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </header>
-
-                    {{-- Badges de informação --}}
-                    <div class="flex flex-wrap gap-2">
-                        @if($vaga->category)
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
-                                <i class="fas fa-tag mr-2"></i>{{ $vaga->category }}
-                            </span>
-                        @endif
-                        @if($vaga->contract_type)
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                                <i class="fas fa-briefcase mr-2"></i>{{ $vaga->contract_type }}
-                            </span>
-                        @endif
-                        @if($vaga->location_type)
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                <i class="fas fa-map-marker-alt mr-2"></i>{{ $vaga->location_type }}
-                            </span>
-                        @endif
-                        @if($vaga->status)
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                                <i class="fas fa-circle mr-2"></i>{{ ucfirst($vaga->status) }}
-                            </span>
-                        @endif
-                    </div>
-                </div>
-
-                {{-- Salário --}}
-                @if($vaga->salary_range)
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 lg:min-w-[200px]">
-                        <div class="flex items-center text-green-700">
-                            <i class="fas fa-dollar-sign mr-2"></i>
+                    {{-- Header da Vaga --}}
+                    <header class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-8">
+                        <div class="space-y-6">
+                            {{-- Título e Empresa --}}
                             <div>
-                                <p class="text-sm font-medium">Faixa Salarial</p>
-                                <p class="text-lg font-bold">{{ $vaga->salary_range }}</p>
+                                <h1 id="job-title" class="text-3xl lg:text-4xl font-bold mb-4 leading-tight">{{ $vaga->title }}</h1>
+                                
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div class="flex items-center text-purple-100">
+                                        <i class="fas fa-building mr-3 text-xl" aria-hidden="true"></i>
+                                        <span class="text-lg font-medium">{{ $vaga->company->name ?? 'Empresa não informada' }}</span>
+                                    </div>
+                                    
+                                    {{-- Botão Ver Perfil da Empresa --}}
+                                    @if($vaga->company)
+                                        <button type="button" 
+                                                class="inline-flex items-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-all duration-200 company-profile-btn focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-purple-600"
+                                                data-company-id="{{ $vaga->company->id }}"
+                                                data-company-name="{{ $vaga->company->name }}"
+                                                aria-label="Ver perfil da empresa {{ $vaga->company->name }}"
+                                                title="Ver perfil da {{ $vaga->company->name }}">
+                                            <i class="fas fa-external-link-alt mr-2" aria-hidden="true"></i>Ver Perfil da Empresa
+                                        </button>
+                                    @endif
+                                </div>
                             </div>
+
+                            {{-- Badges de Informação --}}
+                            <div class="flex flex-wrap gap-3">
+                                @if($vaga->category)
+                                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
+                                        <i class="fas fa-tag mr-2"></i>{{ $vaga->category }}
+                                    </span>
+                                @endif
+                                @if($vaga->contract_type)
+                                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
+                                        <i class="fas fa-briefcase mr-2"></i>{{ $vaga->contract_type }}
+                                    </span>
+                                @endif
+                                @if($vaga->location_type)
+                                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>{{ $vaga->location_type }}
+                                    </span>
+                                @endif
+                                @if($vaga->status)
+                                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
+                                        <i class="fas fa-circle mr-2"></i>{{ ucfirst($vaga->status) }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            {{-- Salário --}}
+                            @if($vaga->salary_range)
+                                <div class="bg-white/20 backdrop-blur-sm rounded-xl p-6 inline-block">
+                                    <div class="flex items-center text-white">
+                                        <i class="fas fa-dollar-sign mr-3 text-2xl"></i>
+                                        <div>
+                                            <p class="text-sm font-medium text-purple-100">Faixa Salarial</p>
+                                            <p class="text-2xl font-bold">{{ $vaga->salary_range }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
+                    </header>
+
+                    {{-- Conteúdo da Vaga --}}
+                    <div class="p-8 space-y-10">
+                        {{-- Descrição --}}
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-file-alt text-purple-600"></i>
+                                </div>
+                                Descrição da Vaga
+                            </h2>
+                            <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                                {!! nl2br(e($vaga->description ?? 'Descrição não informada.')) !!}
+                            </div>
+                        </section>
+
+                        {{-- Requisitos --}}
+                        <section>
+                            <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-list-check text-blue-600"></i>
+                                </div>
+                                Requisitos
+                            </h2>
+                            <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
+                                {!! nl2br(e($vaga->requirements ?? 'Requisitos não informados.')) !!}
+                            </div>
+                        </section>
                     </div>
-                @endif
+                </main>
             </div>
-        </div>
 
-        {{-- Conteúdo da vaga --}}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {{-- Coluna principal --}}
-            <div class="lg:col-span-2 space-y-6">
-                {{-- Descrição --}}
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                        <i class="fas fa-file-alt mr-2 text-purple-500"></i>Descrição da Vaga
-                    </h3>
-                    <div class="prose prose-sm max-w-none text-gray-700">
-                        {!! nl2br(e($vaga->description ?? 'Descrição não informada.')) !!}
-                    </div>
-                </div>
-
-                {{-- Requisitos --}}
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                        <i class="fas fa-list-check mr-2 text-purple-500"></i>Requisitos
-                    </h3>
-                    <div class="prose prose-sm max-w-none text-gray-700">
-                        {!! nl2br(e($vaga->requirements ?? 'Requisitos não informados.')) !!}
-                    </div>
-                </div>
-            </div>
-
-            {{-- Sidebar de ações --}}
-            <div class="space-y-6">
+            {{-- Sidebar Fixa de Aplicação --}}
+            <div class="xl:col-span-1">
+                <div class="sticky top-6 space-y-6">
                 {{-- Card de candidatura --}}
                 @auth
                     @can('isFreelancer')
@@ -602,50 +651,98 @@ document.addEventListener('DOMContentLoaded', function() {
                                 : false;
                         @endphp
 
-                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
+                        <div class="application-card bg-white rounded-xl shadow-lg border border-gray-200 p-6 lg:p-8 hover:shadow-xl transition-all duration-300">
                             @if ($alreadyApplied)
-                                <div class="text-center">
-                                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <i class="fas fa-check text-2xl text-green-600"></i>
+                                <div class="text-center space-y-6">
+                                    <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                                        <i class="fas fa-check text-4xl text-white"></i>
                                     </div>
-                                    <h4 class="font-semibold text-gray-900 mb-2">Candidatura Enviada!</h4>
-                                    <p class="text-sm text-gray-600">Você já se candidatou a esta vaga. Aguarde o retorno da empresa.</p>
+                                    <div class="space-y-3">
+                                        <h3 class="text-2xl font-bold text-gray-900">Candidatura Enviada!</h3>
+                                        <p class="text-gray-600 leading-relaxed">Você já se candidatou a esta vaga. Aguarde o retorno da empresa.</p>
+                                    </div>
+                                    <div class="pt-2">
+                                        <a href="{{ route('applications.index') }}" class="btn-trampix-secondary w-full">
+                                            <i class="fas fa-list mr-2"></i>Ver Minhas Candidaturas
+                                        </a>
+                                    </div>
                                 </div>
                             @else
-                                <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
-                                    <i class="fas fa-paper-plane mr-2 text-purple-500"></i>Candidatar-se
-                                </h4>
-                                
-                                <form method="POST" action="{{ route('applications.store', $vaga->id) }}" class="space-y-4">
-                                    @csrf
-                                    <div>
-                                        <label for="cover_letter" class="block text-sm font-medium text-gray-700 mb-2">
-                                            Mensagem para o recrutador (opcional)
-                                        </label>
-                                        <textarea
-                                            id="cover_letter"
-                                            name="cover_letter"
-                                            rows="4"
-                                            class="trampix-input"
-                                            placeholder="Conte um pouco sobre você e por que se interessa por esta vaga..."
-                                        >{{ old('cover_letter') }}</textarea>
+                                <div class="space-y-8">
+                                    {{-- Cabeçalho do formulário --}}
+                                    <div class="text-center">
+                                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                            <i class="fas fa-paper-plane text-2xl text-white"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Candidatar-se à Vaga</h3>
+                                        <p class="text-gray-600 leading-relaxed">Envie sua candidatura e destaque-se para o recrutador</p>
                                     </div>
+                                    
+                                    {{-- Formulário de candidatura --}}
+                                    <form method="POST" action="{{ route('applications.store', $vaga->id) }}" class="application-form space-y-6" id="applicationForm">
+                                        @csrf
+                                        
+                                        {{-- Campo de mensagem --}}
+                                        <div class="form-group">
+                                            <label for="cover_letter" class="block text-sm font-bold text-gray-800 mb-4">
+                                                <i class="fas fa-envelope mr-2 text-purple-500"></i>
+                                                Mensagem para o recrutador
+                                                <span class="text-gray-500 font-normal ml-1">(opcional)</span>
+                                            </label>
+                                            <div class="relative">
+                                                <textarea
+                                                    id="cover_letter"
+                                                    name="cover_letter"
+                                                    rows="6"
+                                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 resize-none text-gray-700"
+                                                    placeholder="Conte um pouco sobre você, sua experiência e por que se interessa por esta vaga. Esta mensagem ajudará o recrutador a conhecer melhor seu perfil..."
+                                                    maxlength="1000"
+                                                >{{ old('cover_letter') }}</textarea>
+                                                <div class="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-2 py-1 rounded" id="charCount">
+                                                    0/1000
+                                                </div>
+                                            </div>
+                                            <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                                <p class="text-sm text-purple-700 flex items-start">
+                                                    <i class="fas fa-lightbulb mr-2 mt-0.5 text-purple-500"></i>
+                                                    <span><strong>Dica:</strong> Mencione suas habilidades relevantes e experiências relacionadas à vaga para se destacar</span>
+                                                </p>
+                                            </div>
+                                        </div>
 
-                                    <button type="submit" class="btn-trampix-primary w-full">
-                                        <i class="fas fa-paper-plane mr-2"></i>Enviar Candidatura
-                                    </button>
-                                </form>
+                                        {{-- Botão de envio --}}
+                                        <div class="pt-4">
+                                            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:ring-4 focus:ring-purple-300" id="submitBtn">
+                                                <span class="flex items-center justify-center">
+                                                    <i class="fas fa-paper-plane mr-3 text-lg"></i>
+                                                    <span id="btnText" class="text-lg">Enviar Candidatura</span>
+                                                    <div class="hidden ml-3" id="loadingSpinner">
+                                                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                                                    </div>
+                                                </span>
+                                            </button>
+                                        </div>
+                                        
+                                        {{-- Informação adicional --}}
+                                        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 text-center">
+                                            <p class="text-sm text-blue-700 flex items-center justify-center">
+                                                <i class="fas fa-shield-alt mr-2 text-blue-500"></i>
+                                                <span>Sua candidatura será enviada diretamente para a empresa. Mantenha seu perfil atualizado!</span>
+                                            </p>
+                                        </div>
+                                    </form>
+                                </div>
                             @endif
                         </div>
                     @endcan
                 @else
-                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
-                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-user text-2xl text-purple-600"></i>
+                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8 text-center">
+                        <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                            <i class="fas fa-user text-3xl text-white"></i>
                         </div>
-                        <h4 class="font-semibold text-gray-900 mb-2">Faça login para se candidatar</h4>
-                        <p class="text-sm text-gray-600 mb-4">Você precisa estar logado como freelancer para se candidatar a esta vaga.</p>
-                        <a href="{{ route('login') }}" class="btn-trampix-primary">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Faça login para se candidatar</h3>
+                        <p class="text-gray-600 mb-6 leading-relaxed">Você precisa estar logado como freelancer para se candidatar a esta vaga.</p>
+                        <a href="{{ route('login') }}" class="btn-trampix-primary w-full py-3 text-lg font-semibold">
                             <i class="fas fa-sign-in-alt mr-2"></i>Fazer Login
                         </a>
                     </div>
@@ -654,28 +751,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 {{-- Ações da empresa --}}
                 @can('isCompany')
                     @if(($vaga->company?->user_id) === auth()->id())
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                            <h4 class="font-semibold text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-cog mr-2 text-blue-500"></i>Gerenciar Vaga
-                            </h4>
+                        <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-8">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fas fa-cog text-white text-xl"></i>
+                                </div>
+                                <h4 class="text-xl font-bold text-gray-900">Gerenciar Vaga</h4>
+                            </div>
                             
-                            <div class="space-y-3">
+                            <div class="space-y-4">
                                 <a href="{{ route('applications.byVacancy', $vaga->id) }}" 
-                                   class="btn-trampix-secondary w-full text-center">
-                                    <i class="fas fa-users mr-2"></i>Ver Candidatos
+                                   class="btn-trampix-primary w-full py-3 text-lg font-semibold flex items-center justify-center group">
+                                    <i class="fas fa-users mr-3 group-hover:scale-110 transition-transform duration-200"></i>
+                                    Ver Candidatos
                                 </a>
                                 
                                 <a href="{{ route('vagas.edit', $vaga) }}" 
-                                   class="btn-trampix-outline w-full text-center">
-                                    <i class="fas fa-edit mr-2"></i>Editar Vaga
+                                   class="btn-trampix-secondary w-full py-3 text-lg font-semibold flex items-center justify-center group">
+                                    <i class="fas fa-edit mr-3 group-hover:scale-110 transition-transform duration-200"></i>
+                                    Editar Vaga
                                 </a>
                                 
-                                <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" 
-                                      onsubmit="return confirm('Tem certeza que deseja excluir esta vaga? Esta ação não pode ser desfeita.');">
+                                <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" id="deleteForm">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn-trampix-danger w-full">
-                                        <i class="fas fa-trash mr-2"></i>Excluir Vaga
+                                    <button type="submit" class="w-full py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl text-lg font-semibold flex items-center justify-center group">
+                                        <i class="fas fa-trash mr-3 group-hover:scale-110 transition-transform duration-200"></i>
+                                        Excluir Vaga
                                     </button>
                                 </form>
                             </div>
@@ -686,4 +788,152 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Contador de caracteres para o textarea
+    const coverLetterTextarea = document.getElementById('cover_letter');
+    const charCountElement = document.getElementById('charCount');
+    const applicationForm = document.getElementById('applicationForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+
+    if (coverLetterTextarea && charCountElement) {
+        // Função para atualizar contador de caracteres
+        function updateCharCount() {
+            const currentLength = coverLetterTextarea.value.length;
+            const maxLength = 1000;
+            charCountElement.textContent = `${currentLength}/${maxLength} caracteres`;
+            
+            // Mudar cor baseado na proximidade do limite
+            if (currentLength > maxLength * 0.9) {
+                charCountElement.classList.add('text-red-500');
+                charCountElement.classList.remove('text-gray-400', 'text-yellow-500');
+            } else if (currentLength > maxLength * 0.7) {
+                charCountElement.classList.add('text-yellow-500');
+                charCountElement.classList.remove('text-gray-400', 'text-red-500');
+            } else {
+                charCountElement.classList.add('text-gray-400');
+                charCountElement.classList.remove('text-yellow-500', 'text-red-500');
+            }
+        }
+
+        // Atualizar contador ao digitar
+        coverLetterTextarea.addEventListener('input', updateCharCount);
+        
+        // Inicializar contador
+        updateCharCount();
+    }
+
+    // Feedback visual no envio do formulário
+    if (applicationForm && submitBtn) {
+        applicationForm.addEventListener('submit', function(e) {
+            // Desabilitar botão e mostrar loading
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
+            
+            if (btnText && loadingSpinner) {
+                btnText.textContent = 'Enviando...';
+                loadingSpinner.classList.remove('hidden');
+            }
+            
+            // Simular delay mínimo para feedback visual
+            setTimeout(() => {
+                // O formulário será submetido normalmente
+            }, 100);
+        });
+    }
+
+    // Animação suave para o card de candidatura
+    const applicationCard = document.querySelector('.application-card');
+    if (applicationCard) {
+        // Observar quando o card entra na viewport
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        observer.observe(applicationCard);
+    }
+});
+
+// CSS para animação
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+    }
+    
+    .application-card {
+        opacity: 0;
+    }
+    
+    .application-card.animate-fade-in-up {
+        opacity: 1;
+    }
+    
+    /* Melhorias no textarea */
+    .trampix-input:focus {
+        box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+    }
+    
+    /* Hover effect no botão */
+    .btn-trampix-primary:hover {
+        transform: translateY(-2px);
+    }
+    
+    /* Responsividade aprimorada */
+    @media (max-width: 768px) {
+        .application-card {
+            margin: 0 -1rem;
+            border-radius: 0.75rem;
+        }
+        
+        .form-group textarea {
+            font-size: 16px; /* Previne zoom no iOS */
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+@endpush
+
+{{-- Modais de Confirmação de Ação Customizados --}}
+<x-action-confirmation 
+    :actionType="'candidatura'"
+    :jobTitle="$vaga->titulo"
+    :companyName="$vaga->empresa->nome ?? 'Empresa'"
+    modalId="applicationConfirmationModal"
+    :showTip="true" />
+
+<x-action-confirmation 
+    :actionType="'exclusao'"
+    :jobTitle="$vaga->titulo"
+    :companyName="$vaga->empresa->nome ?? 'Empresa'"
+    modalId="deleteConfirmationModal"
+    :showTip="false" />
+
+<x-action-confirmation 
+    :actionType="'generic'"
+    :jobTitle="''"
+    :companyName="''"
+    modalId="companyProfileModal"
+    :showTip="false" />
+
 @endsection

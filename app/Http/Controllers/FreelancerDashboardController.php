@@ -31,37 +31,37 @@ class FreelancerDashboardController extends Controller
 
         // Candidaturas recentes do freelancer (últimas 7)
         $recentApplications = Application::where('freelancer_id', $freelancer->id)
-            ->with(['jobVacancy.serviceCategory', 'jobVacancy.company'])
+            ->with(['jobVacancy', 'jobVacancy.company'])
             ->orderBy('created_at', 'desc')
             ->limit(7)
             ->get();
 
         // Vagas recomendadas baseadas nas categorias do freelancer
-        $freelancerCategories = $freelancer->serviceCategories->pluck('id')->toArray();
+        $freelancerCategories = $freelancer->serviceCategories->pluck('slug')->toArray();
         
-        $recommendedJobs = JobVacancy::where('status', 'open')
+        $recommendedJobs = JobVacancy::where('status', 'active')
             ->when(!empty($freelancerCategories), function ($query) use ($freelancerCategories) {
-                return $query->whereIn('service_category_id', $freelancerCategories);
+                return $query->whereIn('category', $freelancerCategories);
             })
             ->whereNotIn('id', function ($query) use ($freelancer) {
                 $query->select('job_vacancy_id')
                     ->from('applications')
                     ->where('freelancer_id', $freelancer->id);
             })
-            ->with(['serviceCategory', 'company'])
+            ->with(['company'])
             ->orderBy('created_at', 'desc')
             ->limit(7)
             ->get();
 
         // Se não há vagas nas categorias do freelancer, buscar vagas gerais
         if ($recommendedJobs->isEmpty()) {
-            $recommendedJobs = JobVacancy::where('status', 'open')
+            $recommendedJobs = JobVacancy::where('status', 'active')
                 ->whereNotIn('id', function ($query) use ($freelancer) {
                     $query->select('job_vacancy_id')
                         ->from('applications')
                         ->where('freelancer_id', $freelancer->id);
                 })
-                ->with(['serviceCategory', 'company'])
+                ->with(['company'])
                 ->orderBy('created_at', 'desc')
                 ->limit(7)
                 ->get();

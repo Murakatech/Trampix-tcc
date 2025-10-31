@@ -140,7 +140,17 @@
                                                 <i class="fas fa-times me-1"></i>Rejeitado
                                             </span>
                                         @else
-                                            <span class="badge bg-secondary">{{ ucfirst($application->status) }}</span>
+                                            <span class="badge bg-secondary">
+                                    @if($application->status === 'pending')
+                                        Pendente
+                                    @elseif($application->status === 'accepted')
+                                        Aceita
+                                    @elseif($application->status === 'rejected')
+                                        Rejeitada
+                                    @else
+                                        {{ ucfirst($application->status) }}
+                                    @endif
+                                </span>
                                         @endif
                                     </td>
                                     <td>
@@ -183,20 +193,20 @@
                                     <td>
                                         <div class="btn-group" role="group">
                                             @if($application->status === 'pending')
-                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="acceptForm-{{ $application->id }}">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="accepted">
-                                                    <button type="submit" class="btn btn-sm btn-success" 
-                                                            onclick="return confirm('Aceitar esta candidatura?')">
+                                                    <button type="button" class="btn btn-sm btn-success" 
+                                                            onclick="showAcceptConfirmation({{ $application->id }}, '{{ $application->freelancer->name }}', '{{ $application->vaga->titulo }}')">
                                                         <i class="fas fa-check me-1"></i>Aceitar
                                                     </button>
                                                 </form>
 
-                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="rejectForm-{{ $application->id }}">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="rejected">
-                                                    <button type="submit" class="btn btn-sm btn-danger" 
-                                                            onclick="return confirm('Rejeitar esta candidatura?')">
+                                                    <button type="button" class="btn btn-sm btn-danger" 
+                                                            onclick="showRejectConfirmation({{ $application->id }}, '{{ $application->freelancer->name }}', '{{ $application->vaga->titulo }}')">
                                                         <i class="fas fa-times me-1"></i>Rejeitar
                                                     </button>
                                                 </form>
@@ -204,20 +214,20 @@
                                                 <span class="badge bg-success me-2">
                                                     <i class="fas fa-check me-1"></i>Aceito
                                                 </span>
-                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="rejectForm2-{{ $application->id }}">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="rejected">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                            onclick="return confirm('Rejeitar esta candidatura?')">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                            onclick="showRejectConfirmation2({{ $application->id }}, '{{ $application->freelancer->name }}', '{{ $application->vaga->titulo }}')">
                                                         <i class="fas fa-times me-1"></i>Rejeitar
                                                     </button>
                                                 </form>
                                             @elseif($application->status === 'rejected')
-                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="acceptForm2-{{ $application->id }}">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="accepted">
-                                                    <button type="submit" class="btn btn-sm btn-outline-success" 
-                                                            onclick="return confirm('Aceitar esta candidatura?')">
+                                                    <button type="button" class="btn btn-sm btn-outline-success" 
+                                                            onclick="showAcceptConfirmation2({{ $application->id }}, '{{ $application->freelancer->name }}', '{{ $application->vaga->titulo }}')">
                                                         <i class="fas fa-check me-1"></i>Aceitar
                                                     </button>
                                                 </form>
@@ -257,6 +267,83 @@
         </a>
     </div>
 </div>
+
+{{-- Componentes de Confirmação --}}
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="acceptConfirmationModal" />
+
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="rejectConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para aceitar candidatura (primeira vez)
+    function showAcceptConfirmation(applicationId, freelancerName, jobTitle) {
+        showActionModal('acceptConfirmationModal', {
+            actionType: 'generic',
+            message: `Aceitar a candidatura de ${freelancerName} para a vaga "${jobTitle}"?`,
+            onConfirm: () => {
+                const form = document.getElementById(`acceptForm-${applicationId}`);
+                showNotification('Aceitando candidatura...', 'success');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Ação cancelada.', 'info');
+            }
+        });
+    }
+
+    // Função para aceitar candidatura (segunda vez - quando rejeitado)
+    function showAcceptConfirmation2(applicationId, freelancerName, jobTitle) {
+        showActionModal('acceptConfirmationModal', {
+            actionType: 'generic',
+            message: `Aceitar novamente a candidatura de ${freelancerName} para a vaga "${jobTitle}"?`,
+            onConfirm: () => {
+                const form = document.getElementById(`acceptForm2-${applicationId}`);
+                showNotification('Aceitando candidatura...', 'success');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Ação cancelada.', 'info');
+            }
+        });
+    }
+
+    // Função para rejeitar candidatura (primeira vez)
+    function showRejectConfirmation(applicationId, freelancerName, jobTitle) {
+        showActionModal('rejectConfirmationModal', {
+            actionType: 'generic',
+            message: `⚠️ Rejeitar a candidatura de ${freelancerName} para a vaga "${jobTitle}"?\n\nEsta ação pode ser revertida posteriormente.`,
+            onConfirm: () => {
+                const form = document.getElementById(`rejectForm-${applicationId}`);
+                showNotification('Rejeitando candidatura...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Ação cancelada.', 'info');
+            }
+        });
+    }
+
+    // Função para rejeitar candidatura (segunda vez - quando aceito)
+    function showRejectConfirmation2(applicationId, freelancerName, jobTitle) {
+        showActionModal('rejectConfirmationModal', {
+            actionType: 'generic',
+            message: `⚠️ Rejeitar a candidatura de ${freelancerName} para a vaga "${jobTitle}"?\n\nEsta candidatura estava aceita. Esta ação pode ser revertida posteriormente.`,
+            onConfirm: () => {
+                const form = document.getElementById(`rejectForm2-${applicationId}`);
+                showNotification('Rejeitando candidatura...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Ação cancelada.', 'info');
+            }
+        });
+    }
+</script>
+@endpush
 
 <style>
 .avatar-circle {

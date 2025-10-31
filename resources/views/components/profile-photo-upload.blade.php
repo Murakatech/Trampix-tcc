@@ -18,12 +18,12 @@
                 @endif
                 
                 @if($profilePhoto)
-                    <form action="{{ route('profile.photo.delete') }}" method="POST" class="d-inline">
+                    <form action="{{ route('profile.photo.delete') }}" method="POST" class="d-inline" id="removePhotoForm">
                         @csrf
                         @method('DELETE')
                         <input type="hidden" name="profile_type" value="{{ $profileType }}">
-                        <button type="submit" class="btn btn-outline-danger btn-sm" 
-                                onclick="return confirm('Tem certeza que deseja remover a foto?')">
+                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                onclick="showRemovePhotoConfirmation()">
                             Remover
                         </button>
                     </form>
@@ -58,3 +58,28 @@
         </div>
     </div>
 </div>
+
+{{-- Componente de Confirmação --}}
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="removePhotoConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para remover foto
+    function showRemovePhotoConfirmation() {
+        showActionModal('removePhotoConfirmationModal', {
+            actionType: 'generic',
+            message: `🗑️ Tem certeza que deseja remover a foto?\n\nEsta ação não pode ser desfeita.`,
+            onConfirm: () => {
+                const form = document.getElementById('removePhotoForm');
+                showNotification('Removendo foto...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Remoção cancelada.', 'info');
+            }
+        });
+    }
+</script>
+@endpush

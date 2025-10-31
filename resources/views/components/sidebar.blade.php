@@ -10,11 +10,11 @@
         'z-20': expanded,
         'z-10': !expanded
     }"
-    class="trampix-sidebar fixed left-0 top-0 min-h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out overflow-hidden"
+    class="trampix-sidebar fixed left-0 top-0 h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out overflow-hidden flex flex-col"
     id="sidebar">
 
     <!-- Sidebar Header -->
-    <div class="p-4 border-b border-gray-200">
+    <div class="p-4 border-b border-gray-200 flex-shrink-0">
         <div class="flex items-center space-x-3">
             <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <img src="{{ asset('storage/img/logo_trampix.png') }}" alt="Trampix Logo" class="h-8 w-auto object-contain">
@@ -35,7 +35,7 @@
     </div>
 
     <!-- Navigation Cards -->
-    <nav class="py-4">
+    <nav class="py-4 flex-1 overflow-y-auto">
         <!-- Dashboard Home -->
         @php
             $dashboardRoute = 'dashboard';
@@ -292,3 +292,34 @@
         </a>
     </nav>
 </aside>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarNav = sidebar.querySelector('nav');
+    
+    // Garantir que a sidebar mantenha altura correta
+    function adjustSidebarHeight() {
+        const viewportHeight = window.innerHeight;
+        sidebar.style.height = viewportHeight + 'px';
+    }
+    
+    // Ajustar altura inicial
+    adjustSidebarHeight();
+    
+    // Ajustar altura no resize
+    window.addEventListener('resize', adjustSidebarHeight, { passive: true });
+    
+    // Smooth scroll behavior para links internos da sidebar
+    const sidebarLinks = sidebar.querySelectorAll('a[href^="#"], a[href^="/"]');
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Adicionar feedback visual suave
+            this.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    });
+});
+</script>

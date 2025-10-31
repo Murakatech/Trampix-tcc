@@ -300,18 +300,29 @@
                                     @click="open = false"
                                 >
                                     <div class="w-4 h-4 mr-3 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                        <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                        <i class="fas fa-user text-xs text-blue-500"></i>
                                     </div>
                                     <span class="truncate">Visualizar Perfil</span>
                                 </a>
 
-                                <!-- Divider for future options -->
+                                <!-- Divider -->
                                 <hr class="my-1 border-gray-200">
                                 
-                                <!-- Placeholder for future options -->
-                                <div class="px-3 sm:px-4 py-2 text-xs text-gray-400 italic">
-                                    Mais opções em breve...
-                                </div>
+                                <!-- Logout Button -->
+                                <form method="POST" action="{{ route('logout') }}" class="w-full">
+                                    @csrf
+                                    <button 
+                                        type="submit"
+                                        class="flex items-center w-full px-3 sm:px-4 py-2 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors duration-150 touch-manipulation"
+                                        role="menuitem"
+                                        @click="open = false"
+                                    >
+                                        <div class="w-4 h-4 mr-3 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-sign-out-alt text-xs text-red-500"></i>
+                                        </div>
+                                        <span class="truncate">Sair</span>
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

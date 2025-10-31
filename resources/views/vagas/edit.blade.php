@@ -107,12 +107,8 @@
                 <div class="mb-3">
                     <label for="status" class="form-label">Status da vaga</label>
                     <select id="status" name="status" class="form-select @error('status') is-invalid @enderror">
-                        <option value="active" {{ old('status', $vaga->status) == 'active' ? 'selected' : '' }}>
-                            <i class="fas fa-check-circle text-success"></i> Ativa
-                        </option>
-                        <option value="closed" {{ old('status', $vaga->status) == 'closed' ? 'selected' : '' }}>
-                            <i class="fas fa-times-circle text-danger"></i> Encerrada
-                        </option>
+                        <option value="active" {{ old('status', $vaga->status) == 'active' ? 'selected' : '' }}>Ativa</option>
+                        <option value="closed" {{ old('status', $vaga->status) == 'closed' ? 'selected' : '' }}>Encerrada</option>
                     </select>
                     @error('status')
                         <div class="invalid-feedback">{{ $message }}</div>

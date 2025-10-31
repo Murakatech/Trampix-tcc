@@ -50,12 +50,12 @@
                 </button>
                 
                 @if($hasPhoto)
-                    <form method="post" action="{{ route('profile.photo.delete') }}" class="inline">
+                    <form method="post" action="{{ route('profile.photo.delete') }}" class="inline" id="removePhotoForm">
                         @csrf
                         @method('delete')
                         <input type="hidden" name="profile_type" value="{{ $type }}">
-                        <button type="submit" class="text-red-600 hover:text-red-800 text-sm transition-colors duration-200"
-                                onclick="return confirm('Tem certeza que deseja remover a {{ $type === 'freelancer' ? 'foto' : 'logo' }}?')">
+                        <button type="button" class="text-red-600 hover:text-red-800 text-sm transition-colors duration-200"
+                                onclick="showRemovePhotoConfirmation('{{ $type === 'freelancer' ? 'foto' : 'logo' }}')">
                             Remover {{ $type === 'freelancer' ? 'foto' : 'logo' }}
                         </button>
                     </form>
@@ -64,3 +64,28 @@
         </form>
     </div>
 </div>
+
+{{-- Componente de Confirmação --}}
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="removePhotoConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para remover foto/logo
+    function showRemovePhotoConfirmation(photoType) {
+        showActionModal('removePhotoConfirmationModal', {
+            actionType: 'generic',
+            message: `🗑️ Tem certeza que deseja remover a ${photoType}?\n\nEsta ação não pode ser desfeita.`,
+            onConfirm: () => {
+                const form = document.getElementById('removePhotoForm');
+                showNotification(`Removendo ${photoType}...`, 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Remoção cancelada.', 'info');
+            }
+        });
+    }
+</script>
+@endpush
