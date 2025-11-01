@@ -9,28 +9,12 @@ use Illuminate\View\View;
 class DashboardController extends Controller
 {
     /**
-     * Redireciona para o dashboard específico baseado no perfil do usuário
+     * Exibe o dashboard unificado que adapta o conteúdo baseado no perfil do usuário
      */
-    public function index(Request $request): RedirectResponse|View
+    public function index(Request $request): View
     {
-        $user = $request->user();
-        
-        // Verificar se é admin
-        if ($user->isAdmin()) {
-            return view('dashboard');
-        }
-        
-        // Verificar se tem perfil de freelancer ativo
-        if ($user->isFreelancer()) {
-            return redirect()->route('freelancer.dashboard');
-        }
-        
-        // Verificar se tem perfil de empresa ativo
-        if ($user->isCompany()) {
-            return redirect()->route('company.dashboard');
-        }
-        
-        // Se não tem nenhum perfil específico, mostrar dashboard genérico
+        // Retorna sempre a view unificada
+        // A lógica de exibição é tratada no Blade com condicionais
         return view('dashboard');
     }
 }
