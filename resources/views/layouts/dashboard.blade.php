@@ -1,3 +1,15 @@
+@php
+    // Definir display name baseado no perfil ativo
+    $activeRole = session('active_role');
+    $displayName = Auth::user()->name;
+    
+    if ($activeRole === 'freelancer' && Auth::user()->freelancer) {
+        $displayName = Auth::user()->freelancer->display_name ?? Auth::user()->name;
+    } elseif ($activeRole === 'company' && Auth::user()->company) {
+        $displayName = Auth::user()->company->display_name ?? Auth::user()->name;
+    }
+@endphp
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -212,7 +224,7 @@
                         <div class="flex-1 text-center">
                             @if(request()->routeIs('dashboard'))
                                 <h1 class="text-lg font-medium text-gray-900">
-                                    Bem-Vindo, {{ ucfirst(Auth::user()->name) }}
+                                    Bem-Vindo, {{ ucfirst($displayName) }}
                                 </h1>
                             @else
                                 @if(isset($header))
@@ -268,12 +280,12 @@
                                 @if(Auth::user()->profile_photo_path)
                                     <img 
                                         src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" 
-                                        alt="Foto de perfil de {{ Auth::user()->name }}"
+                                        alt="Foto de perfil de {{ $displayName }}"
                                         class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white shadow-sm"
                                     >
                                 @else
                                     <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-xs sm:text-sm">
-                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                        {{ strtoupper(substr($displayName, 0, 1)) }}
                                     </div>
                                 @endif
                             </button>

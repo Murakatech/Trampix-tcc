@@ -48,6 +48,36 @@ class ProfileController extends Controller
     }
 
     /**
+     * Display the freelancer profile creation form.
+     */
+    public function showCreateFreelancer(Request $request): View|RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Verificar se já tem perfil freelancer
+        if ($user->freelancer) {
+            return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de freelancer.');
+        }
+        
+        return view('freelancers.create');
+    }
+
+    /**
+     * Display the company profile creation form.
+     */
+    public function showCreateCompany(Request $request): View|RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Verificar se já tem perfil empresa
+        if ($user->company) {
+            return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de empresa.');
+        }
+        
+        return view('companies.create');
+    }
+
+    /**
      * Display the account settings form.
      */
     public function account(Request $request): View
@@ -70,23 +100,34 @@ class ProfileController extends Controller
             return redirect()->route('dashboard');
         }
         
-        // Carregar apenas o perfil ativo
+        // Carregar ambos os perfis para exibição correta na view
+        $freelancer = $user->freelancer;
+        $company = $user->company;
+        
+        // Carregar categorias se o freelancer existir
+        if ($freelancer) {
+            $freelancer->load('serviceCategories');
+        }
+        
+        // Carregar categorias se a empresa existir
+        if ($company) {
+            $company->load('serviceCategories');
+        }
+        
+        // Determinar o perfil ativo
         $profile = null;
         if ($activeRole === 'freelancer') {
-            $profile = $user->freelancer;
-            // Carregar categorias se o freelancer existir
-            if ($profile) {
-                $profile->load('serviceCategories');
-            }
+            $profile = $freelancer;
         } elseif ($activeRole === 'company') {
-            $profile = $user->company;
+            $profile = $company;
         }
         
         return view('profile.edit', [
             'user' => $user,
             'activeRole' => $activeRole,
             'profile' => $profile,
-            'freelancer' => $profile, // Para compatibilidade com a view
+            'freelancer' => $freelancer,
+            'company' => $company,
             'hasFreelancer' => $user->isFreelancer(),
             'hasCompany' => $user->isCompany(),
         ]);
@@ -106,7 +147,7 @@ class ProfileController extends Controller
         }
         $user->save();
 
-        return Redirect::route('profile.account')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
@@ -195,12 +236,44 @@ class ProfileController extends Controller
                 $this->authorize('canCreateCompanyProfile');
             }
 
+            // Preparar dados para validação, tratando URLs inválidas
+            $requestData = $request->all();
+            
+            // Se o website existe mas é inválido, remover para evitar erro de validação
+            if (isset($requestData['website']) && !empty($requestData['website'])) {
+                if (!filter_var($requestData['website'], FILTER_VALIDATE_URL)) {
+                    $requestData['website'] = null;
+                }
+            }
+            
+            // Criar um novo request com os dados tratados
+            $request->merge($requestData);
+
             $validated = $request->validate(\App\Http\Requests\CompanyUpdateRequest::rulesFor($company?->id));
+
+            // Mapear display_name para name
+            if (isset($validated['display_name'])) {
+                $validated['name'] = $validated['display_name'];
+            }
 
             if ($company) {
                 $company->update($validated);
             } else {
                 $company = $user->createProfile('company', $validated);
+            }
+
+            // Sincronizar categorias de serviço se fornecidas
+            if ($request->has('service_categories')) {
+                $categoryIds = $request->input('service_categories', []);
+                $validCategories = \App\Models\ServiceCategory::whereIn('id', $categoryIds)
+                    ->where('is_active', true)
+                    ->pluck('id')
+                    ->toArray();
+                
+                $company->serviceCategories()->sync($validCategories);
+            } else {
+                // Se nenhuma categoria foi selecionada, remover todas
+                $company->serviceCategories()->detach();
             }
 
             return Redirect::route('profile.edit')->with('success', 'Perfil de empresa atualizado com sucesso!');
@@ -229,6 +302,108 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Create a new company profile from profile selection.
+     */
+    public function createCompany(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Verificar se já tem perfil empresa
+        if ($user->company) {
+            return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de empresa.');
+        }
+        
+        $validated = $request->validate([
+            'company_name' => 'required|string|min:3|max:255',
+            'cnpj' => 'required|string|size:18', // Com máscara: 00.000.000/0000-00
+            'description' => 'required|string|min:30|max:1000',
+            'sector' => 'required|string|max:255',
+            'website' => 'nullable|url|max:255',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:5120', // 5MB
+        ]);
+        
+        // Processar upload do logo
+        if ($request->hasFile('logo')) {
+            $logoPath = $request->file('logo')->store('company_logos', 'public');
+            $validated['logo'] = $logoPath;
+        }
+        
+        // Atualizar nome do usuário
+        $user->update([
+            'name' => $validated['company_name'],
+            'role' => 'company'
+        ]);
+        
+        // Criar perfil empresa
+        $company = $user->createProfile('company', [
+            'name' => $validated['company_name'],
+            'cnpj' => $validated['cnpj'],
+            'description' => $validated['description'],
+            'sector' => $validated['sector'],
+            'website' => $validated['website'] ?? null,
+            'logo' => $validated['logo'] ?? null,
+        ]);
+        
+        // Definir empresa como perfil ativo
+        session(['active_role' => 'company']);
+        
+        return redirect()->route('dashboard')->with('success', 'Perfil de empresa criado com sucesso!');
+    }
+
+    /**
+     * Create a new freelancer profile from profile selection.
+     */
+    public function createFreelancer(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Verificar se já tem perfil freelancer
+        if ($user->freelancer) {
+            return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de freelancer.');
+        }
+        
+        $validated = $request->validate([
+            'name' => 'required|string|min:3|max:255',
+            'title' => 'required|string|max:255',
+            'bio' => 'required|string|min:50|max:1000',
+            'skills' => 'required|string',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // 5MB
+            'cv' => 'nullable|file|mimes:pdf|max:10240', // 10MB
+        ]);
+        
+        // Processar uploads
+        $profileData = [
+            'bio' => $validated['bio'],
+            'title' => $validated['title'],
+            'skills' => $validated['skills'],
+        ];
+        
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('profile_photos', 'public');
+            $profileData['profile_photo'] = $photoPath;
+        }
+        
+        if ($request->hasFile('cv')) {
+            $cvPath = $request->file('cv')->store('cvs', 'public');
+            $profileData['cv_url'] = $cvPath;
+        }
+        
+        // Atualizar nome do usuário
+        $user->update([
+            'name' => $validated['name'],
+            'role' => 'freelancer'
+        ]);
+        
+        // Criar perfil freelancer
+        $freelancer = $user->createProfile('freelancer', $profileData);
+        
+        // Definir freelancer como perfil ativo
+        session(['active_role' => 'freelancer']);
+        
+        return redirect()->route('dashboard')->with('success', 'Perfil de freelancer criado com sucesso!');
     }
 
     /**

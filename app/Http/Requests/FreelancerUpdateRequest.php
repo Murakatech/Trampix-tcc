@@ -17,6 +17,12 @@ class FreelancerUpdateRequest extends FormRequest
     public static function rulesFor(?int $freelancerId = null): array
     {
         return [
+            'display_name' => [
+                'nullable',
+                'string',
+                'max:255',
+                'unique:freelancers,display_name' . ($freelancerId ? ',' . $freelancerId : '')
+            ],
             'bio' => 'nullable|string|max:1000',
             'portfolio_url' => 'nullable|url|max:255',
             'phone' => 'nullable|string|max:20',

@@ -171,7 +171,8 @@
                     @endif
                 </div>
             </div>
-            
+
+
             <!-- Seção de Imagem de Perfil -->
             <div id="profile-info" class="p-6 border-b border-gray-200">
                 <div class="flex items-start space-x-6">
@@ -342,6 +343,18 @@
                     <!-- Formulário Freelancer -->
                     <div class="space-y-6">
                         <div>
+                            <label for="display_name" class="block text-sm font-medium text-gray-700">Nome de Exibição Profissional</label>
+                            <input type="text" id="display_name" name="display_name" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('display_name') border-red-500 @enderror" 
+                                   value="{{ old('display_name', $freelancer->display_name ?? '') }}"
+                                   placeholder="Como você gostaria de ser chamado profissionalmente">
+                            <p class="mt-1 text-sm text-gray-500">Este nome será exibido em seu perfil profissional e candidaturas.</p>
+                            @error('display_name')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
                             <label for="bio" class="block text-sm font-medium text-gray-700">Biografia</label>
                             <textarea id="bio" name="bio" rows="4" 
                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('bio') border-red-500 @enderror" 
@@ -451,6 +464,18 @@
                     <!-- Formulário Empresa -->
                     <div class="space-y-6">
                         <div>
+                            <label for="display_name" class="block text-sm font-medium text-gray-700">Nome de Exibição Profissional</label>
+                            <input type="text" id="display_name" name="display_name" 
+                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('display_name') border-red-500 @enderror" 
+                                   value="{{ old('display_name', $company->display_name ?? '') }}"
+                                   placeholder="Como sua empresa gostaria de ser chamada profissionalmente">
+                            <p class="mt-1 text-sm text-gray-500">Este nome será exibido no perfil da empresa e nas vagas publicadas.</p>
+                            @error('display_name')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
                             <label for="description" class="block text-sm font-medium text-gray-700">Descrição da Empresa</label>
                             <textarea id="description" name="description" rows="4" 
                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('description') border-red-500 @enderror" 
@@ -520,6 +545,37 @@
                                 <option value="500+" {{ old('company_size', $company->company_size ?? '') == '500+' ? 'selected' : '' }}>500+ funcionários</option>
                             </select>
                             @error('company_size')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Categorias de Serviços -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Áreas de Atuação</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
+                                @php
+                                    $selectedCategories = old('service_categories', 
+                                        isset($company) ? $company->serviceCategories->pluck('id')->toArray() : []
+                                    );
+                                @endphp
+                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
+                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                                        <input type="checkbox" 
+                                               name="service_categories[]" 
+                                               value="{{ $category->id }}"
+                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                               {{ in_array($category->id, $selectedCategories) ? 'checked' : '' }}>
+                                        <div class="ml-3 flex items-center">
+                                            @if($category->icon)
+                                                <i class="{{ $category->icon }} text-gray-500 mr-2"></i>
+                                            @endif
+                                            <span class="text-sm text-gray-700">{{ $category->name }}</span>
+                                        </div>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">Selecione as áreas em que sua empresa atua</p>
+                            @error('service_categories')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -613,6 +669,9 @@ function closeModal(modalId) {
 // Inicializar primeira tab
 document.addEventListener('DOMContentLoaded', function() {
     showTab('profile');
+    
+    // Adicionar validação frontend para formulários
+    initializeFormValidation();
     
     // Funcionalidade de Drag & Drop
     const dropZone = document.getElementById('dropZone');
@@ -929,7 +988,181 @@ document.addEventListener('DOMContentLoaded', function() {
             updateImageTransform();
         });
     }
+    
+    // Inicializar detecção de mudanças nos formulários
+    initializeFormChangeDetection();
 });
+
+// Função para detectar mudanças nos campos de formulário
+function initializeFormChangeDetection() {
+    const formInputs = document.querySelectorAll('form input, form textarea, form select');
+    const originalValues = new Map();
+    
+    // Armazenar valores originais
+    formInputs.forEach(input => {
+        if (input.type === 'checkbox') {
+            originalValues.set(input.name, input.checked);
+        } else if (input.type === 'radio') {
+            if (input.checked) {
+                originalValues.set(input.name, input.value);
+            }
+        } else {
+            originalValues.set(input.name, input.value);
+        }
+    });
+    
+    // Adicionar listeners para detectar mudanças
+    formInputs.forEach(input => {
+        const events = ['input', 'change', 'keyup'];
+        
+        events.forEach(eventType => {
+            input.addEventListener(eventType, function() {
+                checkFieldChanges(this, originalValues);
+            });
+        });
+    });
+}
+
+// Função para verificar mudanças em um campo específico
+function checkFieldChanges(field, originalValues) {
+    let currentValue;
+    let originalValue = originalValues.get(field.name);
+    
+    if (field.type === 'checkbox') {
+        currentValue = field.checked;
+    } else if (field.type === 'radio') {
+        currentValue = field.checked ? field.value : originalValue;
+    } else {
+        currentValue = field.value;
+    }
+    
+    const hasChanged = currentValue !== originalValue;
+    
+    // Adicionar/remover indicador visual de mudança
+    toggleChangeIndicator(field, hasChanged);
+    
+    // Atualizar contador de mudanças
+    updateChangeCounter();
+}
+
+// Função para adicionar/remover indicador visual de mudança
+function toggleChangeIndicator(field, hasChanged) {
+    const fieldContainer = field.closest('div');
+    let changeIndicator = fieldContainer.querySelector('.change-indicator');
+    
+    if (hasChanged) {
+        // Adicionar indicador se não existir
+        if (!changeIndicator) {
+            changeIndicator = document.createElement('div');
+            changeIndicator.className = 'change-indicator absolute -top-1 -right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white shadow-sm';
+            changeIndicator.innerHTML = '<span class="sr-only">Campo alterado</span>';
+            
+            // Posicionar o indicador
+            fieldContainer.style.position = 'relative';
+            fieldContainer.appendChild(changeIndicator);
+        }
+        
+        // Adicionar classe de campo alterado
+        field.classList.add('border-orange-300', 'bg-orange-50');
+        field.classList.remove('border-gray-300');
+        
+        // Animação de entrada
+        changeIndicator.style.animation = 'pulse 0.5s ease-in-out';
+        
+    } else {
+        // Remover indicador se existir
+        if (changeIndicator) {
+            changeIndicator.remove();
+        }
+        
+        // Remover classe de campo alterado
+        field.classList.remove('border-orange-300', 'bg-orange-50');
+        field.classList.add('border-gray-300');
+    }
+}
+
+// Função para atualizar contador de mudanças
+function updateChangeCounter() {
+    const changedFields = document.querySelectorAll('.change-indicator');
+    let changeCounter = document.getElementById('changeCounter');
+    
+    if (changedFields.length > 0) {
+        // Criar contador se não existir
+        if (!changeCounter) {
+            changeCounter = document.createElement('div');
+            changeCounter.id = 'changeCounter';
+            changeCounter.className = 'fixed bottom-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300';
+            document.body.appendChild(changeCounter);
+        }
+        
+        changeCounter.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                <span>${changedFields.length} campo${changedFields.length > 1 ? 's' : ''} alterado${changedFields.length > 1 ? 's' : ''}</span>
+            </div>
+        `;
+        
+        changeCounter.style.display = 'block';
+        changeCounter.style.opacity = '1';
+        
+    } else {
+        // Ocultar contador se não há mudanças
+        if (changeCounter) {
+            changeCounter.style.opacity = '0';
+            setTimeout(() => {
+                if (changeCounter && changeCounter.style.opacity === '0') {
+                    changeCounter.style.display = 'none';
+                }
+            }, 300);
+        }
+    }
+}
+
+// Função para inicializar validação frontend
+function initializeFormValidation() {
+    // Validação do formulário principal
+    const mainForm = document.querySelector('form[action*="profile.update"]');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function(e) {
+            const submitButton = this.querySelector('button[type="submit"]');
+            
+            // Desabilitar botão para evitar duplo submit
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Salvando...';
+                
+                // Reabilitar após 5 segundos (caso algo dê errado)
+                setTimeout(() => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = 'Salvar Alterações';
+                }, 5000);
+            }
+        });
+    }
+    
+    // Validação do modal de criação de empresa
+    const companyModal = document.querySelector('#createCompanyModal form');
+    if (companyModal) {
+        companyModal.addEventListener('submit', function(e) {
+            const nameField = this.querySelector('input[name="display_name"]');
+            
+            if (!nameField || !nameField.value.trim()) {
+                e.preventDefault();
+                alert('Por favor, preencha o nome da empresa.');
+                if (nameField) nameField.focus();
+                return false;
+            }
+            
+            const submitButton = this.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Criando...';
+            }
+        });
+    }
+}
 </script>
 <script src="{{ asset('js/cv-uploader.js') }}"></script>
 

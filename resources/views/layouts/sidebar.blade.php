@@ -15,7 +15,17 @@
                      src="{{ Auth::user()->profile_photo_url ?? asset('images/avatar-placeholder.png') }}" 
                      alt="Avatar">
                 <div class="leading-tight">
-                    <div class="font-semibold text-gray-900">{{ Auth::user()->name }}</div>
+                    @php
+                        $activeRole = session('active_role');
+                        $displayName = Auth::user()->name;
+                        
+                        if ($activeRole === 'freelancer' && Auth::user()->freelancer) {
+                            $displayName = Auth::user()->freelancer->display_name ?? Auth::user()->name;
+                        } elseif ($activeRole === 'company' && Auth::user()->company) {
+                            $displayName = Auth::user()->company->display_name ?? Auth::user()->name;
+                        }
+                    @endphp
+                    <div class="font-semibold text-gray-900">{{ $displayName }}</div>
                     <div class="text-xs text-gray-500 capitalize">{{ session('active_role') ?? Auth::user()->role }}</div>
                 </div>
             </div>

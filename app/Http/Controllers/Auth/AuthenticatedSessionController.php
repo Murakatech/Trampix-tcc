@@ -34,9 +34,9 @@ class AuthenticatedSessionController extends Controller
         $hasFreelancer = $user->isFreelancer();
         $hasCompany = $user->isCompany();
         
-        // Se não tem nenhum perfil ativo, vai para dashboard padrão
+        // Se não tem nenhum perfil ativo, vai para seleção de perfil
         if (!$hasFreelancer && !$hasCompany) {
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->route('profile.selection');
         }
         
         // Se tem apenas um perfil, define automaticamente na sessão

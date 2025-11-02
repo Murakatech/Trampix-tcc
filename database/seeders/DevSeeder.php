@@ -157,6 +157,7 @@ class DevSeeder extends Seeder
             $company = Company::updateOrCreate(
                 ['user_id' => $user->id],
                 array_merge($data['company'], [
+                    'display_name' => $data['company']['name'], // Nome de exibição da empresa
                     'cnpj' => fake()->numerify('##.###.###/0001-##'),
                     'phone' => fake()->phoneNumber(),
                     'website' => 'https://' . strtolower(str_replace(' ', '', $data['company']['name'])) . '.com',
@@ -197,6 +198,7 @@ class DevSeeder extends Seeder
         $freelancer = Freelancer::updateOrCreate(
             ['user_id' => $freelancerUser->id],
             [
+                'display_name' => 'Ana Rodrigues - Designer & Freelancer', // Nome de exibição do freelancer
                 'bio' => 'Profissional autônoma com experiência em design, atendimento e gastronomia.',
                 'portfolio_url' => 'https://anarodrigues.dev',
                 'phone' => '(11) 99999-9999',

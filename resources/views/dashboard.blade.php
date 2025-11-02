@@ -7,7 +7,13 @@
     <!-- Header de Boas-vindas -->
     <div class="mb-8">
         <h1 class="trampix-h1">
-            Olá, {{ auth()->user()->name }}! 👋
+            Olá, {{ 
+                (session('active_role') === 'freelancer' && auth()->user()->freelancer?->display_name) 
+                    ? auth()->user()->freelancer->display_name 
+                    : ((session('active_role') === 'company' && auth()->user()->company?->display_name) 
+                        ? auth()->user()->company->display_name 
+                        : auth()->user()->name)
+            }}! 👋
         </h1>
         <p class="text-gray-600 mt-2">
             @if(auth()->user()->isAdmin())
@@ -38,7 +44,7 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">Complete seu perfil</h3>
                     <p class="text-gray-600 mb-6">Para começar a usar o Trampix, você precisa definir seu tipo de perfil.</p>
                     <div class="space-y-3">
-                        <a href="{{ route('register') }}" class="btn-trampix-primary w-full">
+                        <a href="{{ route('profile.selection') }}" class="btn-trampix-primary w-full">
                             Completar Perfil
                         </a>
                     </div>

@@ -25,11 +25,11 @@
                     </label>
                     <input type="text" 
                            id="company_name"
-                           name="name" 
+                           name="display_name" 
                            class="trampix-input w-full" 
                            placeholder="Digite o nome da empresa"
                            required>
-                    @error('name')
+                    @error('display_name')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

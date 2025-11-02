@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ProfileController;
 
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +38,24 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Profile selection and creation routes
+    Route::get('profile-selection', [RegisteredUserController::class, 'profileSelection'])
+        ->name('profile.selection');
+    
+    // GET routes for displaying profile creation forms
+    Route::get('profile/create/freelancer', [ProfileController::class, 'showCreateFreelancer'])
+        ->name('profile.create.freelancer');
+    
+    Route::get('profile/create/company', [ProfileController::class, 'showCreateCompany'])
+        ->name('profile.create.company');
+    
+    // POST routes for processing profile creation
+    Route::post('profile/create/freelancer', [ProfileController::class, 'createFreelancer'])
+        ->name('profile.store.freelancer');
+    
+    Route::post('profile/create/company', [ProfileController::class, 'createCompany'])
+        ->name('profile.store.company');
+
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 

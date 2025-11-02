@@ -44,7 +44,7 @@
     </div>
 
     <!-- Ações Rápidas -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
             <div class="flex items-center">
                 <div class="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
@@ -53,18 +53,6 @@
                 <div>
                     <p class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Buscar Vagas</p>
                     <p class="text-sm text-gray-500">Encontrar novas oportunidades</p>
-                </div>
-            </div>
-        </a>
-
-        <a href="{{ route('applications.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
-            <div class="flex items-center">
-                <div class="bg-purple-100 p-3 rounded-full mr-4 group-hover:bg-purple-200 transition-colors">
-                    <i class="fas fa-clipboard-list text-purple-600 text-xl"></i>
-                </div>
-                <div>
-                    <p class="font-bold text-gray-900 group-hover:text-purple-600 transition-colors">Minhas Aplicações</p>
-                    <p class="text-sm text-gray-500">Acompanhar candidaturas</p>
                 </div>
             </div>
         </a>
@@ -82,95 +70,116 @@
         </a>
     </div>
 
-    <!-- Aplicações Recentes -->
-    @if($freelancer && $freelancer->applications()->exists())
-    <div class="mt-8">
-        <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-            <i class="fas fa-history text-blue-500 mr-2"></i> Aplicações Recentes
-        </h3>
-        <div class="space-y-4">
-            @foreach($freelancer->applications()->with('jobVacancy')->latest()->take(3)->get() as $application)
-            <div class="trampix-card">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-gray-900">{{ $application->jobVacancy->title }}</h4>
-                        <p class="text-sm text-gray-500">{{ $application->jobVacancy->company->name ?? 'Empresa' }}</p>
-                        <div class="flex items-center mt-2 space-x-4">
-                            <span class="text-xs px-2 py-1 rounded-full 
-                                {{ $application->status === 'pending' ? 'bg-orange-100 text-orange-800' : '' }}
-                                {{ $application->status === 'accepted' ? 'bg-green-100 text-green-800' : '' }}
-                                {{ $application->status === 'rejected' ? 'bg-red-100 text-red-800' : '' }}">
-                                @switch($application->status)
-                                    @case('pending') Em Análise @break
-                                    @case('accepted') Aceita @break
-                                    @case('rejected') Rejeitada @break
-                                    @default {{ ucfirst($application->status) }}
-                                @endswitch
-                            </span>
-                            <span class="text-xs text-gray-500">
-                                {{ $application->created_at->diffForHumans() }}
-                            </span>
+    <!-- Grid com os dois novos menus -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <!-- Menu de Aplicações Recentes -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-700 flex items-center">
+                    <i class="fas fa-paper-plane text-blue-500 mr-2"></i> Aplicações Recentes
+                </h3>
+                <a href="{{ route('applications.index') }}" class="btn-trampix-secondary text-sm">
+                    <i class="fas fa-list mr-1"></i> Ver todas
+                </a>
+            </div>
+            
+            @php
+                $recentApplications = $freelancer ? $freelancer->applications()
+                    ->with(['jobVacancy.company'])
+                    ->latest()
+                    ->take(4)
+                    ->get() : collect();
+            @endphp
+            
+            <div class="space-y-3">
+                @forelse($recentApplications as $application)
+                <div class="trampix-card p-4 hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 text-sm">{{ $application->jobVacancy->company->display_name ?? $application->jobVacancy->company->name ?? 'Empresa' }}</h4>
+                            <p class="text-xs text-gray-600 mt-1">{{ $application->jobVacancy->title }}</p>
+                            <div class="flex items-center mt-2 space-x-3">
+                                <span class="text-xs px-2 py-1 rounded-full 
+                                    {{ $application->status === 'pending' ? 'bg-orange-100 text-orange-800' : '' }}
+                                    {{ $application->status === 'accepted' ? 'bg-green-100 text-green-800' : '' }}
+                                    {{ $application->status === 'rejected' ? 'bg-red-100 text-red-800' : '' }}">
+                                    @switch($application->status)
+                                        @case('pending') Em Análise @break
+                                        @case('accepted') Aceita @break
+                                        @case('rejected') Rejeitada @break
+                                        @default {{ ucfirst($application->status) }}
+                                    @endswitch
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    {{ $application->created_at->format('d/m/Y') }}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <a href="{{ route('vagas.show', $application->jobVacancy) }}" class="btn-trampix-secondary text-sm">
-                            Ver Vaga
-                        </a>
-                    </div>
                 </div>
+                @empty
+                <div class="text-center py-8">
+                    <i class="fas fa-paper-plane text-gray-300 text-3xl mb-3"></i>
+                    <p class="text-gray-500 text-sm">Nenhuma aplicação ainda</p>
+                    <a href="{{ route('vagas.index') }}" class="btn-trampix-primary text-sm mt-3">
+                        Buscar Vagas
+                    </a>
+                </div>
+                @endforelse
             </div>
-            @endforeach
         </div>
-    </div>
-    @endif
 
-    <!-- Vagas Recomendadas -->
-    <div class="mt-8">
-        <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-            <i class="fas fa-star text-yellow-500 mr-2"></i> Vagas Recomendadas
-        </h3>
-        <div class="space-y-4">
+        <!-- Menu de Vagas Ativas -->
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-700 flex items-center">
+                    <i class="fas fa-briefcase text-green-500 mr-2"></i> Vagas Ativas
+                </h3>
+                <a href="{{ route('vagas.index') }}" class="btn-trampix-secondary text-sm">
+                    <i class="fas fa-list mr-1"></i> Ver todas
+                </a>
+            </div>
+            
             @php
-                $vagasRecomendadas = \App\Models\JobVacancy::where('status', 'active')
+                $activeJobs = \App\Models\JobVacancy::where('status', 'active')
+                    ->with(['company', 'applications'])
+                    ->withCount('applications')
                     ->latest()
-                    ->take(3)
+                    ->take(4)
                     ->get();
             @endphp
             
-            @forelse($vagasRecomendadas as $vaga)
-            <div class="trampix-card">
-                <div class="flex items-center justify-between">
-                    <div class="flex-1">
-                        <h4 class="font-semibold text-gray-900">{{ $vaga->title }}</h4>
-                        <p class="text-sm text-gray-500">{{ $vaga->company->name ?? 'Empresa' }}</p>
-                        <p class="text-sm text-gray-600 mt-1">{{ Str::limit($vaga->description, 100) }}</p>
-                        <div class="flex items-center mt-2 space-x-4">
-                            <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
-                                {{ $vaga->type ?? 'Remoto' }}
-                            </span>
-                            @if($vaga->salary)
-                            <span class="text-xs text-gray-500">
-                                R$ {{ number_format($vaga->salary, 2, ',', '.') }}
-                            </span>
-                            @endif
+            <div class="space-y-3">
+                @forelse($activeJobs as $job)
+                <div class="trampix-card p-4 hover:shadow-md transition-all duration-300">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-900 text-sm">{{ $job->title }}</h4>
+                            <p class="text-xs text-gray-600 mt-1">{{ $job->company->display_name ?? $job->company->name ?? 'Empresa' }}</p>
+                            <div class="flex items-center mt-2 space-x-3">
+                                <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                    <i class="fas fa-users mr-1"></i>
+                                    {{ $job->applications_count }} candidato{{ $job->applications_count !== 1 ? 's' : '' }}
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    {{ $job->created_at->format('d/m/Y') }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <a href="{{ route('vagas.show', $job) }}" class="btn-trampix-primary text-xs px-3 py-1">
+                                Ver
+                            </a>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <a href="{{ route('vagas.show', $vaga) }}" class="btn-trampix-primary text-sm">
-                            Ver Detalhes
-                        </a>
-                    </div>
                 </div>
+                @empty
+                <div class="text-center py-8">
+                    <i class="fas fa-briefcase text-gray-300 text-3xl mb-3"></i>
+                    <p class="text-gray-500 text-sm">Nenhuma vaga ativa</p>
+                </div>
+                @endforelse
             </div>
-            @empty
-            <div class="text-center py-8">
-                <i class="fas fa-search text-gray-400 text-3xl mb-3"></i>
-                <p class="text-gray-500">Nenhuma vaga disponível no momento</p>
-                <a href="{{ route('vagas.index') }}" class="btn-trampix-primary mt-3">
-                    Explorar Vagas
-                </a>
-            </div>
-            @endforelse
         </div>
     </div>
 </section>

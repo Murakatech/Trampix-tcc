@@ -11,6 +11,7 @@ class Company extends Model
 
     protected $fillable = [
         'user_id',
+        'display_name',
         'name',
         'cnpj',
         'sector',
@@ -43,5 +44,10 @@ class Company extends Model
     public function jobVacancies()
     {
         return $this->hasMany(JobVacancy::class, 'company_id');
+    }
+
+    public function serviceCategories()
+    {
+        return $this->belongsToMany(ServiceCategory::class);
     }
 }

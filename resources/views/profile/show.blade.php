@@ -27,10 +27,10 @@
         // Definir perfil ativo e nome de exibição
         if ($activeRole === 'company' && $company) {
             $activeProfile = $company;
-            $displayName = $company->company_name ?? $user->name;
+            $displayName = $company->display_name ?? $company->company_name ?? $user->name;
         } elseif ($activeRole === 'freelancer' && $freelancer) {
             $activeProfile = $freelancer;
-            $displayName = $user->name;
+            $displayName = $freelancer->display_name ?? $user->name;
         }
     @endphp
 

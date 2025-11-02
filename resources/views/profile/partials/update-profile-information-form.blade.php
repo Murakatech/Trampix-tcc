@@ -7,19 +7,21 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}">
+    <form method="post" action="{{ route('profile.account.update') }}">
         @csrf
         @method('patch')
-        <input type="hidden" name="section" value="account">
 
         <div class="mb-3">
-            <label for="name" class="form-label">Nome</label>
+            <label for="name" class="form-label">Nome Completo</label>
             <input id="name" name="name" type="text" class="form-control @error('name') is-invalid @enderror" 
                    value="{{ old('name', $user->name) }}" required autofocus autocomplete="name">
+            <small class="form-text text-muted">Este é seu nome completo usado na conta.</small>
             @error('name')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
+
+
 
         <div class="mb-3">
             <label for="email" class="form-label">Email</label>

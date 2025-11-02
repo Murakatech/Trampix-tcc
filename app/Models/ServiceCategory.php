@@ -25,4 +25,9 @@ class ServiceCategory extends Model
     {
         return $this->belongsToMany(Freelancer::class);
     }
+
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class);
+    }
 }

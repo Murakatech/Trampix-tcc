@@ -35,39 +35,27 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'user_type' => ['required', 'in:freelancer,company'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->user_type,
+            // role será null por padrão (campo nullable)
         ]);
-
-        // Criar perfil automaticamente baseado no tipo
-        if ($request->user_type === 'company') {
-            Company::create([
-                'user_id' => $user->id,
-                'name' => $user->name,
-                'cnpj' => '',
-                'sector' => '',
-                'location' => '',
-                'description' => '',
-            ]);
-        } elseif ($request->user_type === 'freelancer') {
-            Freelancer::create([
-                'user_id' => $user->id,
-                'bio' => '',
-                'portfolio_url' => '',
-                'cv_url' => '',
-            ]);
-        }
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('profile.selection'));
+    }
+
+    /**
+     * Display the profile selection view.
+     */
+    public function profileSelection(): View
+    {
+        return view('auth.profile-selection');
     }
 }

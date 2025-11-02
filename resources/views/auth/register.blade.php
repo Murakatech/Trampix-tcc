@@ -1,71 +1,148 @@
 <x-guest-layout>
-    <div class="space-y-6">
-        <header class="text-center">
-            <h1 class="text-2xl font-bold text-gray-900">Crie sua conta</h1>
-            <p class="mt-1 text-sm text-gray-600">Cadastre-se para aproveitar todas as funcionalidades</p>
-        </header>
-
-        <form id="register-form" method="POST" action="{{ route('register') }}" class="space-y-4" novalidate>
-            @csrf
-
-            <!-- Name -->
-            <div>
-                <x-input-label for="name" value="Nome" />
-                <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-                <x-input-error :messages="$errors->get('name')" class="mt-2" />
-            </div>
-
-            <!-- Email Address -->
-            <div>
-                <x-input-label for="email" value="Email" />
-                <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-                <x-input-error :messages="$errors->get('email')" class="mt-2" />
-            </div>
-
-            <!-- User Type -->
-            <div>
-                <x-input-label for="user_type" value="Tipo de Usuário" />
-                <select id="user_type" name="user_type" class="block mt-1 w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" required>
-                    <option value="">Selecione o tipo de usuário</option>
-                    <option value="freelancer" {{ old('user_type') == 'freelancer' ? 'selected' : '' }}>
-                        🧑‍💻 Freelancer - Busco trabalhos
-                    </option>
-                    <option value="company" {{ old('user_type') == 'company' ? 'selected' : '' }}>
-                        🏢 Empresa - Publico vagas
-                    </option>
-                </select>
-                <x-input-error :messages="$errors->get('user_type')" class="mt-2" />
-            </div>
-
-            <!-- Password -->
-            <div>
-                <x-input-label for="password" value="Senha" />
-                <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-                <x-input-error :messages="$errors->get('password')" class="mt-2" />
-                <x-password-requirements />
-            </div>
-
-            <!-- Confirm Password -->
-            <div>
-                <x-input-label for="password_confirmation" value="Confirmar Senha" />
-                <x-text-input id="password_confirmation" class="block mt-1 w-full" type="password" name="password_confirmation" required autocomplete="new-password" />
-                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-            </div>
-
-            <div class="flex items-center justify-between pt-2">
-                <a href="{{ route('login') }}" class="btn-trampix-secondary btn-glow px-4 py-2">Entrar</a>
-                <x-primary-button class="btn-trampix-primary btn-glow ms-3 px-4 py-2">
-                    Cadastrar
-                </x-primary-button>
-            </div>
-        </form>
+    <div class="mb-6 text-center">
+        <h1 class="trampix-h1 text-gray-900">Criar Conta</h1>
+        <p class="mt-2 text-sm text-gray-600">
+            Crie sua conta para acessar a plataforma Trampix
+        </p>
     </div>
 
+    <form method="POST" action="{{ route('register') }}" id="registerForm" x-data="{ 
+        name: '',
+        email: '', 
+        password: '', 
+        password_confirmation: '',
+        nameValid: false,
+        emailValid: false,
+        passwordValid: false,
+        passwordMatch: false,
+        showPasswordRequirements: false
+    }">
+        @csrf
+
+        <!-- Name -->
+        <div class="mb-6">
+            <x-input-label for="name" :value="__('Nome Completo')" />
+            <x-text-input 
+                id="name" 
+                class="trampix-input block mt-1 w-full" 
+                type="text" 
+                name="name" 
+                x-model="name"
+                @input="nameValid = name.trim().length >= 2"
+                :value="old('name')" 
+                required 
+                autofocus 
+                autocomplete="name"
+                placeholder="Seu nome completo" />
+            <x-input-error :messages="$errors->get('name')" class="mt-2" />
+            <div x-show="name && !nameValid" class="mt-1 text-sm text-red-600">
+                Por favor, insira seu nome completo (mínimo 2 caracteres)
+            </div>
+        </div>
+
+        <!-- Email Address -->
+        <div class="mb-6">
+            <x-input-label for="email" :value="__('Email')" />
+            <x-text-input 
+                id="email" 
+                class="trampix-input block mt-1 w-full" 
+                type="email" 
+                name="email" 
+                x-model="email"
+                @input="emailValid = $el.validity.valid"
+                :value="old('email')" 
+                required 
+                autocomplete="username"
+                placeholder="seu@email.com" />
+            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <div x-show="email && !emailValid" class="mt-1 text-sm text-red-600">
+                Por favor, insira um email válido
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+            <x-input-label for="password" :value="__('Senha')" />
+            <x-text-input 
+                id="password" 
+                class="trampix-input block mt-1 w-full"
+                type="password"
+                name="password"
+                x-model="password"
+                @focus="showPasswordRequirements = true"
+                @input="passwordValid = password.length >= 8"
+                required 
+                autocomplete="new-password"
+                placeholder="Mínimo 8 caracteres" />
+            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            
+            <!-- Requisitos da senha -->
+            <div x-show="showPasswordRequirements" x-transition class="mt-2 text-sm">
+                <div class="flex items-center space-x-2" :class="passwordValid ? 'text-green-600' : 'text-gray-500'">
+                    <svg class="w-4 h-4" :class="passwordValid ? 'text-green-500' : 'text-gray-400'" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Mínimo 8 caracteres</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="mb-6">
+            <x-input-label for="password_confirmation" :value="__('Confirmar Senha')" />
+            <x-text-input 
+                id="password_confirmation" 
+                class="trampix-input block mt-1 w-full"
+                type="password"
+                name="password_confirmation" 
+                x-model="password_confirmation"
+                @input="passwordMatch = password === password_confirmation && password.length > 0"
+                required 
+                autocomplete="new-password"
+                placeholder="Digite a senha novamente" />
+            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            
+            <div x-show="password_confirmation && !passwordMatch" class="mt-1 text-sm text-red-600">
+                As senhas não coincidem
+            </div>
+            <div x-show="passwordMatch && password_confirmation" class="mt-1 text-sm text-green-600">
+                ✓ Senhas coincidem
+            </div>
+        </div>
+
+        <div class="flex flex-col space-y-4">
+            <button 
+                type="submit" 
+                class="btn-trampix-primary w-full" 
+                id="submitBtn"
+                :disabled="!nameValid || !emailValid || !passwordValid || !passwordMatch"
+                :class="{ 'opacity-50 cursor-not-allowed': !nameValid || !emailValid || !passwordValid || !passwordMatch }">
+                <span id="btnText">{{ __('Criar Conta') }}</span>
+                <div id="spinner" class="hidden">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </button>
+
+            <div class="text-center">
+                <a class="text-sm text-gray-600 hover:text-gray-900 underline transition-colors duration-200" href="{{ route('login') }}">
+                    {{ __('Já tem uma conta? Entrar') }}
+                </a>
+            </div>
+        </div>
+    </form>
+
     <script>
-        // Spinner: rotate brand icon while submitting
-        document.getElementById('register-form')?.addEventListener('submit', function () {
-            const brand = document.getElementById('brand-icon');
-            if (brand) brand.classList.add('icon-spin-slow');
+        document.getElementById('registerForm').addEventListener('submit', function() {
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('spinner');
+            
+            submitBtn.disabled = true;
+            btnText.classList.add('hidden');
+            spinner.classList.remove('hidden');
         });
     </script>
 </x-guest-layout>

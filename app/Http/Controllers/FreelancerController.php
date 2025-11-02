@@ -69,6 +69,7 @@ class FreelancerController extends Controller
         Gate::authorize('canCreateFreelancerProfile');
         
         $validated = $request->validate([
+            'display_name' => 'required|string|min:2|max:255',
             'bio' => 'nullable|string|max:1000',
             'portfolio_url' => 'nullable|url|max:255',
             'phone' => 'nullable|string|max:20',
@@ -87,7 +88,10 @@ class FreelancerController extends Controller
         // Criar perfil freelancer
         $freelancer = auth()->user()->createProfile('freelancer', $validated);
 
-        return redirect()->route('freelancers.edit', $freelancer)
+        // Definir freelancer como perfil ativo
+        session(['active_role' => 'freelancer']);
+
+        return redirect()->route('dashboard')
             ->with('success', 'Perfil de freelancer criado com sucesso!');
     }
 

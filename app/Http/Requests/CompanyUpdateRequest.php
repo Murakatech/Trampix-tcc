@@ -18,7 +18,12 @@ class CompanyUpdateRequest extends FormRequest
     public static function rulesFor(?int $companyId = null): array
     {
         return [
-            'name' => 'required|string|max:255',
+            'display_name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('companies', 'display_name')->ignore($companyId)
+            ],
             'cnpj' => [
                 'nullable',
                 'string',
@@ -32,6 +37,8 @@ class CompanyUpdateRequest extends FormRequest
             'phone' => 'nullable|string|max:20',
             'employees_count' => 'nullable|integer|min:1|max:999999',
             'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
+            'service_categories' => 'nullable|array',
+            'service_categories.*' => 'exists:service_categories,id',
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'is_active' => 'nullable|boolean',
         ];

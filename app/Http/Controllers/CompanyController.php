@@ -52,7 +52,7 @@ class CompanyController extends Controller
         Gate::authorize('canCreateCompanyProfile');
         
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'display_name' => 'required|string|min:2|max:255',
             'cnpj' => 'nullable|string|max:18|unique:companies,cnpj',
             'sector' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:100',
@@ -61,12 +61,30 @@ class CompanyController extends Controller
             'phone' => 'nullable|string|max:20',
             'employees_count' => 'nullable|integer|min:1|max:999999',
             'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
+            'service_categories' => 'nullable|array',
+            'service_categories.*' => 'exists:service_categories,id',
         ]);
+
+        // Mapear display_name para name
+        $validated['name'] = $validated['display_name'];
 
         // Criar perfil empresa
         $company = auth()->user()->createProfile('company', $validated);
 
-        return redirect()->route('companies.edit', $company)
+        // Sincronizar categorias de serviço se fornecidas
+        if (isset($validated['service_categories'])) {
+            $validCategories = \App\Models\ServiceCategory::whereIn('id', $validated['service_categories'])
+                ->where('is_active', true)
+                ->pluck('id')
+                ->toArray();
+            
+            $company->serviceCategories()->sync($validCategories);
+        }
+
+        // Definir empresa como perfil ativo
+        session(['active_role' => 'company']);
+
+        return redirect()->route('dashboard')
             ->with('success', 'Perfil de empresa criado com sucesso!');
     }
 
@@ -96,9 +114,24 @@ class CompanyController extends Controller
             'phone' => 'nullable|string|max:20',
             'employees_count' => 'nullable|integer|min:1|max:999999',
             'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
+            'service_categories' => 'nullable|array',
+            'service_categories.*' => 'exists:service_categories,id',
         ]);
 
         $company->update($validated);
+
+        // Sincronizar categorias de serviço se fornecidas
+        if (isset($validated['service_categories'])) {
+            $validCategories = \App\Models\ServiceCategory::whereIn('id', $validated['service_categories'])
+                ->where('is_active', true)
+                ->pluck('id')
+                ->toArray();
+            
+            $company->serviceCategories()->sync($validCategories);
+        } else {
+            // Se não foram fornecidas categorias, remover todas
+            $company->serviceCategories()->detach();
+        }
 
         return redirect()->route('companies.edit', $company)
             ->with('success', 'Perfil atualizado com sucesso!');
