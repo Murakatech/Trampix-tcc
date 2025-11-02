@@ -59,9 +59,141 @@
                         </ul>
                     </div>
 
-                    <!-- Toggle do Modo Escuro (Direita) -->
-                    <div class="trampix-nav-right d-flex align-items-center">
+                    <!-- Toggle do Modo Escuro e Perfil (Direita) -->
+                    <div class="trampix-nav-right d-flex align-items-center gap-3">
                         <x-dark-mode-toggle />
+                        
+                        @auth
+                            <!-- Perfil Dinâmico -->
+                            <div class="nav-item dropdown position-relative" x-data="{ open: false }">
+                                <button 
+                                    @click="open = !open"
+                                    @click.away="open = false"
+                                    class="trampix-profile-btn d-flex align-items-center gap-2 p-2 border-0 bg-transparent"
+                                    type="button">
+                                    
+                                    <!-- Avatar -->
+                                    <div class="trampix-avatar position-relative">
+                                        @if(auth()->user()->profile_photo_path)
+                                            <img src="{{ auth()->user()->profile_photo_url }}" 
+                                                 alt="Foto de perfil de {{ auth()->user()->display_name }}"
+                                                 class="trampix-avatar-img">
+                                        @else
+                                            <div class="trampix-avatar-placeholder">
+                                                {{ auth()->user()->initials }}
+                                            </div>
+                                        @endif
+                                        
+                                        <!-- Indicador de Status Online -->
+                                        <div class="trampix-status-indicator bg-success"></div>
+                                    </div>
+                                    
+                                    <!-- Informações do Usuário (Desktop) -->
+                                    <div class="trampix-user-info d-none d-md-block text-start">
+                                        <div class="trampix-user-name">{{ auth()->user()->display_name }}</div>
+                                        <div class="trampix-user-role">{{ ucfirst(auth()->user()->active_role) }}</div>
+                                    </div>
+                                    
+                                    <!-- Chevron -->
+                                    <i class="fas fa-chevron-down trampix-chevron" 
+                                       :class="{ 'rotate-180': open }"></i>
+                                </button>
+                                
+                                <!-- Dropdown Menu -->
+                                <div x-show="open"
+                                     x-transition:enter="transition ease-out duration-200"
+                                     x-transition:enter-start="opacity-0 transform scale-95"
+                                     x-transition:enter-end="opacity-100 transform scale-100"
+                                     x-transition:leave="transition ease-in duration-150"
+                                     x-transition:leave-start="opacity-100 transform scale-100"
+                                     x-transition:leave-end="opacity-0 transform scale-95"
+                                     x-cloak
+                                     class="trampix-dropdown-menu">
+                                    
+                                    <!-- Header do Dropdown -->
+                                    <div class="trampix-dropdown-header">
+                                        <div class="d-flex align-items-center gap-3">
+                                            @if(auth()->user()->profile_photo_path)
+                                                <img src="{{ auth()->user()->profile_photo_url }}" 
+                                                     alt="Foto de perfil"
+                                                     class="trampix-dropdown-avatar">
+                                            @else
+                                                <div class="trampix-dropdown-avatar-placeholder">
+                                                    {{ auth()->user()->initials }}
+                                                </div>
+                                            @endif
+                                            
+                                            <div class="flex-grow-1">
+                                                <div class="trampix-dropdown-name">{{ auth()->user()->display_name }}</div>
+                                                <div class="trampix-dropdown-email">{{ auth()->user()->email }}</div>
+                                                <span class="trampix-dropdown-role">{{ ucfirst(auth()->user()->active_role) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Divisor -->
+                                    <div class="trampix-dropdown-divider"></div>
+                                    
+                                    <!-- Itens do Menu -->
+                                    <div class="trampix-dropdown-items">
+                                        <a href="{{ route('profile.edit') }}" class="trampix-dropdown-item">
+                                            <i class="fas fa-user-edit"></i>
+                                            <span>Editar Perfil</span>
+                                        </a>
+                                        
+                                        <a href="{{ route('profile.account') }}" class="trampix-dropdown-item">
+                                            <i class="fas fa-cog"></i>
+                                            <span>Configurações</span>
+                                        </a>
+                                        
+                                        @if(auth()->user()->hasMultipleRoles())
+                                            <div class="trampix-dropdown-divider"></div>
+                                            <div class="px-3 py-2">
+                                                <small class="text-muted fw-bold">TROCAR PERFIL</small>
+                                            </div>
+                                            
+                                            @if(auth()->user()->freelancer && auth()->user()->active_role !== 'freelancer')
+                                                <form method="POST" action="{{ route('profile.switch-role') }}" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="role" value="freelancer">
+                                                    <button type="submit" class="trampix-dropdown-item w-100 border-0 bg-transparent">
+                                                        <i class="fas fa-user"></i>
+                                                        <span>Freelancer</span>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            
+                                            @if(auth()->user()->company && auth()->user()->active_role !== 'company')
+                                                <form method="POST" action="{{ route('profile.switch-role') }}" class="d-inline">
+                                                    @csrf
+                                                    <input type="hidden" name="role" value="company">
+                                                    <button type="submit" class="trampix-dropdown-item w-100 border-0 bg-transparent">
+                                                        <i class="fas fa-building"></i>
+                                                        <span>Empresa</span>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        @endif
+                                        
+                                        <div class="trampix-dropdown-divider"></div>
+                                        
+                                        <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="trampix-dropdown-item w-100 border-0 bg-transparent text-danger">
+                                                <i class="fas fa-sign-out-alt"></i>
+                                                <span>Sair</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            <!-- Botões de Login/Registro para usuários não autenticados -->
+                            <div class="d-flex gap-2">
+                                <a href="{{ route('login') }}" class="btn btn-outline-primary btn-sm">Entrar</a>
+                                <a href="{{ route('register') }}" class="btn btn-primary btn-sm">Cadastrar</a>
+                            </div>
+                        @endauth
                     </div>
 
                 </div>

@@ -4,6 +4,18 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="user-authenticated" content="{{ auth()->check() ? 'true' : 'false' }}">
+    <meta name="app-debug" content="{{ config('app.debug') ? 'true' : 'false' }}">
+    @auth
+    <meta name="user-data" content="{{ json_encode([
+        'id' => auth()->id(),
+        'name' => auth()->user()->name,
+        'email' => auth()->user()->email,
+        'role' => auth()->user()->isAdmin() ? 'admin' : (auth()->user()->isCompany() ? 'company' : 'freelancer'),
+        'permissions' => [], // Expandir conforme necessário
+        'profile_photo' => auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : null
+    ]) }}">
+    @endauth
 
         <title>{{ config('app.name', 'Trampix') }}</title>
 

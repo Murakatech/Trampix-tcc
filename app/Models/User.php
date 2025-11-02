@@ -90,6 +90,26 @@ class User extends Authenticatable
         return null;
     }
 
+    // Método para verificar se o usuário tem múltiplos perfis
+    public function hasMultipleRoles()
+    {
+        $rolesCount = 0;
+        
+        if ($this->isFreelancer()) {
+            $rolesCount++;
+        }
+        
+        if ($this->isCompany()) {
+            $rolesCount++;
+        }
+        
+        if ($this->isAdmin()) {
+            $rolesCount++;
+        }
+        
+        return $rolesCount > 1;
+    }
+
     /**
      * Send the password reset notification.
      */

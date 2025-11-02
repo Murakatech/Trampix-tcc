@@ -111,33 +111,66 @@
                         @csrf
                         
                         <div>
-                            <label for="display_name" class="block text-sm font-medium text-purple-100 mb-2">Nome Público do Perfil</label>
-                            <input type="text" id="display_name" name="display_name" value="{{ old('display_name') }}" required class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Como você quer ser conhecido">
+                            <label for="display_name" class="block text-sm font-medium text-purple-100 mb-2">Nome Profissional *</label>
+                            <input type="text" id="display_name" name="display_name" value="{{ old('display_name') }}" required class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Como você quer ser conhecido profissionalmente">
+                            @error('display_name')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
-                            <label for="bio" class="block text-sm font-medium text-purple-100 mb-2">Bio</label>
-                            <textarea id="bio" name="bio" rows="3" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Conte sobre sua experiência...">{{ old('bio') }}</textarea>
+                            <label for="bio" class="block text-sm font-medium text-purple-100 mb-2">Biografia Profissional *</label>
+                            <textarea id="bio" name="bio" rows="3" required class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Descreva sua experiência, habilidades e especialidades (mínimo 30 caracteres)">{{ old('bio') }}</textarea>
+                            @error('bio')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
                             <label for="portfolio_url" class="block text-sm font-medium text-purple-100 mb-2">URL do Portfólio</label>
                             <input type="url" id="portfolio_url" name="portfolio_url" value="{{ old('portfolio_url') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://meuportfolio.com">
+                            @error('portfolio_url')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
                             <label for="phone" class="block text-sm font-medium text-purple-100 mb-2">Telefone</label>
                             <input type="text" id="phone" name="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="(11) 99999-9999">
+                            @error('phone')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
                             <label for="location" class="block text-sm font-medium text-purple-100 mb-2">Localização</label>
                             <input type="text" id="location" name="location" value="{{ old('location') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="São Paulo, SP">
+                            @error('location')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
                             <label for="hourly_rate" class="block text-sm font-medium text-purple-100 mb-2">Valor por Hora (R$)</label>
                             <input type="number" step="0.01" min="0" id="hourly_rate" name="hourly_rate" value="{{ old('hourly_rate') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="50.00">
+                            @error('hourly_rate')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div>
+                            <label for="availability" class="block text-sm font-medium text-purple-100 mb-2">Disponibilidade</label>
+                            <select id="availability" name="availability" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50">
+                                <option value="">Selecione sua disponibilidade</option>
+                                <option value="full_time" {{ old('availability') == 'full_time' ? 'selected' : '' }}>Tempo Integral</option>
+                                <option value="part_time" {{ old('availability') == 'part_time' ? 'selected' : '' }}>Meio Período</option>
+                                <option value="project_based" {{ old('availability') == 'project_based' ? 'selected' : '' }}>Por Projeto</option>
+                                <option value="hourly" {{ old('availability') == 'hourly' ? 'selected' : '' }}>Por Hora</option>
+                                <option value="weekends" {{ old('availability') == 'weekends' ? 'selected' : '' }}>Fins de Semana</option>
+                            </select>
+                            @error('availability')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div class="flex space-x-4 pt-4">
@@ -253,28 +286,43 @@
                         @csrf
                         
                         <div>
-                            <label for="display_name" class="block text-sm font-medium text-green-100 mb-2">Nome da Empresa</label>
+                            <label for="display_name" class="block text-sm font-medium text-green-100 mb-2">Nome da Empresa *</label>
                             <input type="text" id="display_name" name="display_name" value="{{ old('display_name') }}" required class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Como sua empresa será exibida">
+                            @error('display_name')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
-                            <label for="description" class="block text-sm font-medium text-green-100 mb-2">Descrição</label>
-                            <textarea id="description" name="description" rows="3" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Descreva sua empresa...">{{ old('description') }}</textarea>
+                            <label for="description" class="block text-sm font-medium text-green-100 mb-2">Descrição *</label>
+                            <textarea id="description" name="description" rows="3" required class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Descreva sua empresa e suas atividades (mínimo 30 caracteres)">{{ old('description') }}</textarea>
+                            @error('description')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
                             <label for="website" class="block text-sm font-medium text-green-100 mb-2">Website</label>
                             <input type="url" id="website" name="website" value="{{ old('website') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://minhaempresa.com">
+                            @error('website')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
                             <label for="phone" class="block text-sm font-medium text-green-100 mb-2">Telefone</label>
                             <input type="text" id="phone" name="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="(11) 3333-4444">
+                            @error('phone')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div>
                             <label for="employees_count" class="block text-sm font-medium text-green-100 mb-2">Número de Funcionários</label>
                             <input type="number" min="1" id="employees_count" name="employees_count" value="{{ old('employees_count') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="10">
+                            @error('employees_count')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Categorias de Serviços -->
@@ -298,6 +346,9 @@
                                 @endforeach
                             </div>
                             <p class="text-xs text-green-200 mt-2">Selecione as áreas em que sua empresa atua</p>
+                            @error('service_categories')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
                         </div>
                         
                         <div class="flex space-x-4 pt-4">

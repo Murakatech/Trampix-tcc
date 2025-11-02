@@ -35,12 +35,14 @@ class AuthServiceProvider extends ServiceProvider
             return $user->role === 'admin';
         });
 
-        // Gates para verificar se pode criar perfis
+        // Gates para verificar se pode criar perfis - Permite múltiplos perfis
         Gate::define('canCreateFreelancerProfile', function ($user) {
+            // Admins podem sempre criar, usuários podem criar se não tiverem perfil freelancer ativo
             return $user->isAdmin() || !$user->hasActiveProfile('freelancer');
         });
 
         Gate::define('canCreateCompanyProfile', function ($user) {
+            // Admins podem sempre criar, usuários podem criar se não tiverem perfil empresa ativo
             return $user->isAdmin() || !$user->hasActiveProfile('company');
         });
 

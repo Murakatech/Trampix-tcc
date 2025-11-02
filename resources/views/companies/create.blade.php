@@ -15,9 +15,10 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <x-input-label for="name" :value="__('Nome da Empresa')" />
-                                    <x-text-input id="name" name="name" type="text" class="form-control" :value="old('name')" required placeholder="Minha Empresa Ltda" />
-                                    <x-input-error :messages="$errors->get('name')" class="mt-2" />
+                                    <x-input-label for="display_name" :value="__('Nome da Empresa')" />
+                                    <x-text-input id="display_name" name="display_name" type="text" class="form-control" :value="old('display_name')" required placeholder="Minha Empresa Ltda" />
+                                    <div class="form-text">Nome que será exibido publicamente</div>
+                                    <x-input-error :messages="$errors->get('display_name')" class="mt-2" />
                                 </div>
 
                                 <div class="mb-3">

@@ -117,6 +117,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/photo/upload', [ProfilePhotoController::class, 'upload'])->name('profile.photo.upload');
     Route::delete('/profile/photo/delete', [ProfilePhotoController::class, 'delete'])->name('profile.photo.delete');
     
+    // API para atualização dinâmica de perfil
+    Route::get('/api/profile/check-updates', [ProfilePhotoController::class, 'checkUpdates'])->name('api.profile.check-updates');
+    Route::get('/api/profile/data', [ProfilePhotoController::class, 'getProfileData'])->name('api.profile.data');
+    
     // Rotas para imagens de perfil (freelancer e empresa)
     Route::patch('/profile/image', [ProfileController::class, 'updateImage'])->name('profile.image.update');
     Route::delete('/profile/image', [ProfileController::class, 'deleteImage'])->name('profile.image.delete');
