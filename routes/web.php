@@ -171,6 +171,9 @@ Route::middleware(['auth'])->group(function () {
 
 // Rotas administrativas
 Route::middleware(['auth', 'can:isAdmin'])->group(function () {
+    Route::get('/admin', function () {
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
     Route::get('/admin/freelancers', [FreelancerController::class, 'index'])->name('admin.freelancers');
     Route::get('/admin/companies', [CompanyController::class, 'index'])->name('admin.companies');
     Route::get('/admin/applications', [ApplicationController::class, 'adminIndex'])->name('admin.applications');

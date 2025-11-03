@@ -85,14 +85,20 @@ class JobVacancyController extends Controller
     // Form de criação (somente logado + company)
     public function create()
     {
-        if (! Gate::allows('isCompany')) abort(403);
+        // Permitir acesso para Empresa OU Admin
+        if (! (Gate::allows('isCompany') || Gate::allows('isAdmin'))) {
+            abort(403);
+        }
         return view('vagas.create');
     }
 
     // Salva vaga
     public function store(Request $req)
     {
-        if (! Gate::allows('isCompany')) abort(403);
+        // Permitir criação por Empresa OU Admin
+        if (! (Gate::allows('isCompany') || Gate::allows('isAdmin'))) {
+            abort(403);
+        }
 
         $data = $req->validate([
             'title'         => 'required|string|max:255',
@@ -104,10 +110,15 @@ class JobVacancyController extends Controller
             'salary_range'  => 'nullable|string|max:100',
         ]);
 
-        $company = Company::firstOrCreate(
-            ['user_id' => Auth::id()],
-            ['name'    => Auth::user()->name]
-        );
+        // Para Admin, permitir especificar company_id via request; se não houver, criar/usar perfil vinculado ao usuário
+        if (Gate::allows('isAdmin') && $req->filled('company_id')) {
+            $company = Company::findOrFail($req->input('company_id'));
+        } else {
+            $company = Company::firstOrCreate(
+                ['user_id' => Auth::id()],
+                ['name'    => Auth::user()->name]
+            );
+        }
 
         $data['company_id'] = $company->id;
 
