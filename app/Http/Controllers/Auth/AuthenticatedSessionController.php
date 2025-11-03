@@ -30,39 +30,28 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
         
-        // Detecta perfis disponíveis
+        // Admins não precisam de seleção de perfil nem criação de perfis
+        if ($user->isAdmin()) {
+            return redirect()->intended(route('dashboard', absolute: false));
+        }
+
+        // Determinar redirecionamento baseado nos perfis do usuário
         $hasFreelancer = $user->isFreelancer();
         $hasCompany = $user->isCompany();
-        
-        // Se não tem nenhum perfil ativo, vai para seleção de perfil
+        $activeRole = session('active_role');
+
+        // Se não tem nenhum perfil, redirecionar para seleção de perfil (criação)
         if (!$hasFreelancer && !$hasCompany) {
             return redirect()->route('profile.selection');
         }
-        
-        // Se tem apenas um perfil, define automaticamente na sessão
-        if ($hasFreelancer && !$hasCompany) {
-            $request->session()->put('active_role', 'freelancer');
-            return redirect()->intended(route('dashboard', absolute: false));
+
+        // Se tem ambos os perfis mas não tem active_role na sessão, redirecionar para seleção de papel
+        if ($hasFreelancer && $hasCompany && !$activeRole) {
+            return redirect()->route('select-role.show');
         }
-        
-        if ($hasCompany && !$hasFreelancer) {
-            $request->session()->put('active_role', 'company');
-            return redirect()->intended(route('dashboard', absolute: false));
-        }
-        
-        // Se tem ambos os perfis, verifica se já tem um ativo na sessão
-        if ($request->session()->has('active_role')) {
-            $activeRole = $request->session()->get('active_role');
-            
-            // Valida se o perfil ativo ainda existe
-            if (($activeRole === 'freelancer' && $hasFreelancer) || 
-                ($activeRole === 'company' && $hasCompany)) {
-                return redirect()->intended(route('dashboard', absolute: false));
-            }
-        }
-        
-        // Se tem ambos os perfis e não tem sessão ativa, vai para dashboard
-        return redirect()->route('dashboard');
+
+        // Se tem active_role válido ou apenas um perfil, redirecionar para dashboard
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**

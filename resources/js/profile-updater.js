@@ -91,7 +91,7 @@ class ProfileUpdater {
         this.elements.navbarAvatar = document.querySelector('.trampix-avatar-img, .trampix-avatar-placeholder');
         
         // Sidebar avatars
-        this.elements.sidebarAvatar = document.querySelector('aside img[alt="Avatar"], aside .avatar-placeholder');
+        this.elements.sidebarAvatar = document.querySelector('aside .trampix-avatar-img, aside .trampix-avatar-placeholder, aside img[alt="Avatar"], aside .avatar-placeholder');
         
         // Dropdown avatars
         this.elements.dropdownAvatar = document.querySelector('.trampix-dropdown-avatar, .trampix-dropdown-avatar-placeholder');
@@ -403,14 +403,19 @@ class ProfileUpdater {
             if (data.has_photo && data.photo_url) {
                 // Tem foto - criar/atualizar img
                 if (element.tagName === 'IMG') {
-                    element.src = data.photo_url;
+                    element.src = this.getCacheBustedUrl(data.photo_url);
                     element.alt = `Foto de perfil de ${data.display_name}`;
+                    // garantir classe padrão
+                    if (!element.classList.contains('trampix-avatar-img')) {
+                        element.classList.add('trampix-avatar-img');
+                    }
                 } else {
                     // Converter placeholder para img
                     const img = document.createElement('img');
-                    img.src = data.photo_url;
+                    img.src = this.getCacheBustedUrl(data.photo_url);
                     img.alt = `Foto de perfil de ${data.display_name}`;
-                    img.className = element.className.replace('placeholder', 'img');
+                    img.className = (element.className || '').replace('placeholder', 'img');
+                    img.classList.add('trampix-avatar-img');
                     element.parentNode.replaceChild(img, element);
                 }
             } else {
@@ -418,12 +423,16 @@ class ProfileUpdater {
                 if (element.tagName === 'IMG') {
                     // Converter img para placeholder
                     const placeholder = document.createElement('div');
-                    placeholder.className = element.className.replace('img', 'placeholder');
+                    placeholder.className = (element.className || '').replace('img', 'placeholder');
+                    placeholder.classList.add('trampix-avatar-placeholder');
                     placeholder.textContent = data.initials;
                     element.parentNode.replaceChild(placeholder, element);
                 } else {
                     // Atualizar placeholder existente
                     element.textContent = data.initials;
+                    if (!element.classList.contains('trampix-avatar-placeholder')) {
+                        element.classList.add('trampix-avatar-placeholder');
+                    }
                 }
             }
         });
@@ -438,7 +447,8 @@ class ProfileUpdater {
         }
         
         if (this.elements.userInfo.role) {
-            this.elements.userInfo.role.textContent = this.formatRole(data.role);
+            const role = data.active_role || data.role;
+            this.elements.userInfo.role.textContent = this.formatRole(role);
         }
         
         if (this.elements.userInfo.email) {
@@ -455,6 +465,23 @@ class ProfileUpdater {
         // Implementar atualização dinâmica do menu
         // Esta funcionalidade pode ser expandida conforme necessário
         this.log('Menu items:', data.menu_items);
+    }
+
+    /**
+     * Gera URL com cache busting baseado em Last-Modified
+     */
+    getCacheBustedUrl(url) {
+        try {
+            const u = new URL(url, window.location.origin);
+            const ts = this.state?.lastModified || Date.now();
+            u.searchParams.set('_ts', ts);
+            return u.toString();
+        } catch (e) {
+            // Fallback seguro se URL for relativa simples
+            const sep = url.includes('?') ? '&' : '?';
+            const ts = this.state?.lastModified || Date.now();
+            return `${url}${sep}_ts=${encodeURIComponent(ts)}`;
+        }
     }
 
     /**

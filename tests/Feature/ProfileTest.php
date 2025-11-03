@@ -13,9 +13,17 @@ class ProfileTest extends TestCase
     public function test_profile_page_is_displayed(): void
     {
         $user = User::factory()->create();
+        
+        // Criar perfil freelancer para o usuário
+        \App\Models\Freelancer::create([
+            'user_id' => $user->id,
+            'bio' => 'Test bio',
+            'is_active' => true,
+        ]);
 
         $response = $this
             ->actingAs($user)
+            ->withSession(['active_role' => 'freelancer'])
             ->get('/profile');
 
         $response->assertOk();

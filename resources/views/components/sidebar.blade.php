@@ -193,6 +193,7 @@
                     class="ml-3 font-medium whitespace-nowrap overflow-hidden">Candidaturas</span>
             </a>
 
+            @can('isAdmin')
             <a href="{{ route('admin.vagas.create') }}" 
                class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('admin.vagas.create') ? 'bg-purple-100 text-purple-600' : '' }}">
                 <i class="fa-solid fa-plus text-lg flex-shrink-0"></i>
@@ -206,9 +207,11 @@
                     x-transition:leave-end="opacity-0"
                     class="ml-3 font-medium whitespace-nowrap overflow-hidden">Criar Vaga</span>
             </a>
+            @endcan
 
-            <a href="{{ route('admin.vagas.index') }}" 
-               class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duration-200 {{ request()->routeIs('admin.vagas.index') ? 'bg-purple-100 text-purple-600' : '' }}">
+            @can('isCompany')
+            <a href="{{ route('company.vagas.index') }}" 
+               class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 hover:bg-purple-50 hover:text-purple-600 transition-colors duração-200 {{ request()->routeIs('company.vagas.index') ? 'bg-purple-100 text-purple-600' : '' }}">
                 <i class="fa-solid fa-briefcase text-lg flex-shrink-0"></i>
                 <span 
                     x-show="expanded"
@@ -220,6 +223,7 @@
                     x-transition:leave-end="opacity-0"
                     class="ml-3 font-medium whitespace-nowrap overflow-hidden">Gerenciar Vagas</span>
             </a>
+            @endcan
         @endif
 
 

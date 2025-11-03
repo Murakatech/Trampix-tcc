@@ -94,6 +94,11 @@ Route::get('/profiles/{user}', [ProfileController::class, 'show'])->name('profil
 
 // Perfil / dashboard
 Route::middleware('auth')->group(function () {
+    // Tela de seleção de perfil e troca
+    \App\Http\Controllers\Auth\RoleSelectionController::class; // ensure class reference exists for static analysis
+    Route::get('/select-role', [\App\Http\Controllers\Auth\RoleSelectionController::class, 'show'])->name('select-role.show');
+    Route::post('/select-role', [\App\Http\Controllers\Auth\RoleSelectionController::class, 'select'])->name('select-role.select');
+    Route::post('/switch-role', [\App\Http\Controllers\Auth\RoleSelectionController::class, 'switch'])->name('select-role.switch');
     // Nova rota para configurações de conta
     Route::get('/profile/account', [ProfileController::class, 'account'])->name('profile.account');
     Route::patch('/profile/account', [ProfileController::class, 'updateAccount'])->name('profile.account.update');
@@ -169,6 +174,9 @@ Route::middleware(['auth', 'can:isAdmin'])->group(function () {
     Route::get('/admin/freelancers', [FreelancerController::class, 'index'])->name('admin.freelancers');
     Route::get('/admin/companies', [CompanyController::class, 'index'])->name('admin.companies');
     Route::get('/admin/applications', [ApplicationController::class, 'adminIndex'])->name('admin.applications');
+    // Rota específica para admins criarem vagas
+    Route::get('/admin/vagas/create', [JobVacancyController::class, 'create'])
+        ->name('admin.vagas.create');
 });
 
 require __DIR__.'/auth.php';

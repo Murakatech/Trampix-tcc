@@ -11,7 +11,7 @@
     <div class="p-4 border-b">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <img class="h-10 w-10 rounded-full object-cover" 
+                <img class="h-10 w-10 rounded-full object-cover trampix-avatar-img" 
                      src="{{ Auth::user()->profile_photo_url ?? asset('images/avatar-placeholder.png') }}" 
                      alt="Avatar">
                 <div class="leading-tight">
@@ -25,8 +25,8 @@
                             $displayName = Auth::user()->company->display_name ?? Auth::user()->name;
                         }
                     @endphp
-                    <div class="font-semibold text-gray-900">{{ $displayName }}</div>
-                    <div class="text-xs text-gray-500 capitalize">{{ session('active_role') ?? Auth::user()->role }}</div>
+                    <div class="font-semibold text-gray-900 trampix-user-name">{{ $displayName }}</div>
+                    <div class="text-xs text-gray-500 capitalize trampix-user-role">{{ session('active_role') ?? Auth::user()->role }}</div>
                 </div>
             </div>
             <!-- Botão de colapso desktop -->

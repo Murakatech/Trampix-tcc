@@ -133,4 +133,67 @@ class User extends Authenticatable
         
         return null;
     }
+
+    /**
+     * URL pública para a foto de perfil do perfil ativo
+     */
+    public function getProfilePhotoUrlAttribute()
+    {
+        $path = $this->profile_photo_path;
+        if (!$path) {
+            return null;
+        }
+
+        // Sempre servir do disco "public"
+        return asset('storage/' . ltrim($path, '/'));
+    }
+
+    /**
+     * Nome de exibição dinâmico baseado no perfil ativo
+     */
+    public function getDisplayNameAttribute($value)
+    {
+        // Se houver um nome salvo diretamente no usuário, mantém como fallback
+        $fallback = $value ?: $this->attributes['name'] ?? null;
+
+        $activeRole = session('active_role');
+        if ($activeRole === 'freelancer' && $this->freelancer) {
+            return $this->freelancer->display_name ?: $fallback;
+        }
+
+        if ($activeRole === 'company' && $this->company) {
+            return $this->company->display_name ?: $fallback;
+        }
+
+        return $fallback;
+    }
+
+    /**
+     * Iniciais para placeholder do avatar, derivadas do nome de exibição
+     */
+    public function getInitialsAttribute()
+    {
+        $name = $this->display_name ?: ($this->attributes['name'] ?? '');
+        $name = trim($name);
+        if ($name === '') {
+            // Fallback para parte antes do @ do email
+            $email = $this->attributes['email'] ?? '';
+            $base = $email ? explode('@', $email)[0] : '';
+            $name = $base ?: 'U';
+        }
+
+        // Pega as primeiras letras de até duas palavras
+        $parts = preg_split('/\s+/', $name);
+        $initials = '';
+        foreach ($parts as $part) {
+            if ($part !== '') {
+                $initials .= mb_strtoupper(mb_substr($part, 0, 1));
+            }
+            if (mb_strlen($initials) >= 2) {
+                break;
+            }
+        }
+
+        return $initials ?: 'U';
+    }
 }

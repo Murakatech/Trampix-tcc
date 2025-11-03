@@ -17,6 +17,23 @@
             {{-- Formulário --}}
             <form method="POST" action="{{ route('freelancers.store') }}" class="space-y-4">
                 @csrf
+                {{-- Nome Profissional --}}
+                <div>
+                    <label for="freelancer_display_name" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nome Profissional *
+                    </label>
+                    <input type="text"
+                           id="freelancer_display_name"
+                           name="display_name"
+                           class="trampix-input w-full"
+                           placeholder="Como você quer ser conhecido profissionalmente"
+                           value="{{ old('display_name') }}"
+                           required>
+                    <p class="text-sm text-gray-600 mt-1">Este nome será exibido em seu perfil e candidaturas.</p>
+                    @error('display_name')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
                 
                 {{-- Biografia --}}
                 <div>

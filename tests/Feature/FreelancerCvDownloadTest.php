@@ -8,6 +8,7 @@ use App\Models\Company;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use Illuminate\Support\Str;
 
 class FreelancerCvDownloadTest extends TestCase
 {
@@ -39,7 +40,13 @@ class FreelancerCvDownloadTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('content-disposition');
-        $this->assertStringContainsString('CV_' . $user->name . '.pdf', $response->headers->get('content-disposition'));
+        $header = $response->headers->get('content-disposition');
+        $encoded = rawurlencode('CV_' . $user->name . '.pdf');
+        $ascii = 'CV_' . Str::ascii($user->name) . '.pdf';
+        $this->assertTrue(
+            str_contains($header, $encoded) || str_contains($header, $ascii),
+            'Content-Disposition must include the UTF-8 encoded filename* or the ASCII fallback'
+        );
     }
 
     public function test_company_user_can_download_freelancer_cv()
@@ -61,7 +68,13 @@ class FreelancerCvDownloadTest extends TestCase
 
         $response->assertOk();
         $response->assertHeader('content-disposition');
-        $this->assertStringContainsString('CV_' . $freelancerOwner->name . '.pdf', $response->headers->get('content-disposition'));
+        $header = $response->headers->get('content-disposition');
+        $encoded = rawurlencode('CV_' . $freelancerOwner->name . '.pdf');
+        $ascii = 'CV_' . Str::ascii($freelancerOwner->name) . '.pdf';
+        $this->assertTrue(
+            str_contains($header, $encoded) || str_contains($header, $ascii),
+            'Content-Disposition must include the UTF-8 encoded filename* or the ASCII fallback'
+        );
     }
 
     public function test_other_freelancer_cannot_download_cv()

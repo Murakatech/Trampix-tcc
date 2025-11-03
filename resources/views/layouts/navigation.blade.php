@@ -74,7 +74,11 @@
                                     
                                     <!-- Avatar -->
                                     <div class="trampix-avatar position-relative">
-                                        @if(auth()->user()->profile_photo_path)
+                                        @php
+                                            $photoPath = auth()->user()->profile_photo_path;
+                                            $hasPhoto = $photoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($photoPath);
+                                        @endphp
+                                        @if($hasPhoto)
                                             <img src="{{ auth()->user()->profile_photo_url }}" 
                                                  alt="Foto de perfil de {{ auth()->user()->display_name }}"
                                                  class="trampix-avatar-img">
@@ -91,7 +95,7 @@
                                     <!-- Informações do Usuário (Desktop) -->
                                     <div class="trampix-user-info d-none d-md-block text-start">
                                         <div class="trampix-user-name">{{ auth()->user()->display_name }}</div>
-                                        <div class="trampix-user-role">{{ ucfirst(auth()->user()->active_role) }}</div>
+                                        <div class="trampix-user-role">{{ ucfirst(session('active_role')) }}</div>
                                     </div>
                                     
                                     <!-- Chevron -->
@@ -113,7 +117,11 @@
                                     <!-- Header do Dropdown -->
                                     <div class="trampix-dropdown-header">
                                         <div class="d-flex align-items-center gap-3">
-                                            @if(auth()->user()->profile_photo_path)
+                                            @php
+                                                $photoPath = auth()->user()->profile_photo_path;
+                                                $hasPhoto = $photoPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($photoPath);
+                                            @endphp
+                                            @if($hasPhoto)
                                                 <img src="{{ auth()->user()->profile_photo_url }}" 
                                                      alt="Foto de perfil"
                                                      class="trampix-dropdown-avatar">
@@ -126,7 +134,7 @@
                                             <div class="flex-grow-1">
                                                 <div class="trampix-dropdown-name">{{ auth()->user()->display_name }}</div>
                                                 <div class="trampix-dropdown-email">{{ auth()->user()->email }}</div>
-                                                <span class="trampix-dropdown-role">{{ ucfirst(auth()->user()->active_role) }}</span>
+                                                <span class="trampix-dropdown-role">{{ ucfirst(session('active_role')) }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -243,7 +251,9 @@
 }
 
 .trampix-nav-center {
-    flex: 1;
+    /* Permite que o centro da navbar se ajuste e não force overflow */
+    flex: 1 1 auto;
+    min-width: 0;
     justify-content: center;
     max-width: 600px;
     margin: 0 auto;
@@ -583,6 +593,31 @@
     
     .trampix-dropdown-name {
         font-size: 15px;
+    }
+}
+
+/* Evita que itens da navbar "vazem" para fora em telas médias/grandes */
+@media (min-width: 992px) {
+    .trampix-nav-center .navbar-nav {
+        flex-wrap: wrap; /* permite quebrar linha quando há muitos itens */
+        gap: 0.75rem; /* espaço mais compacto entre itens */
+    }
+    /* reduz um pouco o padding dos links para caber mais itens */
+    .trampix-nav-link {
+        padding: 0.4rem 0.75rem;
+    }
+}
+
+@media (min-width: 992px) and (max-width: 1200px) {
+    .trampix-nav-center {
+        max-width: 100%; /* libera mais largura para os itens em telas menores */
+    }
+    .trampix-nav-center .navbar-nav {
+        gap: 0.5rem !important;
+    }
+    .trampix-nav-link {
+        padding: 0.35rem 0.6rem;
+        font-size: 0.95rem;
     }
 }
 

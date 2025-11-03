@@ -49,4 +49,11 @@ class CompanyUpdateRequest extends FormRequest
         $companyId = $this->user()?->company?->id;
         return self::rulesFor($companyId);
     }
+
+    public function attributes(): array
+    {
+        return [
+            'display_name' => 'name',
+        ];
+    }
 }

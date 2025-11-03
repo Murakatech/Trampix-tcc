@@ -109,7 +109,7 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900">Bem-vindo de volta, {{ ucwords($freelancer->user->name) }}!</h2>
+                <h2 class="text-2xl font-bold text-gray-900">Bem-vindo de volta, <span class="trampix-user-name">{{ ucwords($freelancer->display_name ?? $freelancer->user->name) }}</span>!</h2>
                 <p class="text-gray-600 mt-1">Aqui está um resumo das suas atividades recentes</p>
             </div>
             <div class="flex items-center space-x-4">

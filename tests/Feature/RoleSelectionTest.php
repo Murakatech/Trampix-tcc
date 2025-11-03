@@ -106,9 +106,9 @@ class RoleSelectionTest extends TestCase
     }
 
     /**
-     * Teste: Usuário sem perfis redireciona para dashboard padrão
+     * Teste: Usuário sem perfis é redirecionado para seleção de perfil
      */
-    public function test_user_without_profiles_redirects_to_default_dashboard(): void
+    public function test_user_without_profiles_redirects_to_profile_selection(): void
     {
         // Criar usuário sem perfis
         $user = User::factory()->create();
@@ -119,8 +119,8 @@ class RoleSelectionTest extends TestCase
             'password' => 'password',
         ]);
 
-        // Verificar redirecionamento para dashboard padrão
-        $response->assertRedirect('/dashboard');
+        // Verificar redirecionamento para seleção de perfil (criação)
+        $response->assertRedirect('/profile-selection');
         
         // Verificar que active_role não foi definido na sessão
         $this->assertNull(session('active_role'));

@@ -95,9 +95,9 @@ class ProfileController extends Controller
         $user = $request->user();
         $activeRole = session('active_role');
         
-        // Se não há active_role definido, redirecionar para dashboard
+        // Se não há active_role definido, redirecionar para seleção de perfil
         if (!$activeRole) {
-            return redirect()->route('dashboard');
+            return redirect()->route('select-role.show');
         }
         
         // Carregar ambos os perfis para exibição correta na view
@@ -156,6 +156,7 @@ class ProfileController extends Controller
     public function update(Request $request): RedirectResponse
     {
         $user = $request->user();
+        $section = $request->input('section');
         $activeRole = session('active_role');
         
         // Verificar se é criação de novo perfil via modal
@@ -167,11 +168,27 @@ class ProfileController extends Controller
             return $this->createFreelancerProfile($request);
         }
         
-        if (!$activeRole) {
+        // Se é uma atualização de informações básicas da conta (sem section específica)
+        if (!$section || $section === 'account') {
+            $validated = $request->validate(\App\Http\Requests\AccountUpdateRequest::rulesFor($user->id));
+
+            $user->fill($validated);
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+            $user->save();
+
+            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        }
+        
+        // Se a section é especificada, usar ela ao invés do activeRole
+        $targetRole = $section ?: $activeRole;
+        
+        if (!$targetRole) {
             return redirect()->route('dashboard');
         }
 
-        if ($activeRole === 'freelancer') {
+        if ($targetRole === 'freelancer') {
             // Autorizações: criar/editar
             $freelancer = $user->freelancer;
             if ($freelancer) {
@@ -188,8 +205,7 @@ class ProfileController extends Controller
                 if ($request->boolean('remove_cv') && $freelancer->cv_url) {
                     \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_url);
                     $validated['cv_url'] = null;
-                }
-                if ($request->hasFile('cv')) {
+                } elseif ($request->hasFile('cv')) {
                     if ($freelancer->cv_url) {
                         \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_url);
                     }
@@ -227,7 +243,7 @@ class ProfileController extends Controller
             return Redirect::route('profile.edit')->with('success', 'Perfil de freelancer atualizado com sucesso!');
         }
 
-        if ($activeRole === 'company') {
+        if ($targetRole === 'company') {
             $company = $user->company;
             if ($company) {
                 // Usar Policy padrão para atualização
@@ -239,17 +255,33 @@ class ProfileController extends Controller
             // Preparar dados para validação, tratando URLs inválidas
             $requestData = $request->all();
             
-            // Se o website existe mas é inválido, remover para evitar erro de validação
-            if (isset($requestData['website']) && !empty($requestData['website'])) {
-                if (!filter_var($requestData['website'], FILTER_VALIDATE_URL)) {
-                    $requestData['website'] = null;
-                }
+            // Mapear name para display_name se name foi enviado
+            if (isset($requestData['name']) && !isset($requestData['display_name'])) {
+                $requestData['display_name'] = $requestData['name'];
             }
+            
+            // Não remover website inválido - deixar a validação capturar o erro
+            // if (isset($requestData['website']) && !empty($requestData['website'])) {
+            //     if (!filter_var($requestData['website'], FILTER_VALIDATE_URL)) {
+            //         $requestData['website'] = null;
+            //     }
+            // }
             
             // Criar um novo request com os dados tratados
             $request->merge($requestData);
 
-            $validated = $request->validate(\App\Http\Requests\CompanyUpdateRequest::rulesFor($company?->id));
+            try {
+                $validated = $request->validate(\App\Http\Requests\CompanyUpdateRequest::rulesFor($company?->id));
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                // Mapear erros de display_name para name
+                $errors = $e->errors();
+                if (isset($errors['display_name'])) {
+                    $errors['name'] = $errors['display_name'];
+                    unset($errors['display_name']);
+                }
+                
+                throw \Illuminate\Validation\ValidationException::withMessages($errors);
+            }
 
             // Mapear display_name para name
             if (isset($validated['display_name'])) {
@@ -423,6 +455,8 @@ class ProfileController extends Controller
             'description' => 'nullable|string|max:1000',
             'website' => 'nullable|url|max:255',
         ]);
+        // Mapear company_name para o campo name exigido pelo modelo/tabela
+        $validated['name'] = $validated['company_name'];
         
         // Criar perfil empresa
         $company = $user->createProfile('company', $validated);

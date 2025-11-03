@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ResetPasswordNotification;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
@@ -53,7 +53,7 @@ class PasswordResetTest extends TestCase
         $response->assertStatus(302);
         
         // Verifica se a notificação foi enviada
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, ResetPasswordNotification::class);
         
         // Verifica se o token foi salvo na tabela
         $this->assertDatabaseHas('password_reset_tokens', [

@@ -4,6 +4,13 @@
 <div class="flex items-center justify-between">
     <div>
         <h1 class="text-2xl font-bold text-gray-900">Editar Perfil</h1>
+        <p class="mt-2 text-sm text-gray-800 font-semibold">
+            @if(session('active_role') === 'freelancer')
+                Perfil Freelancer
+            @else
+                Perfil Empresa
+            @endif
+        </p>
         <p class="mt-1 text-sm text-gray-600">
             Perfil ativo: 
             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -114,7 +121,7 @@
                                             <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                                             </svg>
-                                            Ir para perfil de Empresa
+                                            Mudar para perfil Empresa
                                         </button>
                                     </form>
                                 </div>
@@ -162,7 +169,7 @@
                                             <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                                             </svg>
-                                            Ir para perfil de Freelancer
+                                            Mudar para perfil Freelancer
                                         </button>
                                     </form>
                                 </div>

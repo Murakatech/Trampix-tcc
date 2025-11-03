@@ -15,7 +15,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold mb-2">
-                    Bem-vinda, {{ $company->name }}! 🏢
+                    Bem-vinda, <span class="trampix-user-name">{{ $company->name }}</span>! 🏢
                 </h2>
                 <p class="text-green-100">
                     Gerencie suas vagas, acompanhe candidaturas e encontre os melhores talentos para sua empresa.

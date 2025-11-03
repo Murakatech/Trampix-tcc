@@ -80,26 +80,36 @@ class ProfilePhotoController extends Controller
     }
 
     /**
-     * Verifica se há atualizações no perfil do usuário
-     * Utiliza o header If-Modified-Since para otimização
+     * Verifica se há atualizações no perfil do usuário (nome/foto/role)
+     * Utiliza o header If-Modified-Since e retorna payload padronizado
      */
     public function checkUpdates(Request $request): JsonResponse
     {
         $user = Auth::user();
         
         if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json([
+                'success' => false,
+                'error' => 'Unauthorized'
+            ], 401);
         }
 
+        // Determinar papel ativo e última modificação relevante
+        $activeRole = $this->getActiveRole($user);
         $lastModified = $user->updated_at;
+        if ($activeRole === 'freelancer' && $user->freelancer) {
+            $lastModified = $user->freelancer->updated_at ?? $lastModified;
+        } elseif ($activeRole === 'company' && $user->company) {
+            $lastModified = $user->company->updated_at ?? $lastModified;
+        }
+
         $lastModifiedHeader = $request->header('If-Modified-Since');
 
         // Verificar se o cliente tem uma versão atualizada
         if ($lastModifiedHeader) {
             try {
                 $clientLastModified = Carbon::createFromFormat('D, d M Y H:i:s \G\M\T', $lastModifiedHeader);
-                
-                if ($lastModified->lessThanOrEqualTo($clientLastModified)) {
+                if ($lastModified && $clientLastModified && $lastModified->lessThanOrEqualTo($clientLastModified)) {
                     return response()->json(null, 304); // Not Modified
                 }
             } catch (\Exception $e) {
@@ -107,39 +117,59 @@ class ProfilePhotoController extends Controller
             }
         }
 
-        $profilePhotoUrl = $this->getProfilePhotoUrl($user);
+        // Montar dados do perfil padronizados
+        $displayName = $this->getDisplayName($user, $activeRole);
+        $photoUrl = $this->getProfilePhotoUrl($user);
+        $role = $activeRole;
+        $initials = $this->generateInitials($displayName);
+
+        $data = [
+            'photo_url'   => $photoUrl,
+            'has_photo'   => !is_null($photoUrl),
+            'display_name'=> $displayName,
+            'initials'    => $initials,
+            'role'        => $role,
+            'email'       => $user->email,
+        ];
 
         return response()->json([
-            'has_updates' => true,
-            'last_modified' => $lastModified->format('D, d M Y H:i:s \G\M\T'),
-            'profile_photo_url' => $profilePhotoUrl
+            'success'   => true,
+            'changed'   => true,
+            'data'      => $data,
+            'timestamp' => $lastModified ? $lastModified->getTimestamp() : now()->getTimestamp(),
         ])->header('Cache-Control', 'no-cache, must-revalidate')
-          ->header('Last-Modified', $lastModified->format('D, d M Y H:i:s \G\M\T'));
+          ->header('Last-Modified', ($lastModified ? $lastModified->format('D, d M Y H:i:s \G\M\T') : gmdate('D, d M Y H:i:s', time()) . ' GMT'));
     }
 
     /**
-     * Retorna dados completos do perfil do usuário
+     * Retorna dados completos do perfil do usuário (para navbar/sidebar)
      */
     public function getProfileData(Request $request): JsonResponse
     {
         $user = Auth::user();
         
         if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json([
+                'success' => false,
+                'error' => 'Unauthorized'
+            ], 401);
         }
 
+        $activeRole = $this->getActiveRole($user);
+        $displayName = $this->getDisplayName($user, $activeRole);
         $profilePhotoUrl = $this->getProfilePhotoUrl($user);
-        $role = $this->getUserRole($user);
-        $initials = $this->generateInitials($user->name);
+        $initials = $this->generateInitials($displayName);
 
         return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $role,
-                'profile_photo_url' => $profilePhotoUrl,
-                'initials' => $initials
+            'success' => true,
+            'data' => [
+                'id'           => $user->id,
+                'display_name' => $displayName,
+                'email'        => $user->email,
+                'role'         => $activeRole,
+                'photo_url'    => $profilePhotoUrl,
+                'has_photo'    => !is_null($profilePhotoUrl),
+                'initials'     => $initials,
             ]
         ]);
     }
@@ -149,22 +179,44 @@ class ProfilePhotoController extends Controller
      */
     private function getProfilePhotoUrl($user): ?string
     {
-        // Verificar se há foto no perfil principal do usuário
+        $activeRole = $this->getActiveRole($user);
+
+        // Preferir foto específica do perfil ativo
+        if ($activeRole === 'company' && $user->company && $user->company->profile_photo) {
+            return asset('storage/' . $user->company->profile_photo);
+        }
+        if ($activeRole === 'freelancer' && $user->freelancer && $user->freelancer->profile_photo) {
+            return asset('storage/' . $user->freelancer->profile_photo);
+        }
+
+        // Fallback para foto do usuário
         if (isset($user->profile_photo) && $user->profile_photo) {
             return asset('storage/' . $user->profile_photo);
         }
 
-        // Verificar foto no perfil de empresa
-        if ($user->company && $user->company->profile_photo) {
-            return asset('storage/' . $user->company->profile_photo);
-        }
-
-        // Verificar foto no perfil de freelancer
-        if ($user->freelancer && $user->freelancer->profile_photo) {
-            return asset('storage/' . $user->freelancer->profile_photo);
-        }
-
         return null;
+    }
+
+    /**
+     * Retorna o papel ativo considerando sessão e métodos do usuário
+     */
+    private function getActiveRole($user): string
+    {
+        return session('active_role') ?? $this->getUserRole($user);
+    }
+
+    /**
+     * Determina o nome de exibição baseado no papel ativo
+     */
+    private function getDisplayName($user, string $activeRole): string
+    {
+        $name = $user->name;
+        if ($activeRole === 'freelancer' && $user->freelancer) {
+            $name = $user->freelancer->display_name ?? $name;
+        } elseif ($activeRole === 'company' && $user->company) {
+            $name = $user->company->display_name ?? $name;
+        }
+        return $name;
     }
 
     /**
