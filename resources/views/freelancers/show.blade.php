@@ -48,9 +48,18 @@
                                 </div>
                             @endif
 
-                            @if($freelancer->phone)
-                                <div class="mb-3">
-                                    <strong>Telefone:</strong> {{ $freelancer->phone }}
+                            
+
+                            @if($freelancer->whatsapp)
+                                @php
+                                    $waDigits = preg_replace('/\D+/', '', $freelancer->whatsapp);
+                                    $waLink = 'https://wa.me/' . (\Illuminate\Support\Str::startsWith($waDigits, '55') ? $waDigits : ('55' . $waDigits));
+                                @endphp
+                                <div class="mb-3 d-flex align-items-center gap-2">
+                                    <strong>WhatsApp:</strong>
+                                    <a href="{{ $waLink }}" target="_blank" class="btn btn-sm btn-success">
+                                        <i class="fab fa-whatsapp"></i> Conversar no WhatsApp
+                                    </a>
                                 </div>
                             @endif
 
@@ -113,6 +122,11 @@
                                     <a href="mailto:{{ $freelancer->user->email }}" class="btn btn-outline-primary">
                                         <i class="fas fa-envelope"></i> Entrar em Contato
                                     </a>
+                                    @if($freelancer->whatsapp)
+                                        <a href="{{ $waLink }}" target="_blank" class="btn btn-success">
+                                            <i class="fab fa-whatsapp"></i> WhatsApp
+                                        </a>
+                                    @endif
                                     
                                     <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
                                         <i class="fas fa-arrow-left"></i> Voltar

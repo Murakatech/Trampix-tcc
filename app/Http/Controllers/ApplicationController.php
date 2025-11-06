@@ -86,18 +86,26 @@ class ApplicationController extends Controller
     }
 
     // Candidatos de uma vaga (empresa dona da vaga)
-    public function byVacancy($jobVacancyId)
+    public function byVacancy($id)
     {
-        $company = Auth::user()->company ?? null;
+        $company = Auth::user()->company;
 
-        $vacancy = JobVacancy::where('id', $jobVacancyId)
-            ->when($company, fn ($q) => $q->where('company_id', $company->id))
+        // Garantir que a vaga pertence à empresa logada e carregar relacionamentos
+        $jobVacancy = JobVacancy::where('company_id', $company->id)
             ->with(['applications.freelancer.user'])
-            ->firstOrFail();
+            ->find($id);
 
-        $applications = $vacancy->applications;
+        if (!$jobVacancy) {
+            abort(404, 'Vaga não encontrada ou não pertence à empresa.');
+        }
 
-        return view('applications.by_vacancy', compact('vacancy', 'applications'));
+        // Compatibilidade com a view
+        $applications = $jobVacancy->applications;
+        return view('applications.by_vacancy', [
+            'jobVacancy' => $jobVacancy,
+            'vacancy' => $jobVacancy,
+            'applications' => $applications,
+        ]);
     }
     
     // Atualizar status da candidatura (empresa)

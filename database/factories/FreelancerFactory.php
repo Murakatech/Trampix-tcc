@@ -23,7 +23,8 @@ class FreelancerFactory extends Factory
             'bio' => fake()->paragraph(),
             'portfolio_url' => fake()->url(),
             'cv_url' => null,
-            'phone' => fake()->phoneNumber(),
+            // WhatsApp salvo apenas com dígitos
+            'whatsapp' => substr(preg_replace('/\D+/', '', fake()->phoneNumber()), 0, 14),
             'location' => fake()->city() . '/' . fake()->stateAbbr(),
             'hourly_rate' => fake()->randomFloat(2, 25, 150),
             'availability' => fake()->randomElement(['full_time', 'part_time', 'freelance']),

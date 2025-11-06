@@ -125,9 +125,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Confirmação antes de enviar usando modal personalizado
                 e.preventDefault();
                 
-                showActionModal('applicationConfirmationModal', {
+                    showActionModal('applicationConfirmationModal', {
                     actionType: 'candidatura',
-                    jobTitle: '{{ $vaga->titulo }}',
+                    jobTitle: '{{ $vaga->title }}',
     companyName: '{{ $vaga->company->name ?? "Empresa" }}',
     message: `Você está prestes a se candidatar à vaga "${'{{ $vaga->title }}'}" na empresa "${'{{ $vaga->company->name ?? "Empresa" }}'}". Deseja continuar?`,
                     onConfirm: () => {
@@ -175,9 +175,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             showActionModal('deleteConfirmationModal', {
                 actionType: 'exclusao',
-                jobTitle: '{{ $vaga->titulo }}',
+                jobTitle: '{{ $vaga->title }}',
     companyName: '{{ $vaga->company->name ?? "Empresa" }}',
-                message: `⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir a vaga "${'{{ $vaga->titulo }}'}"?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.`,
+                message: `⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir a vaga "${'{{ $vaga->title }}'}"?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.`,
                 onConfirm: () => {
                     showNotification('Excluindo vaga...', 'warning');
                     deleteForm.submit();
@@ -430,7 +430,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Usar novo componente ActionConfirmation
              showActionModal('applicationConfirmationModal', {
                  actionType: 'candidatura',
-                 jobTitle: '{{ $vaga->titulo }}',
+                 jobTitle: '{{ $vaga->title }}',
     companyName: '{{ $vaga->company->name ?? "Empresa" }}',
     message: `Você está prestes a se candidatar à vaga <strong>{{ $vaga->title }}</strong> na empresa <strong>{{ $vaga->company->name ?? "Empresa" }}</strong>. Deseja continuar?`,
                  onConfirm: () => {
@@ -891,14 +891,14 @@ document.head.appendChild(style);
 {{-- Modais de Confirmação de Ação Customizados --}}
 <x-action-confirmation 
     :actionType="'candidatura'"
-    :jobTitle="$vaga->titulo"
+    :jobTitle="$vaga->title"
     :companyName="$vaga->company->name ?? 'Empresa'"
     modalId="applicationConfirmationModal"
     :showTip="true" />
 
 <x-action-confirmation 
     :actionType="'exclusao'"
-    :jobTitle="$vaga->titulo"
+    :jobTitle="$vaga->title"
     :companyName="$vaga->company->name ?? 'Empresa'"
     modalId="deleteConfirmationModal"
     :showTip="false" />

@@ -236,3 +236,56 @@ new TrampixValidator();
 
 // Exporta para uso em outros módulos se necessário
 export default TrampixValidator;
+
+// Máscara progressiva para telefone/WhatsApp BR: (99) 99999-9999
+(function initWhatsappMask(){
+    const applyMask = (value) => {
+        const digits = value.replace(/\D/g, '').slice(0, 11); // DDD (2) + número (até 9)
+        if (digits.length === 0) return '';
+
+        // Até 2 dígitos: começa a formar o DDD
+        if (digits.length <= 2) {
+            return `(${digits}`;
+        }
+
+        const ddd = digits.slice(0, 2);
+        const afterDdd = digits.slice(2);
+
+        // 3 a 6 dígitos após DDD: exibe sem hífen
+        if (afterDdd.length <= 4) {
+            return `(${ddd}) ${afterDdd}`;
+        }
+
+        // 10 dígitos totais (8 após DDD): formato fixo (99) 9999-9999
+        if (digits.length <= 10) {
+            return `(${ddd}) ${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+        }
+
+        // 11 dígitos totais (9 após DDD): formato celular (99) 99999-9999
+        return `(${ddd}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+    };
+
+    const handleInput = (el) => {
+        el.value = applyMask(el.value);
+        // manter o cursor no fim para evitar saltos indesejados
+        const len = el.value.length;
+        try { el.setSelectionRange(len, len); } catch (_) {}
+    };
+
+    const init = () => {
+        const inputs = document.querySelectorAll('input[data-mask="br-phone"]');
+        inputs.forEach((input) => {
+            input.addEventListener('input', () => handleInput(input));
+            // aplica máscara ao carregar
+            if (input.value) {
+                input.value = applyMask(input.value);
+            }
+        });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();

@@ -15,7 +15,7 @@ class Freelancer extends Model
         'bio',
         'portfolio_url',
         'cv_url',
-        'phone',
+        'whatsapp',
         'location',
         'hourly_rate',
         'availability',

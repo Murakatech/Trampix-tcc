@@ -226,6 +226,12 @@ class ProfileController extends Controller
 
             $validated = $request->validate(\App\Http\Requests\FreelancerUpdateRequest::rulesFor($freelancer?->id));
 
+            // Sanitizar WhatsApp se enviado: manter somente números e limitar tamanho
+            if ($request->filled('whatsapp')) {
+                $rawWhatsapp = preg_replace('/\D+/', '', $request->input('whatsapp'));
+                $validated['whatsapp'] = substr($rawWhatsapp, 0, 14);
+            }
+
             // Upload/remoção de CV
             if ($freelancer) {
                 if ($request->boolean('remove_cv') && $freelancer->cv_url) {
@@ -246,7 +252,12 @@ class ProfileController extends Controller
             }
 
             if ($freelancer) {
-                $freelancer->update($validated);
+                // Garantir atualização explícita do display_name
+                $freelancer->fill($validated);
+                if ($request->has('display_name')) {
+                    $freelancer->display_name = $request->input('display_name');
+                }
+                $freelancer->save();
             } else {
                 $freelancer = $user->createProfile('freelancer', $validated);
             }
@@ -281,6 +292,9 @@ class ProfileController extends Controller
                 // Se nenhuma categoria foi selecionada, remover todas
                 $freelancer->serviceCategories()->detach();
             }
+
+            // Garantir que o papel ativo permaneça como freelancer após salvar
+            session(['active_role' => 'freelancer']);
 
             return Redirect::route('profile.edit')->with('success', 'Perfil de freelancer atualizado com sucesso!');
         }
@@ -460,6 +474,7 @@ class ProfileController extends Controller
             'title' => 'required|string|max:255',
             'bio' => 'required|string|min:50|max:1000',
             'skills' => 'required|string',
+            'whatsapp' => 'required|string',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // 5MB
             'cv' => 'nullable|file|mimes:pdf|max:10240', // 10MB
         ]);
@@ -470,6 +485,12 @@ class ProfileController extends Controller
             'title' => $validated['title'],
             'skills' => $validated['skills'],
         ];
+
+        // Sanitizar WhatsApp: manter somente números e limitar tamanho
+        if ($request->filled('whatsapp')) {
+            $rawWhatsapp = preg_replace('/\D+/', '', $request->input('whatsapp'));
+            $profileData['whatsapp'] = substr($rawWhatsapp, 0, 14);
+        }
         
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('profile_photos', 'public');

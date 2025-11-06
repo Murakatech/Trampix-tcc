@@ -42,16 +42,8 @@ Route::middleware('auth')->group(function () {
     Route::get('profile-selection', [RegisteredUserController::class, 'profileSelection'])
         ->name('profile.selection');
     
-    // GET routes for displaying profile creation forms
-    Route::get('profile/create/freelancer', [ProfileController::class, 'showCreateFreelancer'])
-        ->name('profile.create.freelancer');
-    
     Route::get('profile/create/company', [ProfileController::class, 'showCreateCompany'])
         ->name('profile.create.company');
-    
-    // POST routes for processing profile creation
-    Route::post('profile/create/freelancer', [ProfileController::class, 'createFreelancer'])
-        ->name('profile.store.freelancer');
     
     Route::post('profile/create/company', [ProfileController::class, 'createCompany'])
         ->name('profile.store.company');

@@ -36,11 +36,14 @@
                                     <x-input-error :messages="$errors->get('portfolio_url')" class="mt-2" />
                                 </div>
 
-                                <!-- Telefone -->
+                                
+
+                                <!-- WhatsApp (Obrigatório) -->
                                 <div>
-                                    <x-input-label for="phone" :value="__('Telefone')" />
-                                    <x-text-input id="phone" name="phone" type="text" class="trampix-input mt-1 block w-full" :value="old('phone')" placeholder="(11) 99999-9999" />
-                                    <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+                                    <x-input-label for="whatsapp" :value="__('WhatsApp')" />
+                                    <x-text-input id="whatsapp" name="whatsapp" type="text" class="trampix-input mt-1 block w-full" :value="old('whatsapp')" placeholder="Ex: (16) 99999-9999" required data-mask="br-phone" />
+                                    
+                                    <x-input-error :messages="$errors->get('whatsapp')" class="mt-2" />
                                 </div>
 
                                 <!-- Localização -->

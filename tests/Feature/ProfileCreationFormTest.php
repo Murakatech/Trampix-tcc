@@ -43,7 +43,7 @@ class ProfileCreationFormTest extends TestCase
                 'display_name' => 'João Silva Dev',
                 'bio' => 'Desenvolvedor experiente em Laravel e Vue.js',
                 'portfolio_url' => 'https://joaosilva.dev',
-                'phone' => '(11) 99999-9999',
+                'whatsapp' => '(16) 99999-9999',
                 'location' => 'São Paulo, SP',
                 'hourly_rate' => 75.00,
                 'availability' => 'Disponível para projetos de 20h/semana'

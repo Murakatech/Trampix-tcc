@@ -342,9 +342,10 @@
                 </div>
             </div>
             
-            <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="p-6">
+            <form id="profileMainForm" method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="p-6">
                 @csrf
                 @method('patch')
+                <input type="hidden" name="section" value="{{ session('active_role') }}">
 
                 @if(session('active_role') === 'freelancer')
                     <!-- Formulário Freelancer -->
@@ -429,12 +430,12 @@
                             </div>
 
                             <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700">Telefone</label>
-                                <input type="tel" id="phone" name="phone" 
-                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('phone') border-red-500 @enderror" 
-                                       value="{{ old('phone', $freelancer->phone ?? '') }}"
-                                       placeholder="(11) 99999-9999">
-                                @error('phone')
+                                <label for="whatsapp" class="block text-sm font-medium text-gray-700">WhatsApp</label>
+                                <input type="text" id="whatsapp" name="whatsapp" 
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('whatsapp') border-red-500 @enderror" 
+                                       value="{{ old('whatsapp', $freelancer->whatsapp ?? '') }}"
+                                       placeholder="Ex: (16) 99999-9999" data-mask="br-phone">
+                                @error('whatsapp')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -624,9 +625,14 @@
                 @endif
 
                 <div class="pt-6 border-t border-gray-200">
-                    <button type="submit" class="btn-trampix-primary">
-                        Salvar Alterações
-                    </button>
+                    <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div class="text-sm text-gray-600">
+                            <span class="font-medium">Campos alterados:</span> <span id="saveInfoCount">0</span>
+                        </div>
+                        <button type="submit" form="profileMainForm" class="btn-trampix-primary">
+                            Salvar Alterações
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -1126,6 +1132,7 @@ function toggleChangeIndicator(field, hasChanged) {
 function updateChangeCounter() {
     const changedFields = document.querySelectorAll('.change-indicator');
     let changeCounter = document.getElementById('changeCounter');
+    const saveInfoCount = document.getElementById('saveInfoCount');
     
     if (changedFields.length > 0) {
         // Criar contador se não existir
@@ -1147,6 +1154,9 @@ function updateChangeCounter() {
         
         changeCounter.style.display = 'block';
         changeCounter.style.opacity = '1';
+        if (saveInfoCount) {
+            saveInfoCount.textContent = String(changedFields.length);
+        }
         
     } else {
         // Ocultar contador se não há mudanças
@@ -1158,13 +1168,16 @@ function updateChangeCounter() {
                 }
             }, 300);
         }
+        if (saveInfoCount) {
+            saveInfoCount.textContent = '0';
+        }
     }
 }
 
 // Função para inicializar validação frontend
 function initializeFormValidation() {
     // Validação do formulário principal
-    const mainForm = document.querySelector('form[action*="profile.update"]');
+    const mainForm = document.getElementById('profileMainForm');
     if (mainForm) {
         mainForm.addEventListener('submit', function(e) {
             const submitButton = this.querySelector('button[type="submit"]');

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class FreelancerUpdateRequest extends FormRequest
 {
@@ -21,11 +22,11 @@ class FreelancerUpdateRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                'unique:freelancers,display_name' . ($freelancerId ? ',' . $freelancerId : '')
+                Rule::unique('freelancers', 'display_name')->ignore($freelancerId)
             ],
             'bio' => 'nullable|string|max:1000',
             'portfolio_url' => 'nullable|url|max:255',
-            'phone' => 'nullable|string|max:20',
+            'whatsapp' => 'nullable|string',
             'location' => 'nullable|string|max:100',
             'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',
             'availability' => 'nullable|string|max:255',

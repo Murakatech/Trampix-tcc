@@ -67,16 +67,19 @@
                 </div>
 
                 {{-- Telefone --}}
+                
+
+                {{-- WhatsApp (Obrigatório) --}}
                 <div>
-                    <label for="freelancer_phone" class="block text-sm font-medium text-gray-700 mb-2">
-                        Telefone
+                    <label for="freelancer_whatsapp" class="block text-sm font-medium text-gray-700 mb-2">
+                        WhatsApp *
                     </label>
-                    <input type="tel" 
-                           id="freelancer_phone"
-                           name="phone" 
+                    <input type="text" 
+                           id="freelancer_whatsapp"
+                           name="whatsapp" 
                            class="trampix-input w-full" 
-                           placeholder="(11) 99999-9999">
-                    @error('phone')
+                           placeholder="Ex: (16) 99999-9999" required data-mask="br-phone">
+                    @error('whatsapp')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

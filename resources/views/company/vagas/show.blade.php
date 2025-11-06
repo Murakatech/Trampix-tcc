@@ -226,7 +226,7 @@
                             @method('DELETE')
                             <button type="button" 
                                     class="btn-trampix-danger w-100" 
-                                    onclick="showDeleteConfirmation('{{ $vaga->titulo }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')">
+                                    onclick="showDeleteConfirmation('{{ $vaga->title }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')">
                                 <i class="fas fa-trash me-2"></i>Excluir Vaga
                             </button>
                         </form>

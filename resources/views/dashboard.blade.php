@@ -9,13 +9,7 @@
         <h1 class="trampix-h1">
             Olá, 
             <span class="trampix-user-name">
-                {{ 
-                    (session('active_role') === 'freelancer' && auth()->user()->freelancer?->display_name) 
-                        ? auth()->user()->freelancer->display_name 
-                        : ((session('active_role') === 'company' && auth()->user()->company?->display_name) 
-                            ? auth()->user()->company->display_name 
-                            : auth()->user()->name)
-                }}
+                {{ auth()->user()->display_name }}
             </span>! 👋
         </h1>
         <p class="text-gray-600 mt-2">

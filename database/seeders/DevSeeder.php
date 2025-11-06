@@ -304,7 +304,7 @@ class DevSeeder extends Seeder
                 'display_name' => 'Ana Rodrigues - Designer & Freelancer', // Nome de exibição do freelancer
                 'bio' => 'Profissional autônoma com experiência em design, atendimento e gastronomia.',
                 'portfolio_url' => 'https://anarodrigues.dev',
-                'phone' => '(11) 99999-9999',
+                'whatsapp' => '11999999999',
                 'location' => 'São Paulo/SP',
                 'hourly_rate' => 85.00,
                 'availability' => 'Disponível para trabalhos pontuais',

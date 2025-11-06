@@ -134,10 +134,12 @@
                             @enderror
                         </div>
                         
+                        
+
                         <div>
-                            <label for="phone" class="block text-sm font-medium text-purple-100 mb-2">Telefone</label>
-                            <input type="text" id="phone" name="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="(11) 99999-9999">
-                            @error('phone')
+                            <label for="whatsapp" class="block text-sm font-medium text-purple-100 mb-2">WhatsApp *</label>
+                            <input type="text" id="whatsapp" name="whatsapp" value="{{ old('whatsapp') }}" required data-mask="br-phone" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Ex: (16) 99999-9999">
+                            @error('whatsapp')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>

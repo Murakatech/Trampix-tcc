@@ -160,6 +160,14 @@
                                                        title="Enviar Email">
                                                         <i class="fas fa-envelope"></i>
                                                     </a>
+                                                    @if($freelancer->whatsapp)
+                                                        <a href="{{ 'https://wa.me/55' . preg_replace('/\D+/', '', $freelancer->whatsapp) }}"
+                                                           target="_blank"
+                                                           class="btn btn-sm btn-outline-success"
+                                                           title="Abrir no WhatsApp">
+                                                            <i class="fab fa-whatsapp"></i>
+                                                        </a>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>

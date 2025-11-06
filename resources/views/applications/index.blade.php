@@ -80,7 +80,7 @@
                                         <small class="text-muted">{{ $application->jobVacancy->category }}</small>
                                     </td>
                                     <td>
-                                        <div>{{ $application->jobVacancy->company->company_name }}</div>
+                                        <div>{{ $application->jobVacancy->company->name }}</div>
                                         <small class="text-muted">{{ $application->jobVacancy->location_type }}</small>
                                     </td>
                                     <td>
@@ -116,7 +116,7 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="button" class="btn btn-sm btn-outline-danger"
-                                                            onclick="showCancelConfirmation({{ $application->id }}, '{{ $application->jobVacancy->titulo }}', '{{ $application->jobVacancy->empresa->nome ?? 'Empresa' }}')">
+                                                            onclick="showCancelConfirmation({{ $application->id }}, '{{ $application->jobVacancy->title }}', '{{ $application->jobVacancy->company->name ?? 'Empresa' }}')">
                                                         Cancelar
                                                     </button>
                                                 </form>

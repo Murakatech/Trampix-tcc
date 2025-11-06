@@ -1,18 +1,34 @@
 @extends('layouts.app')
 
 @section('header')
+@php
+    // Normalizar variável da vaga para evitar null na view
+    $jobVacancy = $jobVacancy ?? ($vacancy ?? null);
+    $vacancy = $vacancy ?? $jobVacancy;
+@endphp
 <div class="bg-white shadow">
     <div class="container py-4">
-        <h1 class="h2 mb-0">
-            <i class="fas fa-users me-2"></i>
-            Candidatos para: {{ $vacancy->title }}
-        </h1>
+        @if($jobVacancy)
+            <h1 class="h2 mb-0">
+                <i class="fas fa-users me-2"></i>
+                Candidatos para: {{ $jobVacancy->title ?? 'Vaga sem título' }}
+            </h1>
+        @else
+            <h1 class="h2 mb-0">
+                <i class="fas fa-users me-2"></i>
+                Vaga não encontrada
+            </h1>
+        @endif
     </div>
 </div>
 @endsection
 
 @section('content')
 <div class="container mt-4">
+    @if(!$jobVacancy)
+        <p class="text-red-600">Vaga não encontrada.</p>
+        @php return; @endphp
+    @endif
     {{-- Mensagens de sucesso/erro --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -32,7 +48,7 @@
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
             <h3 class="card-title mb-0">
-                <i class="fas fa-briefcase me-2"></i>{{ $vacancy->title }}
+                <i class="fas fa-briefcase me-2"></i>{{ $jobVacancy->title ?? 'Vaga sem título' }}
             </h3>
         </div>
         <div class="card-body">
@@ -197,7 +213,7 @@
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="accepted">
                                                     <button type="button" class="btn btn-sm btn-success" 
-                                                            onclick="showAcceptConfirmation({{ $application->id }}, '{{ $application->freelancer->name }}', '{{ $application->vaga->titulo }}')">
+                                                            onclick="showAcceptConfirmation({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
                                                         <i class="fas fa-check me-1"></i>Aceitar
                                                     </button>
                                                 </form>
@@ -206,7 +222,7 @@
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="rejected">
                                                     <button type="button" class="btn btn-sm btn-danger" 
-                                                            onclick="showRejectConfirmation({{ $application->id }}, '{{ $application->freelancer->name }}', '{{ $application->vaga->titulo }}')">
+                                                            onclick="showRejectConfirmation({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
                                                         <i class="fas fa-times me-1"></i>Rejeitar
                                                     </button>
                                                 </form>
@@ -218,7 +234,7 @@
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="rejected">
                                                     <button type="button" class="btn btn-sm btn-outline-danger" 
-                                                            onclick="showRejectConfirmation2({{ $application->id }}, '{{ $application->freelancer->name }}', '{{ $application->vaga->titulo }}')">
+                                                            onclick="showRejectConfirmation2({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
                                                         <i class="fas fa-times me-1"></i>Rejeitar
                                                     </button>
                                                 </form>
@@ -227,7 +243,7 @@
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="accepted">
                                                     <button type="button" class="btn btn-sm btn-outline-success" 
-                                                            onclick="showAcceptConfirmation2({{ $application->id }}, '{{ $application->freelancer->name }}', '{{ $application->vaga->titulo }}')">
+                                                            onclick="showAcceptConfirmation2({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
                                                         <i class="fas fa-check me-1"></i>Aceitar
                                                     </button>
                                                 </form>

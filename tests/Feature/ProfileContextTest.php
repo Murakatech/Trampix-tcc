@@ -190,7 +190,7 @@ class ProfileContextTest extends TestCase
         // Atualizar dados do freelancer
         $response = $this->patch(route('profile.update'), [
             'bio' => 'Nova biografia do freelancer',
-            'phone' => '11999999999'
+            'whatsapp' => '11999999999'
         ]);
 
         $response->assertRedirect();
@@ -200,7 +200,7 @@ class ProfileContextTest extends TestCase
         $company->refresh();
 
         $this->assertEquals('Nova biografia do freelancer', $freelancer->bio);
-        $this->assertEquals('11999999999', $freelancer->phone);
+        $this->assertEquals('11999999999', $freelancer->whatsapp);
         $this->assertEquals('Empresa Original', $company->name); // Não deve ter mudado
     }
 

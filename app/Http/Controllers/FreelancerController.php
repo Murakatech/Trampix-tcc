@@ -72,7 +72,7 @@ class FreelancerController extends Controller
             'display_name' => 'required|string|min:2|max:255',
             'bio' => 'nullable|string|max:1000',
             'portfolio_url' => 'nullable|url|max:255',
-            'phone' => 'nullable|string|max:20',
+            'whatsapp' => 'required|string',
             'location' => 'nullable|string|max:100',
             'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',
             'availability' => 'nullable|string|max:255',
@@ -93,6 +93,14 @@ class FreelancerController extends Controller
                 ->where('type', 'freelancer')
                 ->first();
             $validated['activity_area_id'] = $area?->id; // define somente se existir
+        }
+
+        // Sanitizar WhatsApp: manter somente números
+        if ($request->filled('whatsapp')) {
+            $raw = preg_replace('/\D+/', '', $request->input('whatsapp'));
+            // limitar tamanho razoável (DDI 55 + DDD 2 + número 8-9)
+            $raw = substr($raw, 0, 14);
+            $validated['whatsapp'] = $raw;
         }
 
         // Criar perfil freelancer
@@ -119,7 +127,7 @@ class FreelancerController extends Controller
         $validated = $request->validate([
             'bio' => 'nullable|string|max:1000',
             'portfolio_url' => 'nullable|url|max:255',
-            'phone' => 'nullable|string|max:20',
+            'whatsapp' => 'nullable|string',
             'location' => 'nullable|string|max:100',
             'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',
             'availability' => 'nullable|string|max:255',
@@ -155,6 +163,13 @@ class FreelancerController extends Controller
         } else {
             // permitir limpar o campo
             $validated['activity_area_id'] = null;
+        }
+
+        // Sanitizar WhatsApp em atualizações: manter somente números e limitar tamanho
+        if ($request->filled('whatsapp')) {
+            $raw = preg_replace('/\D+/', '', $request->input('whatsapp'));
+            $raw = substr($raw, 0, 14);
+            $validated['whatsapp'] = $raw;
         }
 
         $freelancer->update($validated);

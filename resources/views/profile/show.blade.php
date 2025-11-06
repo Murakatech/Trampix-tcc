@@ -91,6 +91,10 @@
 
                     {{-- Informações específicas do perfil ativo --}}
                     @if($activeRole === 'freelancer' && $activeProfile)
+                        @php
+                            $waDigits = $activeProfile->whatsapp ? preg_replace('/\D+/', '', $activeProfile->whatsapp) : null;
+                            $waLink = $waDigits ? ('https://wa.me/' . (\Illuminate\Support\Str::startsWith($waDigits, '55') ? $waDigits : ('55' . $waDigits))) : null;
+                        @endphp
                         @if($activeProfile->bio)
                             <div class="mb-3">
                                 <strong>Bio:</strong>
@@ -104,11 +108,7 @@
                                     <strong>Localização:</strong> {{ $activeProfile->location }}
                                 </div>
                             @endif
-                            @if($activeProfile->phone)
-                                <div class="col-md-6 mb-2">
-                                    <strong>Telefone:</strong> {{ $activeProfile->phone }}
-                                </div>
-                            @endif
+                            
                             @if($activeProfile->hourly_rate)
                                 <div class="col-md-6 mb-2">
                                     <strong>Valor por Hora:</strong> R$ {{ number_format($activeProfile->hourly_rate, 2, ',', '.') }}
@@ -125,6 +125,15 @@
                             <div class="mb-3">
                                 <strong>Portfólio:</strong>
                                 <a href="{{ $activeProfile->portfolio_url }}" target="_blank" class="text-primary">Ver Portfólio</a>
+                            </div>
+                        @endif
+
+                        @if($waLink)
+                            <div class="mb-3">
+                                <strong>WhatsApp:</strong>
+                                <a href="{{ $waLink }}" target="_blank" class="btn btn-sm btn-success ms-2">
+                                    <i class="fab fa-whatsapp"></i> Conversar no WhatsApp
+                                </a>
                             </div>
                         @endif
 
@@ -220,6 +229,11 @@
                                     <a href="mailto:{{ $user->email }}" class="btn btn-outline-primary">
                                         <i class="fas fa-envelope"></i> Entrar em Contato
                                     </a>
+                                    @if(isset($waLink) && $waLink)
+                                        <a href="{{ $waLink }}" target="_blank" class="btn btn-success">
+                                            <i class="fab fa-whatsapp"></i> WhatsApp
+                                        </a>
+                                    @endif
                                 @endif
                             @endif
                         @endauth
