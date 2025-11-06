@@ -55,6 +55,17 @@
                     </div>
                 </div>
             </a>
+            <a href="{{ route('admin.categories.index') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-purple-100 rounded-lg">
+                        <i class="fas fa-tags text-purple-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Categorias</p>
+                        <p class="text-gray-900 font-semibold">Gerenciar</p>
+                    </div>
+                </div>
+            </a>
             <a href="{{ route('admin.applications') }}" class="trampix-card hover:shadow-lg transition-all">
                 <div class="flex items-center">
                     <div class="p-3 bg-purple-100 rounded-lg">

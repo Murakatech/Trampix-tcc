@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Company;
 use App\Models\Freelancer;
 use App\Models\JobVacancy;
+use App\Models\Category;
 use App\Models\Application;
 
 class DevSeeder extends Seeder
@@ -168,16 +169,118 @@ class DevSeeder extends Seeder
             );
 
             foreach ($data['jobs'] as $job) {
+                // Garantir que a categoria exista na tabela categories e associar category_id
+                $catName = $job['category'] ?? null;
+                $categoryId = null;
+                if ($catName) {
+                    $category = Category::firstOrCreate(
+                        ['slug' => \Str::slug($catName)],
+                        ['name' => $catName]
+                    );
+                    $categoryId = $category->id;
+                }
+
                 JobVacancy::updateOrCreate(
                     ['company_id' => $company->id, 'title' => $job['title']],
                     array_merge($job, [
                         'company_id' => $company->id,
+                        'category_id' => $categoryId,
                         'status' => 'active',
                         'location_type' => 'Presencial',
                         'created_at' => now()->subDays(rand(1, 30)),
                     ])
                 );
             }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 20 VAGAS ALEATÓRIAS PARA agencia@trampix.com
+        |--------------------------------------------------------------------------
+        */
+        $agencyUser = User::updateOrCreate(
+            ['email' => 'agencia@trampix.com'],
+            [
+                'name' => 'Agência Criarte',
+                'password' => Hash::make($securePassword),
+                'role' => 'company',
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $agencyCompany = Company::where('user_id', $agencyUser->id)->first();
+        if (!$agencyCompany) {
+            $agencyCompany = Company::create([
+                'user_id' => $agencyUser->id,
+                'name' => 'Agência Criarte Comunicação LTDA',
+                'display_name' => 'Agência Criarte Comunicação LTDA',
+                'sector' => 'Marketing e Design',
+                'location' => 'Rio de Janeiro/RJ',
+                'description' => 'Agência focada em branding, marketing digital e design.',
+                'cnpj' => fake()->numerify('##.###.###/0001-##'),
+                'phone' => fake()->phoneNumber(),
+                'website' => 'https://agenciacriarte.com',
+                'employees_count' => rand(5, 50),
+                'founded_year' => rand(2010, 2022),
+                'is_active' => true,
+            ]);
+        }
+
+        $randomAgencyJobs = [
+            ['title' => 'Desenvolvedor Full Stack', 'category' => 'Tecnologia', 'contract_type' => 'PJ'],
+            ['title' => 'Enfermeiro Plantonista', 'category' => 'Saúde', 'contract_type' => 'CLT'],
+            ['title' => 'Mestre de Obras', 'category' => 'Construção', 'contract_type' => 'CLT'],
+            ['title' => 'Produtor de Eventos', 'category' => 'Eventos', 'contract_type' => 'PJ'],
+            ['title' => 'Esteticista', 'category' => 'Beleza/Estética', 'contract_type' => 'CLT'],
+            ['title' => 'Professor de Inglês', 'category' => 'Educação', 'contract_type' => 'CLT'],
+            ['title' => 'Analista de Logística', 'category' => 'Logística', 'contract_type' => 'CLT'],
+            ['title' => 'Analista Financeiro', 'category' => 'Financeiro/Contábil', 'contract_type' => 'CLT'],
+            ['title' => 'Assistente Jurídico', 'category' => 'Jurídico', 'contract_type' => 'CLT'],
+            ['title' => 'Técnico Agrícola', 'category' => 'Agricultura/Agro', 'contract_type' => 'CLT'],
+            ['title' => 'Engenheiro de Energia', 'category' => 'Energia', 'contract_type' => 'PJ'],
+            ['title' => 'Geólogo de Campo', 'category' => 'Mineração', 'contract_type' => 'PJ'],
+            ['title' => 'Guia de Turismo', 'category' => 'Turismo', 'contract_type' => 'Freelance'],
+            ['title' => 'Auxiliar de Limpeza', 'category' => 'Limpeza', 'contract_type' => 'CLT'],
+            ['title' => 'Vigilante', 'category' => 'Segurança', 'contract_type' => 'CLT'],
+            ['title' => 'Instrutor de CrossFit', 'category' => 'Esportes', 'contract_type' => 'Freelance'],
+            ['title' => 'Produtor Musical', 'category' => 'Música', 'contract_type' => 'PJ'],
+            ['title' => 'Chef de Cozinha', 'category' => 'Gastronomia', 'contract_type' => 'CLT'],
+            ['title' => 'Artesão de Cerâmica', 'category' => 'Artesanato', 'contract_type' => 'Freelance'],
+            ['title' => 'Corretor de Imóveis', 'category' => 'Imobiliário', 'contract_type' => 'PJ'],
+        ];
+
+        foreach ($randomAgencyJobs as $job) {
+            $catName = $job['category'];
+            $category = Category::firstOrCreate(
+                ['slug' => \Str::slug($catName)],
+                ['name' => $catName]
+            );
+
+            $locationType = fake()->randomElement(['Presencial', 'Remoto', 'Híbrido']);
+            $desc = fake()->paragraph(2);
+            $reqs = 'Desejável experiência prévia; boa comunicação; organização.';
+            $salary = fake()->randomElement([
+                'R$ 2.000 - R$ 3.000',
+                'R$ 3.000 - R$ 4.500',
+                'R$ 4.500 - R$ 6.000',
+                'R$ 6.000 - R$ 8.000',
+            ]);
+
+            JobVacancy::updateOrCreate(
+                ['company_id' => $agencyCompany->id, 'title' => $job['title']],
+                [
+                    'company_id' => $agencyCompany->id,
+                    'title' => $job['title'],
+                    'category_id' => $category->id,
+                    'description' => $desc,
+                    'contract_type' => $job['contract_type'],
+                    'salary_range' => $salary,
+                    'requirements' => $reqs,
+                    'status' => 'active',
+                    'location_type' => $locationType,
+                    'created_at' => now()->subDays(rand(1, 30)),
+                ]
+            );
         }
 
         /*

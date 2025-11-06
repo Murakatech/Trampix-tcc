@@ -21,6 +21,9 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
+// Página pública de documentação sobre Categorias e Áreas de Atuação
+Route::view('/docs/categorias-e-areas', 'docs.categories-activity-areas')->name('docs.categories_areas');
+
 // Rotas de Dashboard Pós-Login
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -88,6 +91,8 @@ Route::get('/sidebar-demo', fn () => view('sidebar-demo'))
 
 // Público
 Route::resource('vagas', JobVacancyController::class)->only(['index','show']);
+// API pública para sugestões de busca de vagas
+Route::get('/api/vagas/suggest', [JobVacancyController::class, 'suggest'])->name('api.vagas.suggest');
 Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
 // Perfil público unificado (visualização)
 Route::get('/profiles/{user}', [ProfileController::class, 'show'])->name('profiles.show');
@@ -180,6 +185,15 @@ Route::middleware(['auth', 'can:isAdmin'])->group(function () {
     // Rota específica para admins criarem vagas
     Route::get('/admin/vagas/create', [JobVacancyController::class, 'create'])
         ->name('admin.vagas.create');
+    // Rota POST para admins salvarem vagas
+    Route::post('/admin/vagas', [JobVacancyController::class, 'store'])
+        ->name('admin.vagas.store');
+
+    // Administração de Categorias
+    Route::get('/admin/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'index'])
+        ->name('admin.categories.index');
+    Route::post('/admin/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'store'])
+        ->name('admin.categories.store');
 });
 
 require __DIR__.'/auth.php';

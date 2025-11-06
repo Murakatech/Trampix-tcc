@@ -36,12 +36,18 @@ class FreelancerDashboardController extends Controller
             ->limit(7)
             ->get();
 
-        // Vagas recomendadas baseadas nas categorias do freelancer
-        $freelancerCategories = $freelancer->serviceCategories->pluck('slug')->toArray();
+        // Vagas recomendadas baseadas nos setores do freelancer (match com categorias de vagas por nome)
+        $freelancerCategories = $freelancer->sectors->pluck('name')->toArray();
         
         $recommendedJobs = JobVacancy::where('status', 'active')
             ->when(!empty($freelancerCategories), function ($query) use ($freelancerCategories) {
-                return $query->whereIn('category', $freelancerCategories);
+                $ids = \App\Models\ServiceCategory::whereIn('name', $freelancerCategories)->pluck('id');
+                return $query->where(function($q) use ($ids, $freelancerCategories) {
+                    if ($ids->count() > 0) {
+                        $q->whereIn('service_category_id', $ids);
+                    }
+                    $q->orWhereIn('category', $freelancerCategories);
+                });
             })
             ->whereNotIn('id', function ($query) use ($freelancer) {
                 $query->select('job_vacancy_id')
@@ -102,10 +108,11 @@ class FreelancerDashboardController extends Controller
             ->count();
 
         // Verificar se há novas vagas recomendadas (últimas 24 horas)
-        $freelancerCategories = $freelancer->serviceCategories->pluck('id')->toArray();
+        $freelancerSectorNames = $freelancer->sectors->pluck('name')->toArray();
+        $sectorMappedCategoryIds = \App\Models\ServiceCategory::whereIn('name', $freelancerSectorNames)->pluck('id');
         $newRecommendedJobsCount = JobVacancy::where('status', 'open')
-            ->when(!empty($freelancerCategories), function ($query) use ($freelancerCategories) {
-                return $query->whereIn('service_category_id', $freelancerCategories);
+            ->when($sectorMappedCategoryIds->count() > 0, function ($query) use ($sectorMappedCategoryIds) {
+                return $query->whereIn('service_category_id', $sectorMappedCategoryIds);
             })
             ->where('created_at', '>=', now()->subDay())
             ->whereNotIn('id', function ($query) use ($freelancer) {

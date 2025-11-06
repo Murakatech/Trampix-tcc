@@ -23,6 +23,7 @@ class Company extends Model
         'founded_year',
         'is_active',
         'profile_photo',
+        'activity_area_id',
     ];
 
     protected $casts = [
@@ -49,5 +50,15 @@ class Company extends Model
     public function serviceCategories()
     {
         return $this->belongsToMany(ServiceCategory::class);
+    }
+
+    public function sectors()
+    {
+        return $this->belongsToMany(\App\Models\Sector::class, 'company_sector');
+    }
+
+    public function activityArea()
+    {
+        return $this->belongsTo(\App\Models\ActivityArea::class);
     }
 }

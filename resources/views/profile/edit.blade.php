@@ -322,7 +322,7 @@
                             
                             @if((session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) || 
                                 (session('active_role') === 'company' && isset($company) && $company->profile_photo))
-                                <form method="POST" action="{{ route('profile.image.delete') }}" id="removePhotoForm">
+                                <form method="POST" action="{{ route('profile.photo.delete') }}" id="removePhotoForm">
                                     @csrf
                                     @method('DELETE')
                                     <input type="hidden" name="profile_type" value="{{ session('active_role') }}">
@@ -367,6 +367,23 @@
                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('bio') border-red-500 @enderror" 
                                       placeholder="Conte sobre sua experiência e especialidades...">{{ old('bio', $freelancer->bio ?? '') }}</textarea>
                             @error('bio')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Área de Atuação (ActivityArea) -->
+                        <div>
+                            <label for="activity_area_id" class="block text-sm font-medium text-gray-700">Área de Atuação</label>
+                            <select id="activity_area_id" name="activity_area_id"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('activity_area_id') border-red-500 @enderror">
+                                <option value="">Selecione...</option>
+                                @foreach(\App\Models\ActivityArea::where('type', 'freelancer')->orderBy('name')->get() as $area)
+                                    <option value="{{ $area->id }}" {{ old('activity_area_id', $freelancer->activity_area_id ?? null) == $area->id ? 'selected' : '' }}>
+                                        {{ $area->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('activity_area_id')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -552,6 +569,23 @@
                                 <option value="500+" {{ old('company_size', $company->company_size ?? '') == '500+' ? 'selected' : '' }}>500+ funcionários</option>
                             </select>
                             @error('company_size')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Área de Atuação (ActivityArea) da Empresa -->
+                        <div>
+                            <label for="activity_area_id" class="block text-sm font-medium text-gray-700">Área de Atuação</label>
+                            <select id="activity_area_id" name="activity_area_id"
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('activity_area_id') border-red-500 @enderror">
+                                <option value="">Selecione...</option>
+                                @foreach(\App\Models\ActivityArea::where('type', 'company')->orderBy('name')->get() as $area)
+                                    <option value="{{ $area->id }}" {{ old('activity_area_id', $company->activity_area_id ?? null) == $area->id ? 'selected' : '' }}>
+                                        {{ $area->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('activity_area_id')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

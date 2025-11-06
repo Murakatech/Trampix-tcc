@@ -31,14 +31,27 @@ class AuthenticatedSessionController extends Controller
         $user = Auth::user();
         
         // Admins não precisam de seleção de perfil nem criação de perfis
+        // Redirecionar diretamente para o dashboard administrativo
         if ($user->isAdmin()) {
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->intended(route('admin.dashboard', absolute: false));
         }
 
         // Determinar redirecionamento baseado nos perfis do usuário
         $hasFreelancer = $user->isFreelancer();
         $hasCompany = $user->isCompany();
         $activeRole = session('active_role');
+
+        // Se usuário possui apenas um perfil e não há active_role definido,
+        // definir automaticamente o perfil ativo para evitar tela de seleção
+        if (!$activeRole) {
+            if ($hasFreelancer && !$hasCompany) {
+                session(['active_role' => 'freelancer']);
+                $activeRole = 'freelancer';
+            } elseif ($hasCompany && !$hasFreelancer) {
+                session(['active_role' => 'company']);
+                $activeRole = 'company';
+            }
+        }
 
         // Se não tem nenhum perfil, redirecionar para seleção de perfil (criação)
         if (!$hasFreelancer && !$hasCompany) {

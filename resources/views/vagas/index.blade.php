@@ -9,8 +9,6 @@
 
     <!-- Layout principal com sidebar -->
     <div class="sidebar-layout {{ auth()->check() ? 'ml-20' : '' }}">
-        <!-- Navbar integrada -->
-        @include('layouts.navigation')
         
         <!-- Header -->
         <div class="bg-white shadow-sm border-b">
@@ -24,8 +22,6 @@
                         @guest
                             <a href="{{ route('login') }}" class="btn-trampix-secondary">Entrar</a>
                             <a href="{{ route('register') }}" class="btn-trampix-primary">Cadastrar</a>
-                        @else
-                            <a href="{{ route('dashboard') }}" class="btn-trampix-secondary">Dashboard</a>
                         @endguest
                     </div>
                 </div>
@@ -39,7 +35,8 @@
 <x-action-confirmation 
     actionType="candidatura" 
     modalId="applicationConfirmationModal" 
-    :showTip="true" />
+    :showTip="true"
+    confirmText="Ir para a vaga" />
 
 <x-action-confirmation 
     actionType="exclusao" 
@@ -48,25 +45,16 @@
 @push('scripts')
 <script>
     // Função para mostrar confirmação de candidatura
-    function showApplicationConfirmation(vagaId, jobTitle, companyName) {
+    function showApplicationConfirmation(vagaId, jobTitle, companyName, redirectUrl) {
         showActionModal('applicationConfirmationModal', {
             actionType: 'candidatura',
             jobTitle: jobTitle,
             companyName: companyName,
-            message: `Deseja se candidatar para a vaga "${jobTitle}" na empresa ${companyName}?`,
+            message: `Você será redirecionado para a página da vaga "${jobTitle}". Lá você poderá enviar sua candidatura com uma mensagem personalizada. Deseja continuar?`,
             onConfirm: () => {
-                const form = document.getElementById(`applicationForm-${vagaId}`);
-                const submitButton = form.querySelector('button');
-                
-                // Adicionar loading ao botão
-                if (submitButton) {
-                    const originalContent = submitButton.innerHTML;
-                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
-                    submitButton.disabled = true;
-                }
-                
-                showNotification('Enviando candidatura...', 'info');
-                form.submit();
+                // Redirecionar para a página de detalhes da vaga
+                showNotification('Redirecionando para a vaga...', 'info');
+                window.location.href = redirectUrl;
             },
             onCancel: () => {
                 showNotification('Candidatura cancelada.', 'info');
@@ -120,14 +108,15 @@
 
     /* Melhorias no layout de filtros */
     .filter-section {
-        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        transition: all 0.3s ease;
+        background: #ffffff;
+        border: 1px solid #e5e7eb; /* cinza leve */
+        border-radius: 8px;
+        transition: border-color 0.2s ease, background-color 0.2s ease;
     }
 
     .filter-section:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        box-shadow: none;
+        border-color: #d1d5db; /* leve realce no hover */
     }
 
     .filter-grid {
@@ -154,8 +143,10 @@
 
     .filter-input-group .trampix-input {
         padding-left: 2.5rem;
-        transition: all 0.2s ease;
-        border-radius: 8px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        border-radius: 6px;
+        background-color: #fff;
+        border-color: #e5e7eb;
     }
 
     .filter-input-group .input-icon {
@@ -462,32 +453,7 @@
         visibility: visible;
     }
 
-    /* Modo escuro */
-    @media (prefers-color-scheme: dark) {
-        .trampix-card {
-            background-color: #1f2937;
-            border-color: #374151;
-        }
-        
-        .filter-section {
-            background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-            border-color: #374151;
-        }
-        
-        .text-gray-900 {
-            color: #f9fafb;
-        }
-        
-        .text-gray-600 {
-            color: #d1d5db;
-        }
-        
-        .card-btn-secondary {
-            background: #374151;
-            color: #f9fafb;
-            border-color: #4b5563;
-        }
-    }
+
 </style>
 @endpush
 
@@ -547,6 +513,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterSection = document.getElementById('filtersContent');
     const loadingIndicator = document.getElementById('loadingIndicator');
 
+    // Wrappers globais de loading para compatibilidade com chamadas existentes
+    function showLoading() {
+        const resultsContainer = document.getElementById('resultsContainer');
+        if (loadingIndicator && resultsContainer) {
+            loadingIndicator.classList.remove('hidden');
+            resultsContainer.style.opacity = '0.5';
+            resultsContainer.style.pointerEvents = 'none';
+        }
+    }
+
+    function hideLoading() {
+        const resultsContainer = document.getElementById('resultsContainer');
+        if (loadingIndicator && resultsContainer) {
+            loadingIndicator.classList.add('hidden');
+            resultsContainer.style.opacity = '1';
+            resultsContainer.style.pointerEvents = 'auto';
+        }
+    }
+
     // Toggle do painel de filtros com animação suave
     if (filterToggle && filterSection) {
         filterToggle.addEventListener('click', function() {
@@ -591,36 +576,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Auto-submit em mudanças nos selects com tratamento de erro
-    document.querySelectorAll('#categories, #contract_type, #location_type').forEach(select => {
-        if (select) {
-            select.addEventListener('change', function() {
-                try {
-                    // Adicionar feedback visual
-                    this.style.opacity = '0.6';
-                    this.disabled = true;
-                    
-                    const form = this.closest('form');
-                    if (form) {
-                        form.classList.add('filter-loading');
-                    }
-                    
-                    showLoading();
-                    setTimeout(() => {
-                        filterForm.submit();
-                    }, 300);
-                } catch (error) {
-                    console.error('Erro ao aplicar filtro:', error);
-                    showNotification('Erro ao aplicar filtro. Tente novamente.', 'error');
-                    hideLoading();
-                    
-                    // Restaurar estado do select
-                    this.style.opacity = '1';
-                    this.disabled = false;
-                }
-            });
-        }
-    });
+    // [REMOVIDO] Auto-submit duplicado que acionava reload; unificado no bloco de busca suave abaixo
 
     // Funcionalidade de busca com debounce e tratamento de erro
     const searchInput = document.querySelector('input[name="search"]');
@@ -647,7 +603,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         
                         showLoading();
-                        filterForm.submit();
+                        // Disparar submit para o listener de busca suave do formulário
+                        form.dispatchEvent(new Event('submit', { cancelable: true }));
                     } else {
                         // Restaurar ícone original
                         if (icon) {
@@ -676,28 +633,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 icon.className = 'fas fa-search input-icon';
             }
         });
+
+        // Submeter imediatamente ao pressionar Enter no campo de busca
+        searchInput.addEventListener('keydown', function(e){
+            if (e.key === 'Enter'){
+                e.preventDefault();
+                const form = this.closest('form');
+                if (form){
+                    showLoading();
+                    form.dispatchEvent(new Event('submit', { cancelable: true }));
+                }
+            }
+        });
     }
 
     // Funções de loading melhoradas
-    function showLoading() {
-        const resultsContainer = document.getElementById('resultsContainer');
-        
-        if (loadingIndicator && resultsContainer) {
-            loadingIndicator.classList.remove('hidden');
-            resultsContainer.style.opacity = '0.5';
-            resultsContainer.style.pointerEvents = 'none';
-        }
-    }
-
-    function hideLoading() {
-        const resultsContainer = document.getElementById('resultsContainer');
-        
-        if (loadingIndicator && resultsContainer) {
-            loadingIndicator.classList.add('hidden');
-            resultsContainer.style.opacity = '1';
-            resultsContainer.style.pointerEvents = 'auto';
-        }
-    }
+    // Mantemos o controle de loading no bloco de busca suave
 
     // Esconder loading quando a página carregar
     window.addEventListener('load', function() {
@@ -825,121 +776,45 @@ document.addEventListener('DOMContentLoaded', function() {
     @endif
 
     {{-- Sistema de Filtros --}}
-    <div class="filter-section p-6 mb-6" role="search" aria-label="Filtros de busca de vagas">
+    @php
+        $filtersApplied = request()->hasAny(['categories', 'contract_type', 'location_type', 'search']);
+    @endphp
+    <div class="filter-section p-4 mb-6" role="search" aria-label="Filtros de busca de vagas">
         <div class="flex items-center justify-between mb-6">
             <h2 class="trampix-h2 text-gray-900 flex items-center" id="filters-heading">
                 <i class="fas fa-filter mr-3 text-purple-600"></i>Filtros de Busca
             </h2>
             <button id="toggleFilters" 
                     class="card-btn card-btn-outline text-sm"
-                    aria-expanded="true"
+                    aria-expanded="{{ $filtersApplied ? 'true' : 'false' }}"
                     aria-controls="filtersContent"
                     aria-describedby="filters-heading">
-                <i class="fas fa-chevron-down mr-2" id="filterIcon"></i>
-                <span>Ocultar</span>
+                <i class="fas {{ $filtersApplied ? 'fa-chevron-up' : 'fa-chevron-down' }} mr-2" id="filterIcon"></i>
+                <span>{{ $filtersApplied ? 'Ocultar' : 'Mostrar' }}</span>
             </button>
         </div>
         
-        <div id="filtersContent" class="transition-all duration-300 ease-in-out" aria-live="polite">
-            <form method="GET" action="{{ route('vagas.index') }}" id="filterForm" role="form" aria-label="Formulário de filtros">
-                <div class="filter-grid">
-                    {{-- Busca por texto --}}
-                    <div class="filter-input-group">
-                        <label for="search" class="block text-sm font-semibold text-gray-700 mb-3">
-                            Buscar vagas
-                        </label>
-                        <input type="text" 
-                               id="search" 
-                               name="search" 
-                               value="{{ request('search') }}"
-                               placeholder="Digite o título da vaga, empresa ou palavra-chave..."
-                               class="trampix-input w-full"
-                               aria-describedby="search-help"
-                               autocomplete="off">
-                        <i class="fas fa-search input-icon"></i>
-                        <div id="search-help" class="text-xs text-gray-500 mt-1">
-                            Busque por título, descrição ou requisitos da vaga
-                        </div>
-                    </div>
-
-                    {{-- Categorias --}}
-                    <div>
-                        <label for="categories" class="block text-sm font-semibold text-gray-700 mb-3">
-                            <i class="fas fa-tags mr-2 text-purple-600"></i>Categorias
-                        </label>
-                        <select id="categories" 
-                                name="categories[]" 
-                                multiple 
-                                class="trampix-input w-full h-32"
-                                aria-describedby="categories-help"
-                                aria-label="Selecione uma ou mais categorias">
-                            @foreach($availableCategories as $category)
-                                <option value="{{ $category }}" 
-                                        {{ in_array($category, request('categories', [])) ? 'selected' : '' }}>
-                                    {{ $category }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div id="categories-help" class="text-xs text-gray-500 mt-1">
-                            Segure Ctrl (Windows) ou Cmd (Mac) para selecionar múltiplas categorias
-                        </div>
-                    </div>
-
-                    {{-- Tipo de Contrato --}}
-                    <div>
-                        <label for="contract_type" class="block text-sm font-semibold text-gray-700 mb-3">
-                            <i class="fas fa-briefcase mr-2 text-blue-600"></i>Contrato
-                        </label>
-                        <select id="contract_type" 
-                                name="contract_type" 
-                                class="trampix-input w-full"
-                                aria-label="Selecione o tipo de contrato">
-                            <option value="">Todos os tipos</option>
-                            @foreach($contractTypes as $type)
-                                <option value="{{ $type }}" {{ request('contract_type') === $type ? 'selected' : '' }}>
-                                    {{ $type }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Tipo de Localização --}}
-                    <div>
-                        <label for="location_type" class="block text-sm font-semibold text-gray-700 mb-3">
-                            <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>Localização
-                        </label>
-                        <select id="location_type" 
-                                name="location_type" 
-                                class="trampix-input w-full"
-                                aria-label="Selecione o tipo de localização">
-                            <option value="">Todas as localizações</option>
-                            @foreach($locationTypes as $type)
-                                <option value="{{ $type }}" {{ request('location_type') === $type ? 'selected' : '' }}>
-                                    {{ $type }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                {{-- Botões de ação --}}
-                <div class="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t border-gray-200">
-                    <button type="submit" 
-                            class="card-btn card-btn-primary flex-1 sm:flex-none"
-                            aria-describedby="apply-filters-help">
-                        <i class="fas fa-search mr-2"></i>Aplicar Filtros
-                    </button>
-                    <a href="{{ route('vagas.index') }}" 
-                       class="card-btn card-btn-secondary flex-1 sm:flex-none text-center"
-                       aria-describedby="clear-filters-help">
-                        <i class="fas fa-times mr-2"></i>Limpar Filtros
-                    </a>
-                </div>
-                <div class="sr-only">
-                    <div id="apply-filters-help">Aplicar os filtros selecionados à lista de vagas</div>
-                    <div id="clear-filters-help">Remover todos os filtros aplicados</div>
-                </div>
-            </form>
+        <div id="filtersContent" class="transition-all duration-300 ease-in-out {{ $filtersApplied ? '' : 'hidden' }}" aria-live="polite">
+            @php
+                // Listas disponíveis já fornecidas pela view
+                $categoriesList = $availableCategories ?? [];
+                $locationsList = $locationTypes ?? ['Remoto','Híbrido','Presencial'];
+            @endphp
+            <x-filter-panel
+                class="p-0 w-full"
+                :showHeader="false"
+                noContainer="true"
+                :action="route('vagas.index')"
+                method="GET"
+                applyLabel="Aplicar Filtros"
+                :resetHref="route('vagas.index')"
+                :categories="$categoriesList"
+                :locationTypes="$locationsList"
+                :selectedCategory="request('category')"
+                :selectedLocationType="request('location_type')"
+                searchName="search"
+                :searchValue="request('search')"
+            />
         </div>
     </div>
 
@@ -970,7 +845,7 @@ document.addEventListener('DOMContentLoaded', function() {
                  role="list" 
                  aria-label="Lista de vagas disponíveis">
                 @foreach ($vagas as $index => $vaga)
-                    <article class="trampix-card hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] job-card focus-within:ring-2 focus-within:ring-purple-500 focus-within:ring-offset-2" 
+                    <article class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-0.5 job-card focus-within:ring-2 focus-within:ring-purple-500 focus-within:ring-offset-2" 
                              style="animation-delay: {{ $index * 0.1 }}s"
                              role="listitem"
                              aria-labelledby="job-title-{{ $vaga->id }}"
@@ -979,7 +854,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex-1">
                                 <h3 id="job-title-{{ $vaga->id }}" 
-                                    class="font-semibold text-gray-900 mb-2 hover:text-purple-600 transition-colors duration-200">
+                                    class="text-lg font-semibold text-gray-900 mb-2 hover:text-purple-600 transition-colors duration-200">
                                     <a href="{{ route('vagas.show', $vaga->id) }}" 
                                        class="text-decoration-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded"
                                        aria-describedby="job-company-{{ $vaga->id }} job-description-{{ $vaga->id }}">
@@ -1012,34 +887,37 @@ document.addEventListener('DOMContentLoaded', function() {
                             @endauth
                         </div>
 
-                        {{-- Badges de informação --}}
-                        <div class="flex flex-wrap gap-2 mb-4" role="list" aria-label="Informações da vaga">
-                            @if($vaga->category)
-                                <span class="job-badge badge-category"
+                        {{-- Badges de informação (destacadas) --}}
+                        <div class="flex flex-wrap gap-3 mb-4" role="list" aria-label="Informações da vaga">
+                            @php
+                                $categoryLabel = $vaga->category?->name ?? $vaga->category ?? null;
+                            @endphp
+                            @if($categoryLabel)
+                                <span class="job-badge badge-category text-sm font-semibold px-3 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-purple-700 shadow-sm"
                                       role="listitem"
-                                      aria-label="Categoria: {{ $vaga->category }}">
-                                    <i class="fas fa-tag mr-1" aria-hidden="true"></i>{{ $vaga->category }}
+                                      aria-label="Categoria: {{ $categoryLabel }}">
+                                    <i class="fas fa-tag mr-2" aria-hidden="true"></i>{{ $categoryLabel }}
                                 </span>
                             @endif
                             @if($vaga->contract_type)
-                                <span class="job-badge badge-contract"
+                                <span class="job-badge badge-contract text-sm font-semibold px-3 py-1.5 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm"
                                       role="listitem"
                                       aria-label="Tipo de contrato: {{ $vaga->contract_type }}">
-                                    <i class="fas fa-briefcase mr-1" aria-hidden="true"></i>{{ $vaga->contract_type }}
+                                    <i class="fas fa-briefcase mr-2" aria-hidden="true"></i>{{ $vaga->contract_type }}
                                 </span>
                             @endif
                             @if($vaga->location_type)
-                                <span class="job-badge badge-location"
+                                <span class="job-badge badge-location text-sm font-semibold px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
                                       role="listitem"
                                       aria-label="Tipo de localização: {{ $vaga->location_type }}">
-                                    <i class="fas fa-map-marker-alt mr-1" aria-hidden="true"></i>{{ $vaga->location_type }}
+                                    <i class="fas fa-map-marker-alt mr-2" aria-hidden="true"></i>{{ $vaga->location_type }}
                                 </span>
                             @endif
                         </div>
 
                         {{-- Descrição --}}
                         <p id="job-description-{{ $vaga->id }}" 
-                           class="text-sm text-gray-600 mb-4 line-clamp-3"
+                           class="text-sm text-gray-700 mb-4 line-clamp-3"
                            aria-label="Descrição da vaga">
                             {{ Str::limit($vaga->description, 120) }}
                         </p>
@@ -1069,7 +947,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             if ($buttonCount >= 4) $gridClass .= ' has-four-buttons';
                         @endphp
                         
-                        <div class="{{ $gridClass }}" 
+                        <div class="{{ $gridClass }} mt-4 pt-4 border-t border-gray-200 gap-2 sm:gap-3" 
                              role="group" 
                              aria-label="Ações disponíveis para esta vaga">
                             {{-- Ver Detalhes --}}
@@ -1094,15 +972,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             @auth
                                 @can('isFreelancer')
                                     @if (!$hasApplied)
-                                        <form action="{{ route('applications.store', $vaga->id) }}" method="POST" class="contents" id="applicationForm-{{ $vaga->id }}">
-                                            @csrf
-                                            <button type="button" 
-                                                    class="card-btn card-btn-outline"
-                                                    aria-label="Candidatar-se para a vaga {{ $vaga->title }}"
-                                                    onclick="showApplicationConfirmation({{ $vaga->id }}, '{{ $vaga->title }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')">
-                                                <i class="fas fa-paper-plane mr-2" aria-hidden="true"></i>Candidatar
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('vagas.show', $vaga->id) }}"
+                                           class="card-btn card-btn-outline"
+                                           aria-label="Ir para a vaga {{ $vaga->title }}">
+                                            <i class="fas fa-arrow-right mr-2" aria-hidden="true"></i>Ir para a vaga
+                                        </a>
                                     @else
                                         <button type="button" 
                                                 class="card-btn card-btn-outline opacity-60 cursor-not-allowed" 
@@ -1130,7 +1004,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     <button type="button" 
                                             class="card-btn card-btn-danger" 
                                             aria-label="Excluir vaga {{ $vaga->title }}"
-                                            onclick="showDeleteConfirmation({{ $vaga->id }}, '{{ $vaga->title }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')">
+                                            onclick="showDeleteConfirmation({{ $vaga->id }}, '{{ $vaga->title }}', '{{ $vaga->company->name ?? 'Empresa' }}')">
                                         <i class="fas fa-trash mr-2" aria-hidden="true"></i>Excluir
                                     </button>
                                 </form>
@@ -1148,6 +1022,146 @@ document.addEventListener('DOMContentLoaded', function() {
             @endif
         @endif
     </div>
+
+    {{-- Busca suave (AJAX) e sugestões --}}
+    <script>
+    (function(){
+        const filtersContent = document.getElementById('filtersContent');
+        if (!filtersContent) return;
+        const form = filtersContent.querySelector('form[data-filter-form="true"]');
+        if (!form) return;
+        const resultsSel = form.getAttribute('data-results-container') || '#resultsContainer';
+        const loadingSel = form.getAttribute('data-loading') || '#loadingIndicator';
+        const resultsEl = document.querySelector(resultsSel);
+        const loadingEl = document.querySelector(loadingSel);
+        let currentFetchController = null;
+        let latestRequestId = 0;
+        let submitTimer = null;
+        const SUBMIT_DEBOUNCE_MS = 250;
+
+        function showLoading(state){
+            if (!loadingEl) return;
+            loadingEl.classList[state ? 'remove' : 'add']('hidden');
+        }
+
+        async function fetchResults(url){
+            const myRequestId = ++latestRequestId;
+            showLoading(true);
+            try {
+                // Cancelar requisição anterior se existir (evita erros ao mudar vários filtros)
+                if (currentFetchController) {
+                    currentFetchController.abort();
+                }
+                currentFetchController = new AbortController();
+                const res = await fetch(url, { headers: { 'X-Requested-With':'XMLHttpRequest' }, signal: currentFetchController.signal });
+                if (!res.ok) {
+                    // Falha silenciosa: manter resultados atuais sem erro visível
+                    return;
+                }
+                const html = await res.text();
+                // Parse e extrai o container de resultados da resposta inteira
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newResults = doc.querySelector(resultsSel);
+                // Ignorar respostas antigas (se outra atualização já foi agendada/concluída)
+                if (myRequestId !== latestRequestId) {
+                    return;
+                }
+                if (newResults && resultsEl) {
+                    resultsEl.innerHTML = newResults.innerHTML;
+                } else {
+                    // Falha silenciosa se não encontrar o container esperado
+                    return;
+                }
+            } catch (e) {
+                // Ignorar aborts e erros de rede de forma silenciosa
+                if (e && e.name === 'AbortError') {
+                    return;
+                }
+                // Mantém resultados atuais sem erro visível
+                return;
+            } finally {
+                showLoading(false);
+                currentFetchController = null;
+            }
+        }
+
+        function scheduleSubmit(){
+            if (submitTimer) {
+                clearTimeout(submitTimer);
+            }
+            submitTimer = setTimeout(() => {
+                const params = new URLSearchParams(new FormData(form));
+                const url = `${form.action}?${params.toString()}`;
+                window.history.replaceState({}, '', url);
+                fetchResults(url);
+            }, SUBMIT_DEBOUNCE_MS);
+        }
+
+        // Intercepta o envio do formulário para busca suave
+        form.addEventListener('submit', function(ev){
+            ev.preventDefault();
+            scheduleSubmit();
+        });
+
+        // Auto-submeter selects ao alterar valores
+        form.querySelectorAll('select').forEach(sel => {
+            sel.addEventListener('change', () => {
+                scheduleSubmit();
+            });
+        });
+
+        // Sugestões no campo de busca com debounce
+        const searchInput = form.querySelector('[data-search-input="true"]');
+        const suggestTargetSel = searchInput ? searchInput.getAttribute('data-suggest-target') : null;
+        const suggestBox = suggestTargetSel ? document.querySelector(suggestTargetSel) : null;
+        let tId;
+        function debounce(fn, ms){
+            return function(){
+                clearTimeout(tId);
+                const args = arguments;
+                tId = setTimeout(()=>fn.apply(null, args), ms);
+            }
+        }
+        async function loadSuggestions(q){
+            if (!suggestBox) return;
+            if (!q || q.length < 2){ suggestBox.classList.add('hidden'); suggestBox.innerHTML=''; return; }
+            try{
+                const res = await fetch(`/api/vagas/suggest?search=${encodeURIComponent(q)}`);
+                // Garantir JSON válido antes de parsear
+                const ct = res.headers.get('content-type') || '';
+                if (!res.ok || !ct.includes('application/json')) {
+                    throw new Error(`Resposta inválida (${res.status})`);
+                }
+                const data = await res.json();
+                const items = (data.suggestions || []).slice(0,8);
+                if (!items.length){ suggestBox.classList.add('hidden'); suggestBox.innerHTML=''; return; }
+                suggestBox.innerHTML = items.map(s => `<button type="button" class="block w-full text-left px-3 py-2 hover:bg-purple-50">${s}</button>`).join('');
+                suggestBox.classList.remove('hidden');
+                // Click em sugestão preenche e agenda submit suave
+                suggestBox.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (searchInput){ searchInput.value = btn.textContent; }
+                        suggestBox.classList.add('hidden');
+                        scheduleSubmit();
+                    });
+                });
+            }catch(e){ 
+                // Falha silenciosa: esconder e limpar sugestões
+                suggestBox.classList.add('hidden');
+                suggestBox.innerHTML='';
+            }
+        }
+        if (searchInput && suggestBox){
+            const debounced = debounce(loadSuggestions, 250);
+            searchInput.addEventListener('input', (e)=> debounced(e.target.value));
+            // Fechar ao clicar fora
+            document.addEventListener('click', (e)=>{
+                if (!suggestBox.contains(e.target) && e.target !== searchInput){ suggestBox.classList.add('hidden'); }
+            });
+        }
+    })();
+    </script>
         </div> <!-- Fecha content -->
     </div> <!-- Fecha layout principal com sidebar -->
 </div> <!-- Fecha min-h-screen -->

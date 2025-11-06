@@ -61,7 +61,7 @@
 
                     <!-- Toggle do Modo Escuro e Perfil (Direita) -->
                     <div class="trampix-nav-right d-flex align-items-center gap-3">
-                        <x-dark-mode-toggle />
+
                         
                         @auth
                             <!-- Perfil Dinâmico -->
@@ -144,23 +144,25 @@
                                     
                                     <!-- Itens do Menu -->
                                     <div class="trampix-dropdown-items">
-                                        <a href="{{ route('profile.edit') }}" class="trampix-dropdown-item">
-                                            <i class="fas fa-user-edit"></i>
-                                            <span>Editar Perfil</span>
-                                        </a>
-                                        
+                                        @unless(auth()->user()->isAdmin())
+                                            <a href="{{ route('profile.edit') }}" class="trampix-dropdown-item">
+                                                <i class="fas fa-user-edit"></i>
+                                                <span>Editar Perfil</span>
+                                            </a>
+                                        @endunless
+        
                                         <a href="{{ route('profile.account') }}" class="trampix-dropdown-item">
                                             <i class="fas fa-cog"></i>
                                             <span>Configurações</span>
                                         </a>
                                         
-                                        @if(auth()->user()->hasMultipleRoles())
+                                        @if(auth()->user()->hasMultipleRoles() && !auth()->user()->isAdmin())
                                             <div class="trampix-dropdown-divider"></div>
                                             <div class="px-3 py-2">
                                                 <small class="text-muted fw-bold">TROCAR PERFIL</small>
                                             </div>
                                             
-                                            @if(auth()->user()->freelancer && auth()->user()->active_role !== 'freelancer')
+                                            @if(!auth()->user()->isAdmin() && auth()->user()->freelancer && auth()->user()->active_role !== 'freelancer')
                                                 <form method="POST" action="{{ route('profile.switch-role') }}" class="d-inline">
                                                     @csrf
                                                     <input type="hidden" name="role" value="freelancer">
@@ -171,7 +173,7 @@
                                                 </form>
                                             @endif
                                             
-                                            @if(auth()->user()->company && auth()->user()->active_role !== 'company')
+                                            @if(!auth()->user()->isAdmin() && auth()->user()->company && auth()->user()->active_role !== 'company')
                                                 <form method="POST" action="{{ route('profile.switch-role') }}" class="d-inline">
                                                     @csrf
                                                     <input type="hidden" name="role" value="company">
@@ -219,6 +221,18 @@
     --trampix-light-gray: #F3F3F3;
     --trampix-red: #FF4C4C;
     --trampix-dark-gray: #4A4A4A;
+}
+
+/* Garantir que a navbar fique colada no topo sem espaçamento extra */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+.trampix-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+    margin-top: 0 !important;
 }
 
 /* Logo Trampix */

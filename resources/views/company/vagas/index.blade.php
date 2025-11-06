@@ -95,7 +95,7 @@
                         <option value="">Todos os tipos</option>
                         <option value="CLT" {{ request('contract_type') == 'CLT' ? 'selected' : '' }}>CLT</option>
                         <option value="PJ" {{ request('contract_type') == 'PJ' ? 'selected' : '' }}>PJ</option>
-                        <option value="Freelancer" {{ request('contract_type') == 'Freelancer' ? 'selected' : '' }}>Freelancer</option>
+                        <option value="Freelance" {{ request('contract_type') == 'Freelance' ? 'selected' : '' }}>Freelance</option>
                         <option value="Estágio" {{ request('contract_type') == 'Estágio' ? 'selected' : '' }}>Estágio</option>
                     </select>
                 </div>

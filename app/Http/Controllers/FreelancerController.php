@@ -77,12 +77,22 @@ class FreelancerController extends Controller
             'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',
             'availability' => 'nullable|string|max:255',
             'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'activity_area_id' => 'nullable|integer',
         ]);
 
         // Upload do CV se fornecido
         if ($request->hasFile('cv')) {
             $cvPath = $request->file('cv')->store('cvs', 'public');
             $validated['cv_url'] = $cvPath;
+        }
+
+        // Mapear área de atuação válida (type = freelancer)
+        if ($request->filled('activity_area_id')) {
+            $areaId = (int) $request->input('activity_area_id');
+            $area = \App\Models\ActivityArea::where('id', $areaId)
+                ->where('type', 'freelancer')
+                ->first();
+            $validated['activity_area_id'] = $area?->id; // define somente se existir
         }
 
         // Criar perfil freelancer
@@ -115,6 +125,7 @@ class FreelancerController extends Controller
             'availability' => 'nullable|string|max:255',
             'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
             'remove_cv' => 'nullable|boolean',
+            'activity_area_id' => 'nullable|integer',
         ]);
 
         // Remover CV se solicitado
@@ -132,6 +143,18 @@ class FreelancerController extends Controller
             
             $cvPath = $request->file('cv')->store('cvs', 'public');
             $validated['cv_url'] = $cvPath;
+        }
+
+        // Mapear área de atuação válida (type = freelancer)
+        if ($request->filled('activity_area_id')) {
+            $areaId = (int) $request->input('activity_area_id');
+            $area = \App\Models\ActivityArea::where('id', $areaId)
+                ->where('type', 'freelancer')
+                ->first();
+            $validated['activity_area_id'] = $area?->id; // define somente se existir
+        } else {
+            // permitir limpar o campo
+            $validated['activity_area_id'] = null;
         }
 
         $freelancer->update($validated);

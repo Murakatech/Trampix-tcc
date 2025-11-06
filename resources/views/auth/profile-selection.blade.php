@@ -17,10 +17,10 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="h-full w-full m-0 p-0 overflow-hidden bg-gray-50 font-sans antialiased">
+    <body class="min-h-screen w-full m-0 p-0 overflow-y-auto bg-gray-50 font-sans antialiased">
         
         <!-- Container principal com Alpine.js -->
-        <div class="flex w-full h-screen" x-data="{ activeProfile: null, animatingFreelancer: false, animatingCompany: false }">
+        <div class="flex w-full min-h-screen overflow-y-auto" x-data="{ activeProfile: null, animatingFreelancer: false, animatingCompany: false }">
             
             <!-- Logo e Nome Trampix no Centro -->
             <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 text-center">
@@ -47,7 +47,7 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="text-center px-8 absolute inset-0 flex flex-col justify-center items-center transition-all duration-300">
+                     class="text-center px-8 absolute inset-0 flex flex-col justify-center items-center transition-all duration-300 overflow-y-auto py-12">
                     
                     <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
                         <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,7 +103,7 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="w-full max-w-md mx-auto px-8 py-6 bg-white/10 backdrop-blur-sm rounded-2xl z-20 relative">
+                     class="w-full max-w-md mx-auto px-8 py-6 bg-white/10 backdrop-blur-sm rounded-2xl z-20 relative max-h-[85vh] overflow-y-auto">
                     
                     <h3 class="text-3xl font-bold mb-6 text-center">Criar Perfil Freelancer</h3>
                     
@@ -160,7 +160,7 @@
                         
                         <div>
                             <label for="availability" class="block text-sm font-medium text-purple-100 mb-2">Disponibilidade</label>
-                            <select id="availability" name="availability" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <select id="availability" name="availability" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-white/50">
                                 <option value="">Selecione sua disponibilidade</option>
                                 <option value="full_time" {{ old('availability') == 'full_time' ? 'selected' : '' }}>Tempo Integral</option>
                                 <option value="part_time" {{ old('availability') == 'part_time' ? 'selected' : '' }}>Meio Período</option>
@@ -222,7 +222,7 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="text-center px-8 absolute inset-0 flex flex-col justify-center items-center transition-all duration-300">
+                     class="text-center px-8 absolute inset-0 flex flex-col justify-center items-center transition-all duration-300 overflow-y-auto py-12">
                     
                     <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
                         <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,7 +278,7 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="w-full max-w-md mx-auto px-8 py-6 bg-white/10 backdrop-blur-sm rounded-2xl z-20 relative">
+                     class="w-full max-w-md mx-auto px-8 py-6 bg-white/10 backdrop-blur-sm rounded-2xl z-20 relative max-h-[85vh] overflow-y-auto">
                     
                     <h3 class="text-3xl font-bold mb-6 text-center">Criar Perfil Empresa</h3>
                     

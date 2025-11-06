@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\ActivityArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -43,8 +44,8 @@ class CompanyController extends Controller
     public function create()
     {
         Gate::authorize('canCreateCompanyProfile');
-        
-        return view('companies.create');
+        $activityAreas = ActivityArea::where('type', 'company')->orderBy('name')->get();
+        return view('companies.create', compact('activityAreas'));
     }
 
     public function store(Request $request)
@@ -63,10 +64,20 @@ class CompanyController extends Controller
             'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
             'service_categories' => 'nullable|array',
             'service_categories.*' => 'exists:service_categories,id',
+            'activity_area_id' => 'nullable|integer',
         ]);
 
         // Mapear display_name para name
         $validated['name'] = $validated['display_name'];
+
+        // Validar área de atuação (type = company)
+        if ($request->filled('activity_area_id')) {
+            $areaId = (int) $request->input('activity_area_id');
+            $area = \App\Models\ActivityArea::where('id', $areaId)
+                ->where('type', 'company')
+                ->first();
+            $validated['activity_area_id'] = $area?->id;
+        }
 
         // Criar perfil empresa
         $company = auth()->user()->createProfile('company', $validated);
@@ -116,7 +127,19 @@ class CompanyController extends Controller
             'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
             'service_categories' => 'nullable|array',
             'service_categories.*' => 'exists:service_categories,id',
+            'activity_area_id' => 'nullable|integer',
         ]);
+
+        // Validar área de atuação (type = company)
+        if ($request->filled('activity_area_id')) {
+            $areaId = (int) $request->input('activity_area_id');
+            $area = \App\Models\ActivityArea::where('id', $areaId)
+                ->where('type', 'company')
+                ->first();
+            $validated['activity_area_id'] = $area?->id;
+        } else {
+            $validated['activity_area_id'] = null;
+        }
 
         $company->update($validated);
 

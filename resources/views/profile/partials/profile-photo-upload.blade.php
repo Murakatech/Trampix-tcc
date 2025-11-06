@@ -41,27 +41,25 @@
                 @enderror
             </div>
             
-            <div class="flex items-center gap-4">
-                <button type="submit" class="btn-trampix-secondary">
-                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                    </svg>
-                    {{ $hasPhoto ? 'Alterar' : 'Enviar' }}
-                </button>
-                
-                @if($hasPhoto)
-                    <form method="post" action="{{ route('profile.photo.delete') }}" class="inline" id="removePhotoForm">
-                        @csrf
-                        @method('delete')
-                        <input type="hidden" name="profile_type" value="{{ $type }}">
-                        <button type="button" class="text-red-600 hover:text-red-800 text-sm transition-colors duration-200"
-                                onclick="showRemovePhotoConfirmation('{{ $type === 'freelancer' ? 'foto' : 'logo' }}')">
-                            Remover {{ $type === 'freelancer' ? 'foto' : 'logo' }}
-                        </button>
-                    </form>
-                @endif
-            </div>
+            <button type="submit" class="btn-trampix-secondary">
+                <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                {{ $hasPhoto ? 'Alterar' : 'Enviar' }}
+            </button>
         </form>
+
+        @if($hasPhoto)
+            <form method="post" action="{{ route('profile.photo.delete') }}" class="inline mt-2" id="removePhotoForm">
+                @csrf
+                @method('delete')
+                <input type="hidden" name="profile_type" value="{{ $type }}">
+                <button type="button" class="text-red-600 hover:text-red-800 text-sm transition-colors duration-200"
+                        onclick="showRemovePhotoConfirmation('{{ $type === 'freelancer' ? 'foto' : 'logo' }}')">
+                    Remover {{ $type === 'freelancer' ? 'foto' : 'logo' }}
+                </button>
+            </form>
+        @endif
     </div>
 </div>
 

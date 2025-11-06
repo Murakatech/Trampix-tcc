@@ -27,7 +27,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        @vite(['resources/js/dark-mode.js'])
+
 
         <!-- Custom Styles -->
         @stack('styles')
@@ -197,40 +197,55 @@
                 transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
             }
 
-            /* Sidebar behavior - always visible, pushes content */
+            /* Sidebar behavior - fixed position, follows scroll */
             .trampix-sidebar {
-                position: relative;
-                z-index: 10;
-                min-height: 100vh;
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 20;
+                height: 100vh;
                 flex-shrink: 0;
                 transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            }
+            
+            /* Main content offset to account for fixed sidebar */
+            .main-content-offset {
+                margin-left: 5rem; /* 80px - collapsed sidebar width */
+                transition: margin-left 0.3s ease-in-out;
+            }
+            
+            /* Expanded sidebar offset */
+            .main-content-offset.expanded {
+                margin-left: 14rem; /* 224px - expanded sidebar width */
             }
         </style>
     </head>
     <body class="bg-gray-50 font-sans antialiased">
         
-        <div class="flex min-h-screen">
+        <div class="min-h-screen" x-data="{ sidebarExpanded: false }">
             <!-- Sidebar Component -->
-            <x-sidebar />
+            <div @mouseenter="sidebarExpanded = true" @mouseleave="sidebarExpanded = false">
+                <x-sidebar />
+            </div>
             
             <!-- Main Content -->
-            <div class="flex-1 transition-all duration-700" style="transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);">
+            <div class="main-content-offset transition-all duration-700" 
+                 :class="{ 'expanded': sidebarExpanded }"
+                 style="transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);">
                 
                 <!-- Top Navigation Bar -->
                 <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
                 <div class="px-4 sm:px-6 lg:px-8">
-                    <div class="flex justify-between items-center h-16">
+                    <div class="flex justify-between items-center min-h-16 py-2">
                         <!-- Page Title or Welcome Message -->
                         <div class="flex-1 text-center">
                             @if(request()->routeIs('dashboard'))
-                                <h1 class="text-lg font-medium text-gray-900">
-                                    Bem-Vindo, {{ ucfirst($displayName) }}
-                                </h1>
+                                <h1 class="text-lg font-medium text-gray-900">Painel Geral</h1>
                             @else
                                 @if(isset($header))
                                     <h1 class="text-lg font-medium text-gray-900">{{ $header }}</h1>
                                 @elseif (View::hasSection('header'))
-                                    <h1 class="text-lg font-medium text-gray-900">@yield('header')</h1>
+                                    @yield('header')
                                 @else
                                     <h1 class="text-lg font-medium text-gray-900">
                                         @switch(true)
@@ -304,18 +319,32 @@
                                 aria-orientation="vertical"
                                 aria-labelledby="profile-menu-button"
                             >
-                                <!-- Profile Link -->
-                                <a 
-                                    href="{{ route('profile.edit') }}" 
-                                    class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150 touch-manipulation"
-                                    role="menuitem"
-                                    @click="open = false"
-                                >
-                                    <div class="w-4 h-4 mr-3 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                        <i class="fas fa-user text-xs text-blue-500"></i>
-                                    </div>
-                                    <span class="truncate">Visualizar Perfil</span>
-                                </a>
+                                <!-- Profile / Account Link -->
+                                @if(Auth::user()->isAdmin())
+                                    <a 
+                                        href="{{ route('profile.account') }}" 
+                                        class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150 touch-manipulation"
+                                        role="menuitem"
+                                        @click="open = false"
+                                    >
+                                        <div class="w-4 h-4 mr-3 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-user-shield text-xs text-blue-500"></i>
+                                        </div>
+                                        <span class="truncate">Minha Conta</span>
+                                    </a>
+                                @else
+                                    <a 
+                                        href="{{ route('profile.edit') }}" 
+                                        class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150 touch-manipulation"
+                                        role="menuitem"
+                                        @click="open = false"
+                                    >
+                                        <div class="w-4 h-4 mr-3 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-user text-xs text-blue-500"></i>
+                                        </div>
+                                        <span class="truncate">Visualizar Perfil</span>
+                                    </a>
+                                @endif
 
                                 <!-- Divider -->
                                 <hr class="my-1 border-gray-200">

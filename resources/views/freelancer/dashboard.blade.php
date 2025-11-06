@@ -104,25 +104,80 @@
 @section('header', 'Dashboard Freelancer')
 
 @section('content')
-<!-- Welcome Message -->
-<div class="mb-6">
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+<!-- Cabeçalho em Gradiente (padrão admin, adaptado ao freelancer) -->
+<div class="space-y-8">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 text-white">
         <div class="flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-gray-900">Bem-vindo de volta, <span class="trampix-user-name">{{ ucwords($freelancer->display_name ?? $freelancer->user->name) }}</span>!</h2>
-                <p class="text-gray-600 mt-1">Aqui está um resumo das suas atividades recentes</p>
+                <h2 class="text-2xl font-bold mb-2">
+                    Bem-vindo(a), <span class="trampix-user-name">{{ ucwords($freelancer->display_name ?? $freelancer->user->name) }}</span>! 💼
+                </h2>
+                <p class="text-blue-100">
+                    Acesse rapidamente suas candidaturas, encontre vagas recomendadas e atualize seu perfil.
+                </p>
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="bg-green-50 px-4 py-2 rounded-lg border border-green-200">
-                    <span class="text-green-700 font-medium">{{ $applicationsStats['total'] }} Candidaturas</span>
-                </div>
+            <div class="hidden md:block">
+                <i class="fas fa-user-astronaut text-6xl text-blue-300"></i>
             </div>
         </div>
     </div>
-</div>
 
-<div>
-        <!-- Resumo de Estatísticas -->
+    <!-- Ações Rápidas (mesmo padrão visual do admin) -->
+    <section>
+        <h3 class="text-xl font-semibold text-gray-700 mb-6 flex items-center">
+            <i class="fas fa-bolt text-blue-500 mr-2"></i>
+            Ações Rápidas
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a href="{{ route('vagas.index') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-briefcase text-blue-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Buscar Vagas</p>
+                        <p class="text-gray-900 font-semibold">Explorar oportunidades</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('applications.index') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-paper-plane text-blue-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Minhas Candidaturas</p>
+                        <p class="text-gray-900 font-semibold">Acompanhar status</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('profile.edit') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-user-edit text-blue-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Editar Perfil</p>
+                        <p class="text-gray-900 font-semibold">Atualizar informações</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('vagas.index') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-lightbulb text-blue-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Recomendações</p>
+                        <p class="text-gray-900 font-semibold">Ver vagas recomendadas</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- Resumo de Estatísticas -->
+    <div>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="trampix-card bg-blue-50 border-blue-200">
                 <div class="flex items-center">
@@ -333,8 +388,6 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 </div>
 
@@ -373,8 +426,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('[data-stat="accepted"] .text-2xl').textContent = stats.accepted;
         document.querySelector('[data-stat="rejected"] .text-2xl').textContent = stats.rejected;
         
-        // Atualizar contador no header
-        document.querySelector('.bg-green-50 span').textContent = `${stats.total} Candidaturas`;
+    // Atualizar contador no header rápido (exibe total no bloco de Ações Rápidas não mais necessário)
+        // Mantemos o total apenas nas estatísticas principais
         
         // Atualizar indicadores de novas aplicações
         const latestAppsIndicator = document.querySelector('#latest-applications .animate-pulse');

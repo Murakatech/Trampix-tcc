@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JobVacancy;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
@@ -38,7 +39,14 @@ class CompanyVacancyController extends Controller
 
             // Filtros
             if ($request->filled('category')) {
-                $query->where('category', $request->category);
+                $catName = $request->category;
+                $catId = Category::where('name', $catName)->value('id');
+                $query->where(function($q) use ($catName, $catId) {
+                    if ($catId) {
+                        $q->where('category_id', $catId);
+                    }
+                    $q->orWhere('category', $catName);
+                });
             }
 
             if ($request->filled('status')) {
@@ -56,11 +64,8 @@ class CompanyVacancyController extends Controller
             // Buscar vagas com paginação
             $vagas = $query->latest()->paginate(12);
 
-            // Buscar categorias únicas para filtro
-            $categories = JobVacancy::where('company_id', $company->id)
-                ->whereNotNull('category')
-                ->distinct()
-                ->pluck('category');
+            // Categorias predefinidas para filtro (agora vindas de categories)
+            $categories = Category::orderBy('name')->pluck('name');
 
             // Estatísticas
             $stats = [

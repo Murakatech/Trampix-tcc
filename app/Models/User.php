@@ -123,14 +123,33 @@ class User extends Authenticatable
      */
     public function getProfilePhotoPathAttribute()
     {
-        if ($this->isFreelancer() && $this->freelancer && $this->freelancer->profile_photo) {
-            return $this->freelancer->profile_photo;
+        // Prioriza o perfil ativo em sessão para alternar corretamente
+        $activeRole = session('active_role');
+
+        // Quando há um papel ativo definido, NÃO fazer fallback para outro perfil.
+        if ($activeRole === 'freelancer') {
+            return ($this->freelancer && $this->freelancer->profile_photo)
+                ? $this->freelancer->profile_photo
+                : null;
         }
-        
-        if ($this->isCompany() && $this->company && $this->company->profile_photo) {
-            return $this->company->profile_photo;
+
+        if ($activeRole === 'company') {
+            return ($this->company && $this->company->profile_photo)
+                ? $this->company->profile_photo
+                : null;
         }
-        
+
+        // Sem papel ativo definido: fallback ordenado freelancer → company
+        if (!$activeRole) {
+            if ($this->freelancer && $this->freelancer->profile_photo) {
+                return $this->freelancer->profile_photo;
+            }
+
+            if ($this->company && $this->company->profile_photo) {
+                return $this->company->profile_photo;
+            }
+        }
+
         return null;
     }
 

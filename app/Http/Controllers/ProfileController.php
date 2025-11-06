@@ -94,10 +94,27 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $activeRole = session('active_role');
-        
-        // Se não há active_role definido, redirecionar para seleção de perfil
+        $hasFreelancer = (bool) $user->freelancer;
+        $hasCompany = (bool) $user->company;
+
+        // Se não há active_role definido, decidir comportamento conforme perfis existentes
         if (!$activeRole) {
-            return redirect()->route('select-role.show');
+            // Sem perfis: encaminhar para seleção/criação de perfil
+            if (!$hasFreelancer && !$hasCompany) {
+                return redirect()->route('profile.selection');
+            }
+
+            // Apenas um perfil: definir automaticamente e seguir
+            if ($hasFreelancer && !$hasCompany) {
+                session(['active_role' => 'freelancer']);
+                $activeRole = 'freelancer';
+            } elseif ($hasCompany && !$hasFreelancer) {
+                session(['active_role' => 'company']);
+                $activeRole = 'company';
+            } else {
+                // Ambos os perfis: exibir tela de seleção
+                return redirect()->route('select-role.show');
+            }
         }
         
         // Carregar ambos os perfis para exibição correta na view
@@ -139,6 +156,11 @@ class ProfileController extends Controller
     public function updateAccount(Request $request): RedirectResponse
     {
         $user = $request->user();
+
+        // Bloquear edição da conta para administradores
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.dashboard')->with('error', 'A conta do administrador não pode ser editada.');
+        }
         $validated = $request->validate(\App\Http\Requests\AccountUpdateRequest::rulesFor($user->id));
 
         $user->fill($validated);
@@ -170,6 +192,10 @@ class ProfileController extends Controller
         
         // Se é uma atualização de informações básicas da conta (sem section específica)
         if (!$section || $section === 'account') {
+            // Bloquear edição da conta para administradores
+            if ($user->isAdmin()) {
+                return Redirect::route('admin.dashboard')->with('error', 'A conta do administrador não pode ser editada.');
+            }
             $validated = $request->validate(\App\Http\Requests\AccountUpdateRequest::rulesFor($user->id));
 
             $user->fill($validated);
@@ -223,6 +249,22 @@ class ProfileController extends Controller
                 $freelancer->update($validated);
             } else {
                 $freelancer = $user->createProfile('freelancer', $validated);
+            }
+
+            // Atualizar área de atuação (ActivityArea) para freelancer
+            if ($request->filled('activity_area_id')) {
+                $areaId = (int) $request->input('activity_area_id');
+                $area = \App\Models\ActivityArea::where('id', $areaId)
+                    ->where('type', 'freelancer')
+                    ->first();
+                $freelancer->activity_area_id = $area?->id; // só define se for válida
+                $freelancer->save();
+            } else {
+                // permitir limpar o campo
+                if ($freelancer->activity_area_id) {
+                    $freelancer->activity_area_id = null;
+                    $freelancer->save();
+                }
             }
 
             // Processar categorias de serviços
@@ -292,6 +334,22 @@ class ProfileController extends Controller
                 $company->update($validated);
             } else {
                 $company = $user->createProfile('company', $validated);
+            }
+
+            // Atualizar área de atuação (ActivityArea) para empresa
+            if ($request->filled('activity_area_id')) {
+                $areaId = (int) $request->input('activity_area_id');
+                $area = \App\Models\ActivityArea::where('id', $areaId)
+                    ->where('type', 'company')
+                    ->first();
+                $company->activity_area_id = $area?->id; // só define se for válida
+                $company->save();
+            } else {
+                // permitir limpar o campo
+                if ($company->activity_area_id) {
+                    $company->activity_area_id = null;
+                    $company->save();
+                }
             }
 
             // Sincronizar categorias de serviço se fornecidas

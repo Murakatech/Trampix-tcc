@@ -49,6 +49,20 @@
                                     <x-text-input id="location" name="location" type="text" class="trampix-input mt-1 block w-full" :value="old('location')" placeholder="São Paulo, SP" />
                                     <x-input-error :messages="$errors->get('location')" class="mt-2" />
                                 </div>
+
+                                <!-- Área de Atuação (ActivityArea) -->
+                                <div>
+                                    <x-input-label for="activity_area_id" :value="__('Área de Atuação')" />
+                                    <select id="activity_area_id" name="activity_area_id" class="trampix-input mt-1 block w-full">
+                                        <option value="">Selecione sua área de atuação</option>
+                                        @foreach(\App\Models\ActivityArea::where('type', 'freelancer')->orderBy('name')->get() as $area)
+                                            <option value="{{ $area->id }}" {{ old('activity_area_id') == $area->id ? 'selected' : '' }}>
+                                                {{ $area->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <x-input-error :messages="$errors->get('activity_area_id')" class="mt-2" />
+                                </div>
                             </div>
 
                             <div class="space-y-6">

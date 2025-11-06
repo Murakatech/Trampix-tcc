@@ -49,8 +49,8 @@
         <hr class="my-3">
         
         @if($role === 'freelancer')
-            <x-sidebar-item href="{{ url('/vagas') }}" :active="request()->is('vagas*')" icon="fa-solid fa-magnifying-glass">Buscar Vagas</x-sidebar-item>
-            <x-sidebar-item href="{{ url('/my-applications') }}" :active="request()->is('my-applications*')">
+            <x-sidebar-item href="{{ route('vagas.index') }}" :active="request()->routeIs('vagas.index')" icon="fa-solid fa-magnifying-glass">Buscar Vagas</x-sidebar-item>
+            <x-sidebar-item href="{{ route('applications.index') }}" :active="request()->routeIs('applications.index')">
                 <x-slot name="icon">
                     <img src="{{ asset('images/candidatura_icon.png') }}" alt="Candidaturas" class="w-4 h-4 object-contain">
                 </x-slot>

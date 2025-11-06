@@ -3,7 +3,8 @@
     'jobTitle' => '',
     'companyName' => '',
     'modalId' => 'actionConfirmationModal',
-    'showTip' => true
+    'showTip' => true,
+    'confirmText' => null
 ])
 
 {{-- Modal de Confirmação de Ações Customizado --}}
@@ -125,13 +126,13 @@
                         onclick="confirmAction('{{ $modalId }}')" 
                         onmouseenter="window.ActionConfirmation.analytics.track('button_hover', {modal_id: '{{ $modalId }}', button_type: 'confirm'})"
                         class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 shadow-lg text-sm sm:text-base"
-                        aria-label="Confirmar {{ $actionType }}"
+                        aria-label="{{ $confirmText ? $confirmText : ('Confirmar ' . $actionType) }}"
                         tabindex="0">
                     @if($actionType === 'candidatura')
                         <svg class="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                         </svg>
-                        Enviar Candidatura
+                        {{ $confirmText ?? 'Enviar Candidatura' }}
                     @elseif($actionType === 'exclusao')
                         <svg class="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -286,7 +287,7 @@ function showActionModal(modalId, options = {}) {
      setupFocusTrap(modal);
  }
 
-function closeActionModal(modalId) {
+function closeActionModal(modalId, reason = 'cancel') {
      const startTime = performance.now();
      
      const modal = document.getElementById(modalId);
@@ -294,7 +295,7 @@ function closeActionModal(modalId) {
 
      // Executar callback de cancelamento se existir
      const callbacks = window.ActionConfirmation.pendingCallbacks[modalId];
-     if (callbacks && callbacks.onCancel) {
+     if (reason === 'cancel' && callbacks && callbacks.onCancel) {
          callbacks.onCancel();
      }
 
@@ -320,14 +321,17 @@ function closeActionModal(modalId) {
      }, 200);
 
      // Analytics
-     window.ActionConfirmation.analytics.track('modal_cancelled', {
+     const eventName = reason === 'confirm' ? 'modal_closed' : 'modal_cancelled';
+     window.ActionConfirmation.analytics.track(eventName, {
          modal_id: modalId,
          action_type: callbacks ? callbacks.actionType : 'unknown'
      });
 
-     // Limpar callbacks
-     delete window.ActionConfirmation.pendingCallbacks[modalId];
- }
+     // Limpar callbacks apenas em cancelamento
+     if (reason === 'cancel') {
+         delete window.ActionConfirmation.pendingCallbacks[modalId];
+     }
+}
 
 function confirmAction(modalId) {
     const startTime = performance.now();
@@ -342,8 +346,8 @@ function confirmAction(modalId) {
             company_name: callbacks.companyName
         });
 
-        // Fechar modal
-        closeActionModal(modalId);
+        // Fechar modal sem acionar cancelamento
+        closeActionModal(modalId, 'confirm');
         
         // Executar callback com delay para animação
         setTimeout(() => {
@@ -351,6 +355,9 @@ function confirmAction(modalId) {
             
             // Track performance
             window.ActionConfirmation.analytics.trackPerformance('action_confirm', startTime);
+
+            // Limpar callbacks após confirmação
+            delete window.ActionConfirmation.pendingCallbacks[modalId];
         }, 300);
     }
 }
@@ -410,5 +417,28 @@ function closeApplicationModal() {
 
 function confirmApplication() {
     confirmAction('{{ $modalId }}');
+}
+</script>
+<script>
+// Fallback global de notificação caso não esteja definido em outras páginas
+if (typeof window.showNotification !== 'function') {
+    window.showNotification = function(message, type = 'info') {
+        try {
+            // Tenta usar um toast simples se existir
+            if (window.toastr && typeof window.toastr[type] === 'function') {
+                window.toastr[type](message);
+                return;
+            }
+        } catch (e) {
+            // ignora
+        }
+
+        // Fallback para console e alert
+        console.log(`[${type}]`, message);
+        // Evita interromper UX com alert em tudo; usa alert apenas para erros
+        if (type === 'error') {
+            alert(message);
+        }
+    }
 }
 </script>

@@ -42,6 +42,9 @@
                 --trampix-dark-gray: #4A4A4A;
             }
 
+            /* Reset global para evitar faixa branca padrão do body */
+            html, body { margin: 0; padding: 0; }
+
             /* Tipografia básica do styleguide */
             .trampix-h1 { color: var(--trampix-purple); font-weight: 700; font-size: 2.5rem; }
             .trampix-h2 { color: var(--trampix-black); font-weight: 500; font-size: 2rem; }
@@ -99,7 +102,9 @@
     </head>
     <body>
         <div id="app">
-            @include('layouts.navigation')
+            @if (!request()->routeIs('vagas.index'))
+                @include('layouts.navigation')
+            @endif
 
             <!-- Page Heading -->
             @if(isset($header))
@@ -117,7 +122,7 @@
             @endif
 
             <!-- Page Content -->
-            <main class="py-4">
+            <main class="{{ request()->routeIs('vagas.index') ? '' : 'py-4' }}">
                 @if(isset($slot))
                     {{ $slot }}
                 @else
@@ -129,8 +134,7 @@
         <!-- Bootstrap 5 JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         
-        <!-- Dark Mode Script -->
-        @vite(['resources/js/dark-mode.js'])
+
         
         <!-- Custom Scripts -->
         @stack('scripts')

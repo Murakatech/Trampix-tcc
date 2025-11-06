@@ -47,11 +47,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="category" class="form-label">Categoria</label>
-                            <input type="text" id="category" name="category" 
-                                   class="form-control @error('category') is-invalid @enderror" 
-                                   value="{{ old('category', $vaga->category) }}" placeholder="Ex: Desenvolvimento, Design, Marketing">
-                            @error('category')
+                            <label for="category_id" class="form-label">Categoria da Vaga</label>
+                            <select id="category_id" name="category_id" class="form-select @error('category_id') is-invalid @enderror">
+                                <option value="">Selecione uma categoria...</option>
+                                @foreach(($categories ?? []) as $cat)
+                                    <option value="{{ $cat->id }}" {{ old('category_id', $vaga->category_id) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

@@ -33,11 +33,25 @@
                                     <x-input-error :messages="$errors->get('website')" class="mt-2" />
                                 </div>
 
-                                <div class="mb-3">
-                                    <x-input-label for="phone" :value="__('Telefone')" />
-                                    <x-text-input id="phone" name="phone" type="text" class="form-control" :value="old('phone')" placeholder="(11) 3333-4444" />
-                                    <x-input-error :messages="$errors->get('phone')" class="mt-2" />
-                                </div>
+                            <div class="mb-3">
+                                <x-input-label for="phone" :value="__('Telefone')" />
+                                <x-text-input id="phone" name="phone" type="text" class="form-control" :value="old('phone')" placeholder="(11) 3333-4444" />
+                                <x-input-error :messages="$errors->get('phone')" class="mt-2" />
+                            </div>
+                            
+                            <div class="mb-3">
+                                <x-input-label for="activity_area_id" :value="__('Área de Atuação')" />
+                                <select id="activity_area_id" name="activity_area_id" class="form-select">
+                                    <option value="">Selecione uma área (opcional)</option>
+                                    @isset($activityAreas)
+                                        @foreach($activityAreas as $area)
+                                            <option value="{{ $area->id }}" {{ old('activity_area_id') == $area->id ? 'selected' : '' }}>{{ $area->name }}</option>
+                                        @endforeach
+                                    @endisset
+                                </select>
+                                <div class="form-text">Escolha a área principal de atuação da empresa.</div>
+                                <x-input-error :messages="$errors->get('activity_area_id')" class="mt-2" />
+                            </div>
                             </div>
 
                             <div class="col-md-6">
@@ -53,15 +67,15 @@
                                     <x-input-error :messages="$errors->get('founded_year')" class="mt-2" />
                                 </div>
 
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="is_active">
-                                            Empresa ativa (aceita candidaturas)
-                                        </label>
-                                    </div>
-                                    <x-input-error :messages="$errors->get('is_active')" class="mt-2" />
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="is_active" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_active">
+                                        Empresa ativa (aceita candidaturas)
+                                    </label>
                                 </div>
+                                <x-input-error :messages="$errors->get('is_active')" class="mt-2" />
+                            </div>
                             </div>
                         </div>
 

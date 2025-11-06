@@ -21,6 +21,7 @@ class Freelancer extends Model
         'availability',
         'is_active',
         'profile_photo',
+        'activity_area_id',
     ];
 
     protected $casts = [
@@ -46,5 +47,15 @@ class Freelancer extends Model
     public function serviceCategories()
     {
         return $this->belongsToMany(ServiceCategory::class);
+    }
+
+    public function sectors()
+    {
+        return $this->belongsToMany(\App\Models\Sector::class, 'freelancer_sector');
+    }
+
+    public function activityArea()
+    {
+        return $this->belongsTo(\App\Models\ActivityArea::class);
     }
 }

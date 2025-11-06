@@ -27,6 +27,60 @@
         </div>
     </div>
 
+    <!-- Ações Rápidas (padronizado) -->
+    <section>
+        <h3 class="text-xl font-semibold text-gray-700 mb-6 flex items-center">
+            <i class="fas fa-bolt text-green-500 mr-2"></i>
+            Ações Rápidas
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a href="{{ route('vagas.create') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-plus text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Criar Vaga</p>
+                        <p class="text-gray-900 font-semibold">Nova oportunidade</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('company.vagas.index') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-briefcase text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Minhas Vagas</p>
+                        <p class="text-gray-900 font-semibold">Gerenciar vagas</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('applications.manage') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-user-check text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Candidaturas</p>
+                        <p class="text-gray-900 font-semibold">Acompanhar</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('profile.edit') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-building-user text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Perfil</p>
+                        <p class="text-gray-900 font-semibold">Editar informações</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </section>
+
     <!-- Estatísticas Gerais -->
     <section>
         <h3 class="text-xl font-semibold text-gray-700 mb-6 flex items-center">

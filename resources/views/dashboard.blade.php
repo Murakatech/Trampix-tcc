@@ -36,8 +36,6 @@
         @include('dashboard.partials.company')
     @elseif(auth()->user()->isFreelancer())
         @include('dashboard.partials.freelancer')
-    @elseif(auth()->user()->isAdmin())
-        @include('dashboard.partials.admin')
     @else
         <!-- Usuário sem perfil definido -->
         <div class="text-center py-12">

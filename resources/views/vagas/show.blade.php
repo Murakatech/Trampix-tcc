@@ -128,8 +128,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 showActionModal('applicationConfirmationModal', {
                     actionType: 'candidatura',
                     jobTitle: '{{ $vaga->titulo }}',
-                    companyName: '{{ $vaga->empresa->nome ?? "Empresa" }}',
-                    message: `Você está prestes a se candidatar à vaga "${'{{ $vaga->titulo }}'}" na empresa "${'{{ $vaga->empresa->nome ?? "Empresa" }}'}". Deseja continuar?`,
+    companyName: '{{ $vaga->company->name ?? "Empresa" }}',
+    message: `Você está prestes a se candidatar à vaga "${'{{ $vaga->title }}'}" na empresa "${'{{ $vaga->company->name ?? "Empresa" }}'}". Deseja continuar?`,
                     onConfirm: () => {
                         // Adicionar loading ao botão
                         if (submitButton) {
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
             showActionModal('deleteConfirmationModal', {
                 actionType: 'exclusao',
                 jobTitle: '{{ $vaga->titulo }}',
-                companyName: '{{ $vaga->empresa->nome ?? "Empresa" }}',
+    companyName: '{{ $vaga->company->name ?? "Empresa" }}',
                 message: `⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir a vaga "${'{{ $vaga->titulo }}'}"?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.`,
                 onConfirm: () => {
                     showNotification('Excluindo vaga...', 'warning');
@@ -375,30 +375,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /* Modo escuro */
-    @media (prefers-color-scheme: dark) {
-        .trampix-card {
-            background-color: #1f2937;
-            border-color: #374151;
-        }
-        
-        .text-gray-900 {
-            color: #f9fafb;
-        }
-        
-        .text-gray-600,
-        .text-gray-700 {
-            color: #d1d5db;
-        }
-        
-        .border-gray-200 {
-            border-color: #374151;
-        }
-        
-        .bg-gray-50 {
-            background-color: #374151;
-        }
-    }
+
 
     /* Melhorias para telas pequenas */
     @media (max-width: 480px) {
@@ -420,27 +397,12 @@ document.addEventListener('DOMContentLoaded', function() {
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Funcionalidade do botão "Ver Perfil da Empresa"
+    // Ver Perfil da Empresa — redirecionamento direto
     document.querySelectorAll('.company-profile-btn').forEach(button => {
         button.addEventListener('click', function() {
             const companyId = this.dataset.companyId;
-            const companyName = this.dataset.companyName;
-            
-            // Mostrar modal de confirmação personalizado
-            showActionModal('companyProfileModal', {
-                actionType: 'generic',
-                message: `Deseja ver o perfil da empresa ${companyName}?`,
-                onConfirm: () => {
-                    // Redirecionar para a página de perfil da empresa
-                    // window.location.href = `/empresas/${companyId}`;
-                    
-                    // Por enquanto, vamos mostrar uma notificação
-                    showNotification(`Funcionalidade em desenvolvimento.\nEmpresa: ${companyName}\nID: ${companyId}`, 'info');
-                },
-                onCancel: () => {
-                    showNotification('Visualização cancelada.', 'info');
-                }
-            });
+            // Redirecionar diretamente para o perfil público da empresa
+            window.location.href = `/companies/${companyId}`;
         });
     });
 
@@ -469,8 +431,8 @@ document.addEventListener('DOMContentLoaded', function() {
              showActionModal('applicationConfirmationModal', {
                  actionType: 'candidatura',
                  jobTitle: '{{ $vaga->titulo }}',
-                 companyName: '{{ $vaga->empresa->nome ?? "Empresa" }}',
-                 message: `Você está prestes a se candidatar à vaga <strong>{{ $vaga->titulo }}</strong> na empresa <strong>{{ $vaga->empresa->nome ?? "Empresa" }}</strong>. Deseja continuar?`,
+    companyName: '{{ $vaga->company->name ?? "Empresa" }}',
+    message: `Você está prestes a se candidatar à vaga <strong>{{ $vaga->title }}</strong> na empresa <strong>{{ $vaga->company->name ?? "Empresa" }}</strong>. Deseja continuar?`,
                  onConfirm: () => {
                      // Submeter formulário após confirmação
                      candidateForm.submit();
@@ -549,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                                     <div class="flex items-center text-purple-100">
                                         <i class="fas fa-building mr-3 text-xl" aria-hidden="true"></i>
-                                        <span class="text-lg font-medium">{{ $vaga->company->name ?? 'Empresa não informada' }}</span>
+    <span class="text-lg font-medium">{{ $vaga->company->name ?? 'Empresa não informada' }}</span>
                                     </div>
                                     
                                     {{-- Botão Ver Perfil da Empresa --}}
@@ -558,7 +520,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 class="inline-flex items-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-all duration-200 company-profile-btn focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-purple-600"
                                                 data-company-id="{{ $vaga->company->id }}"
                                                 data-company-name="{{ $vaga->company->name }}"
-                                                aria-label="Ver perfil da empresa {{ $vaga->company->name }}"
+    aria-label="Ver perfil da empresa {{ $vaga->company->name }}"
                                                 title="Ver perfil da {{ $vaga->company->name }}">
                                             <i class="fas fa-external-link-alt mr-2" aria-hidden="true"></i>Ver Perfil da Empresa
                                         </button>
@@ -566,26 +528,37 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                             </div>
 
-                            {{-- Badges de Informação --}}
+                            {{-- Badges de Informação (mais destacadas) --}}
                             <div class="flex flex-wrap gap-3">
-                                @if($vaga->category)
-                                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
-                                        <i class="fas fa-tag mr-2"></i>{{ $vaga->category }}
+                                @php
+                                    $categoryLabel = $vaga->category?->name ?? $vaga->category ?? null;
+                                @endphp
+                                @if($categoryLabel)
+                                    <span class="inline-flex items-center px-4 py-1.5 rounded-full text-base font-semibold bg-white/30 text-white backdrop-blur-sm shadow-sm">
+                                        <i class="fas fa-tag mr-2"></i>{{ $categoryLabel }}
                                     </span>
                                 @endif
                                 @if($vaga->contract_type)
-                                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
+                                    <span class="inline-flex items-center px-4 py-1.5 rounded-full text-base font-semibold bg-white/30 text-white backdrop-blur-sm shadow-sm">
                                         <i class="fas fa-briefcase mr-2"></i>{{ $vaga->contract_type }}
                                     </span>
                                 @endif
                                 @if($vaga->location_type)
-                                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
+                                    <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-white/30 text-white backdrop-blur-sm shadow-sm">
                                         <i class="fas fa-map-marker-alt mr-2"></i>{{ $vaga->location_type }}
                                     </span>
                                 @endif
                                 @if($vaga->status)
-                                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm">
-                                        <i class="fas fa-circle mr-2"></i>{{ ucfirst($vaga->status) }}
+                                    @php
+                                        $statusMap = [
+                                            'active' => 'Ativa',
+                                            'closed' => 'Fechada',
+                                            'paused' => 'Pausada',
+                                        ];
+                                        $statusLabel = $statusMap[$vaga->status] ?? ucfirst($vaga->status);
+                                    @endphp
+                                    <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-white/30 text-white backdrop-blur-sm shadow-sm">
+                                        <i class="fas fa-circle mr-2"></i>{{ $statusLabel }}
                                     </span>
                                 @endif
                             </div>
@@ -693,13 +666,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 <textarea
                                                     id="cover_letter"
                                                     name="cover_letter"
-                                                    rows="6"
-                                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 resize-none text-gray-700"
+                                                    rows="10"
+                                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 resize-y text-gray-700"
+                                                    style="min-height: 200px"
                                                     placeholder="Conte um pouco sobre você, sua experiência e por que se interessa por esta vaga. Esta mensagem ajudará o recrutador a conhecer melhor seu perfil..."
                                                     maxlength="1000"
                                                 >{{ old('cover_letter') }}</textarea>
                                                 <div class="absolute bottom-3 right-3 text-xs text-gray-400 bg-white px-2 py-1 rounded" id="charCount">
-                                                    0/1000
+                                                    0/1000 caracteres
                                                 </div>
                                             </div>
                                             <div class="mt-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
@@ -918,14 +892,14 @@ document.head.appendChild(style);
 <x-action-confirmation 
     :actionType="'candidatura'"
     :jobTitle="$vaga->titulo"
-    :companyName="$vaga->empresa->nome ?? 'Empresa'"
+    :companyName="$vaga->company->name ?? 'Empresa'"
     modalId="applicationConfirmationModal"
     :showTip="true" />
 
 <x-action-confirmation 
     :actionType="'exclusao'"
     :jobTitle="$vaga->titulo"
-    :companyName="$vaga->empresa->nome ?? 'Empresa'"
+    :companyName="$vaga->company->name ?? 'Empresa'"
     modalId="deleteConfirmationModal"
     :showTip="false" />
 
