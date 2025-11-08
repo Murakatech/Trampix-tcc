@@ -54,7 +54,7 @@
                     @csrf
                     <input type="hidden" name="role" value="company">
                     <button type="submit" 
-                            class="btn-trampix-secondary w-full sm:w-40 py-3 text-lg font-medium transition-all duration-300 hover:transform hover:scale-105">
+                            class="btn-trampix-company w-full sm:w-40 py-3 text-lg font-medium transition-all duration-300 hover:transform hover:scale-105">
                         <div class="flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 

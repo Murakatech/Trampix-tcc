@@ -282,7 +282,7 @@
                         </div>
 
                         <!-- Profile Icon with Dropdown -->
-                        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+                        <div class="relative flex flex-col items-center" x-data="{ open: false }" @click.away="open = false">
                             <!-- Profile Photo Button -->
                             <button 
                                 @click="open = !open"
@@ -299,11 +299,27 @@
                                         class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white shadow-sm"
                                     >
                                 @else
-                                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-medium text-xs sm:text-sm">
+                                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-medium text-xs sm:text-sm"
+                                         style="{{ ($activeRole === 'company') 
+                                            ? 'background: linear-gradient(to bottom right, #1ca751, var(--trampix-green));' 
+                                            : 'background: linear-gradient(to bottom right, #3b82f6, #8F3FF7);' }}">
                                         {{ strtoupper(substr($displayName, 0, 1)) }}
                                     </div>
                                 @endif
                             </button>
+
+                            <!-- Etiqueta discreta abaixo do avatar com cor do papel -->
+                            @php
+                                $activeRole = session('active_role')
+                                    ?? (Auth::user()->isCompany() ? 'company' : (Auth::user()->isFreelancer() ? 'freelancer' : null));
+                            @endphp
+                            <div class="mt-1 text-center">
+                                @if($activeRole === 'freelancer')
+                                    <span class="badge" style="background-color: rgba(143, 63, 247, 0.12); color: #3f3f46; border: 1px solid rgba(143, 63, 247, 0.25);">🧑‍💻 Freelancer</span>
+                                @elseif($activeRole === 'company')
+                                    <span class="badge" style="background-color: rgba(185, 255, 102, 0.18); color: #3f3f46; border: 1px solid rgba(185, 255, 102, 0.35);">🏢 Empresa</span>
+                                @endif
+                            </div>
 
                             <!-- Dropdown Menu -->
                             <div 
@@ -334,7 +350,7 @@
                                     </a>
                                 @else
                                     <a 
-                                        href="{{ route('profile.edit') }}" 
+                                        href="{{ route('profiles.show', Auth::user()) }}" 
                                         class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150 touch-manipulation"
                                         role="menuitem"
                                         @click="open = false"

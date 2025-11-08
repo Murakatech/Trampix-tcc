@@ -44,8 +44,8 @@ class CompanyController extends Controller
     public function create()
     {
         Gate::authorize('canCreateCompanyProfile');
-        $activityAreas = ActivityArea::where('type', 'company')->orderBy('name')->get();
-        return view('companies.create', compact('activityAreas'));
+        // Redirecionar para a tela unificada de seleção/criação de perfil
+        return redirect()->route('profile.selection');
     }
 
     public function store(Request $request)
@@ -59,8 +59,9 @@ class CompanyController extends Controller
             'location' => 'nullable|string|max:100',
             'description' => 'nullable|string|max:1000',
             'website' => 'nullable|url|max:255',
+            'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'employees_count' => 'nullable|integer|min:1|max:999999',
+            'company_size' => ['nullable','string', 'in:1-10,11-50,51-200,201-500,500+'],
             'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
             'service_categories' => 'nullable|array',
             'service_categories.*' => 'exists:service_categories,id',
@@ -122,8 +123,9 @@ class CompanyController extends Controller
             'location' => 'nullable|string|max:100',
             'description' => 'nullable|string|max:1000',
             'website' => 'nullable|url|max:255',
+            'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'employees_count' => 'nullable|integer|min:1|max:999999',
+            'company_size' => ['nullable','string', 'in:1-10,11-50,51-200,201-500,500+'],
             'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
             'service_categories' => 'nullable|array',
             'service_categories.*' => 'exists:service_categories,id',

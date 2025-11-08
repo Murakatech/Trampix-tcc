@@ -16,6 +16,31 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <meta name="old-service-categories" content='@json(old("service_categories", []))'>
+
+        <!-- Estilos locais: esconder scrollbar mantendo rolagem -->
+        <style>
+            .no-scrollbar {
+                -ms-overflow-style: none; /* IE e Edge */
+                scrollbar-width: none; /* Firefox */
+            }
+            .no-scrollbar::-webkit-scrollbar {
+                display: none; /* Chrome, Safari */
+            }
+            /* Select com texto branco no estado fechado e opções pretas no dropdown */
+            .select-contrast { color: #fff; }
+            .select-contrast option { color: #000; background-color: #fff; }
+            .select-contrast optgroup { color: #000; }
+            /* Autocomplete dropdown */
+            .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 50; background: rgba(255,255,255,0.95); backdrop-filter: blur(4px); border: 1px solid rgba(255,255,255,0.3); border-radius: 0.5rem; margin-top: 0.25rem; max-height: 200px; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+            .autocomplete-item { display: block; width: 100%; padding: 0.5rem 0.75rem; text-align: left; color: #111827; background: transparent; border: none; cursor: pointer; }
+            .autocomplete-item:hover { background-color: rgba(243,244,246,0.9); }
+            /* Chips com ícone de remover visível no hover */
+            .chip { display: inline-flex; align-items: center; gap: 6px; position: relative; }
+            .chip .chip-close { opacity: 0; transition: opacity 150ms ease; color: #4b5563; font-weight: 700; line-height: 1; }
+            .chip:hover .chip-close { opacity: 1; }
+            .chip .chip-close:hover { color: #ef4444; }
+        </style>
     </head>
     <body class="min-h-screen w-full m-0 p-0 overflow-y-auto bg-gray-50 font-sans antialiased">
         
@@ -47,7 +72,7 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="text-center px-8 absolute inset-0 flex flex-col justify-center items-center transition-all duration-300 overflow-y-auto py-12">
+                     class="text-center px-8 absolute inset-0 flex flex-col justify-center items-center transition-all duration-300 overflow-y-auto no-scrollbar py-12">
                     
                     <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
                         <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,13 +151,7 @@
                             @enderror
                         </div>
                         
-                        <div>
-                            <label for="portfolio_url" class="block text-sm font-medium text-purple-100 mb-2">URL do Portfólio</label>
-                            <input type="url" id="portfolio_url" name="portfolio_url" value="{{ old('portfolio_url') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://meuportfolio.com">
-                            @error('portfolio_url')
-                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        
                         
                         
 
@@ -143,18 +162,57 @@
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <!-- E-mail (Freelancer) -->
+                        <div>
+                            <label for="freelancer_email" class="block text-sm font-medium text-purple-100 mb-2">E-mail</label>
+                            <input type="email" id="freelancer_email" name="email" value="{{ old('email') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="seu@email.com">
+                            @error('email')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="portfolio_url" class="block text-sm font-medium text-purple-100 mb-2">URL do Portfólio</label>
+                            <input type="url" id="portfolio_url" name="portfolio_url" value="{{ old('portfolio_url') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://meuportfolio.com">
+                            @error('portfolio_url')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
                         
                         <div>
                             <label for="location" class="block text-sm font-medium text-purple-100 mb-2">Localização</label>
-                            <input type="text" id="location" name="location" value="{{ old('location') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="São Paulo, SP">
+                            <input type="text" id="location" name="location" value="{{ old('location') }}" data-autocomplete="city" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Cidade, Estado, País">
                             @error('location')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Áreas de Atuação (Freelancer) -->
+                        <label class="block text-sm font-medium text-purple-100 mb-2">Áreas de Atuação (Max 5)</label>
+                        <div id="freelancerCategoriesPicker" class="space-y-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto no-scrollbar">
+                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
+                                    <button type="button"
+                                            class="category-option flex items-center p-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 cursor-pointer transition-colors duration-200 text-white"
+                                            data-id="{{ $category->id }}" data-name="{{ $category->name }}">
+                                        @if($category->icon)
+                                            <i class="{{ $category->icon }} text-purple-200 mr-2"></i>
+                                        @endif
+                                        <span class="text-sm">{{ $category->name }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                            <div id="freelancerSelectedChips" class="flex flex-wrap gap-2"></div>
+                            <div id="freelancerSelectedInputs"></div>
+                            @error('service_categories')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>
                         
                         <div>
                             <label for="hourly_rate" class="block text-sm font-medium text-purple-100 mb-2">Valor por Hora (R$)</label>
-                            <input type="number" step="0.01" min="0" id="hourly_rate" name="hourly_rate" value="{{ old('hourly_rate') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="50.00">
+                            <input type="text" id="hourly_rate" name="hourly_rate" value="{{ old('hourly_rate') }}" data-mask="br-currency" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="R$ 50,00">
                             @error('hourly_rate')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
@@ -162,7 +220,7 @@
                         
                         <div>
                             <label for="availability" class="block text-sm font-medium text-purple-100 mb-2">Disponibilidade</label>
-                            <select id="availability" name="availability" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-white/50">
+                            <select id="availability" name="availability" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white select-contrast focus:outline-none focus:ring-2 focus:ring-white/50">
                                 <option value="">Selecione sua disponibilidade</option>
                                 <option value="full_time" {{ old('availability') == 'full_time' ? 'selected' : '' }}>Tempo Integral</option>
                                 <option value="part_time" {{ old('availability') == 'part_time' ? 'selected' : '' }}>Meio Período</option>
@@ -224,7 +282,7 @@
                      x-transition:leave="transition ease-in duration-300"
                      x-transition:leave-start="opacity-100"
                      x-transition:leave-end="opacity-0"
-                     class="text-center px-8 absolute inset-0 flex flex-col justify-center items-center transition-all duration-300 overflow-y-auto py-12">
+                     class="text-center px-8 absolute inset-0 flex flex-col justify-center items-center transition-all duration-300 overflow-y-auto no-scrollbar py-12">
                     
                     <div class="w-32 h-32 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-8 backdrop-blur-sm">
                         <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,6 +362,14 @@
                         </div>
                         
                         <div>
+                            <label for="email" class="block text-sm font-medium text-green-100 mb-2">E-mail *</label>
+                            <input type="email" id="email" name="email" value="{{ old('email') }}" required class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="empresa@dominio.com">
+                            @error('email')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
                             <label for="website" class="block text-sm font-medium text-green-100 mb-2">Website</label>
                             <input type="url" id="website" name="website" value="{{ old('website') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://minhaempresa.com">
                             @error('website')
@@ -313,45 +379,59 @@
                         
                         <div>
                             <label for="phone" class="block text-sm font-medium text-green-100 mb-2">Telefone</label>
-                            <input type="text" id="phone" name="phone" value="{{ old('phone') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="(11) 3333-4444">
+                            <input type="text" id="phone" name="phone" value="{{ old('phone') }}" data-mask="br-phone" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="(11) 3333-4444">
                             @error('phone')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Localização (Empresa) -->
+                        <div>
+                            <label for="company_location" class="block text-sm font-medium text-green-100 mb-2">Localização</label>
+                            <input type="text" id="company_location" name="location" value="{{ old('location') }}" data-autocomplete="city" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="Cidade, Estado, País">
+                            @error('location')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Áreas de Atuação (Empresa) -->
+                        <label class="block text-sm font-medium text-green-100 mb-2">Áreas de Atuação (Max 5)</label>
+                        <div id="companyCategoriesPicker" class="space-y-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto no-scrollbar">
+                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
+                                    <button type="button"
+                                            class="category-option flex items-center p-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 cursor-pointer transition-colors duration-200 text-white"
+                                            data-id="{{ $category->id }}" data-name="{{ $category->name }}">
+                                        @if($category->icon)
+                                            <i class="{{ $category->icon }} text-green-200 mr-2"></i>
+                                        @endif
+                                        <span class="text-sm">{{ $category->name }}</span>
+                                    </button>
+                                @endforeach
+                            </div>
+                            <div id="companySelectedChips" class="flex flex-wrap gap-2"></div>
+                            <div id="companySelectedInputs"></div>
+                            @error('service_categories')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>
                         
                         <div>
-                            <label for="employees_count" class="block text-sm font-medium text-green-100 mb-2">Número de Funcionários</label>
-                            <input type="number" min="1" id="employees_count" name="employees_count" value="{{ old('employees_count') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="10">
-                            @error('employees_count')
+                            <label for="company_size" class="block text-sm font-medium text-green-100 mb-2">Número de Funcionários</label>
+                            <select id="company_size" name="company_size" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white select-contrast focus:outline-none focus:ring-2 focus:ring-white/50">
+                                <option value="">Selecione...</option>
+                                <option value="1-10" {{ old('company_size') == '1-10' ? 'selected' : '' }}>1-10 funcionários</option>
+                                <option value="11-50" {{ old('company_size') == '11-50' ? 'selected' : '' }}>11-50 funcionários</option>
+                                <option value="51-200" {{ old('company_size') == '51-200' ? 'selected' : '' }}>51-200 funcionários</option>
+                                <option value="201-500" {{ old('company_size') == '201-500' ? 'selected' : '' }}>201-500 funcionários</option>
+                                <option value="500+" {{ old('company_size') == '500+' ? 'selected' : '' }}>500+ funcionários</option>
+                            </select>
+                            @error('company_size')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Categorias de Serviços -->
-                        <div>
-                            <label class="block text-sm font-medium text-green-100 mb-3">Áreas de Atuação</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto">
-                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
-                                    <label class="flex items-center p-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 cursor-pointer transition-colors duration-200">
-                                        <input type="checkbox" 
-                                               name="service_categories[]" 
-                                               value="{{ $category->id }}"
-                                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-white/30 rounded bg-white/20"
-                                               {{ in_array($category->id, old('service_categories', [])) ? 'checked' : '' }}>
-                                        <div class="ml-3 flex items-center text-white">
-                                            @if($category->icon)
-                                                <i class="{{ $category->icon }} text-green-200 mr-2"></i>
-                                            @endif
-                                            <span class="text-sm">{{ $category->name }}</span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                            <p class="text-xs text-green-200 mt-2">Selecione as áreas em que sua empresa atua</p>
-                            @error('service_categories')
-                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        <!-- Categorias de Serviços (seleção via select múltiplo já acima) -->
                         
                         <div class="flex space-x-4 pt-4">
                             <button type="button" 
@@ -384,8 +464,172 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                     </svg>
                 </button>
-            </div>
-        </div>
+    </div>
+</div>
 
-    </body>
+</body>
 </html>
+<script>
+// Picker de categorias com chips e limite de seleção
+document.addEventListener('DOMContentLoaded', function () {
+    const setupPicker = (rootId, chipsId, inputsId, limit, preselected = []) => {
+        const root = document.getElementById(rootId);
+        if (!root) return;
+        const chips = document.getElementById(chipsId);
+        const inputs = document.getElementById(inputsId);
+        const options = root.querySelectorAll('.category-option');
+
+        const selectedSet = new Set(preselected.map(id => String(id)));
+
+        const renderChip = (id, name) => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'chip px-3 py-1 bg-white text-purple-700 rounded-full text-sm shadow hover:bg-purple-200 transition';
+            chip.dataset.id = id;
+            chip.setAttribute('aria-label', `Remover categoria ${name}`);
+            chip.addEventListener('click', () => toggle(id, name));
+
+            const labelSpan = document.createElement('span');
+            labelSpan.textContent = name;
+
+            const closeSpan = document.createElement('span');
+            closeSpan.className = 'chip-close';
+            closeSpan.textContent = '×';
+
+            chip.appendChild(labelSpan);
+            chip.appendChild(closeSpan);
+            chips.appendChild(chip);
+        };
+
+        const addHiddenInput = (id) => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'service_categories[]';
+            input.value = id;
+            input.dataset.id = id;
+            inputs.appendChild(input);
+        };
+
+        const removeChip = (id) => {
+            chips.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.remove());
+        };
+
+        const removeInput = (id) => {
+            inputs.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.remove());
+        };
+
+        const markOption = (id, on) => {
+            options.forEach(opt => {
+                if (opt.dataset.id === String(id)) {
+                    opt.classList.toggle('ring-2', on);
+                    opt.classList.toggle('ring-white', on);
+                    opt.classList.toggle('bg-white/20', on);
+                }
+            });
+        };
+
+        const toggle = (id, name) => {
+            const idStr = String(id);
+            if (selectedSet.has(idStr)) {
+                selectedSet.delete(idStr);
+                removeChip(idStr);
+                removeInput(idStr);
+                markOption(idStr, false);
+            } else {
+                if (selectedSet.size >= limit) {
+                    alert(`Você pode selecionar no máximo ${limit} categorias.`);
+                    return;
+                }
+                selectedSet.add(idStr);
+                renderChip(idStr, name);
+                addHiddenInput(idStr);
+                markOption(idStr, true);
+            }
+        };
+
+        // Inicializar opções clique
+        options.forEach(opt => {
+            opt.addEventListener('click', () => toggle(opt.dataset.id, opt.dataset.name));
+        });
+
+        // Preselecionar
+        options.forEach(opt => {
+            if (selectedSet.has(opt.dataset.id)) {
+                renderChip(opt.dataset.id, opt.dataset.name);
+                addHiddenInput(opt.dataset.id);
+                markOption(opt.dataset.id, true);
+            }
+        });
+    };
+
+    const oldSelected = (function(){
+        try { return JSON.parse(document.querySelector('meta[name="old-service-categories"]')?.content || '[]'); } catch(e) { return []; }
+    })();
+
+    setupPicker('freelancerCategoriesPicker', 'freelancerSelectedChips', 'freelancerSelectedInputs', 5, oldSelected);
+    setupPicker('companyCategoriesPicker', 'companySelectedChips', 'companySelectedInputs', 5, oldSelected);
+});
+</script>
+<script>
+// Autocomplete de Localização usando Nominatim (OpenStreetMap)
+document.addEventListener('DOMContentLoaded', function() {
+  const initCityAutocomplete = (input) => {
+    let timer;
+    // criar container de lista se não existir
+    let list = input.parentNode.querySelector('.autocomplete-list');
+    input.parentNode.classList.add('relative');
+    if (!list) {
+      list = document.createElement('div');
+      list.className = 'autocomplete-list hidden';
+      input.parentNode.appendChild(list);
+    }
+
+    const formatResult = (item) => {
+      const a = item.address || {};
+      const city = a.city || a.town || a.village || a.municipality || a.suburb || '';
+      const state = a.state || a.region || '';
+      const country = a.country || '';
+      return [city, state, country].filter(Boolean).join(', ') || item.display_name;
+    };
+
+    const fetchResults = async (q) => {
+      if (!q || q.length < 2) { list.innerHTML = ''; list.classList.add('hidden'); return; }
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&q=${encodeURIComponent(q)}`;
+        const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        const data = await resp.json();
+        list.innerHTML = '';
+        data.forEach(item => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'autocomplete-item';
+          const label = formatResult(item);
+          btn.textContent = label;
+          btn.addEventListener('click', () => {
+            input.value = label;
+            list.classList.add('hidden');
+            list.innerHTML = '';
+          });
+          list.appendChild(btn);
+        });
+        list.classList.toggle('hidden', data.length === 0);
+      } catch (e) {
+        // Falha silenciosa; poderia logar se necessário
+      }
+    };
+
+    input.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fetchResults(input.value.trim()), 250);
+    });
+    input.addEventListener('blur', () => {
+      setTimeout(() => list.classList.add('hidden'), 150);
+    });
+    input.addEventListener('focus', () => {
+      if (list.innerHTML.trim() !== '') list.classList.remove('hidden');
+    });
+  };
+
+  document.querySelectorAll('input[data-autocomplete="city"]').forEach(initCityAutocomplete);
+});
+</script>

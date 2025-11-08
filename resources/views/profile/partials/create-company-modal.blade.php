@@ -64,6 +64,22 @@
                     @enderror
                 </div>
 
+                {{-- E-mail (obrigatório) --}}
+                <div>
+                    <label for="company_email" class="block text-sm font-medium text-gray-700 mb-2">
+                        E-mail *
+                    </label>
+                    <input type="email"
+                           id="company_email"
+                           name="email"
+                           class="trampix-input w-full"
+                           placeholder="contato@empresa.com"
+                           required>
+                    @error('email')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Botões de Ação --}}
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                     <button type="button" 

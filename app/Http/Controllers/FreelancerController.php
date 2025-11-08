@@ -46,8 +46,8 @@ class FreelancerController extends Controller
         $freelancer = auth()->user()->freelancer;
         
         if (!$freelancer) {
-            return redirect()->route('freelancers.create')
-                ->with('info', 'Você precisa criar um perfil de freelancer primeiro.');
+            return redirect()->route('profile.selection')
+                ->with('info', 'Você precisa criar seu perfil na tela de seleção de perfil.');
         }
         
         return view('profile.show', [
@@ -60,8 +60,8 @@ class FreelancerController extends Controller
     public function create()
     {
         Gate::authorize('canCreateFreelancerProfile');
-        
-        return view('freelancers.create');
+        // Redirecionar para a tela unificada de seleção/criação de perfil
+        return redirect()->route('profile.selection');
     }
 
     public function store(Request $request)
@@ -78,6 +78,8 @@ class FreelancerController extends Controller
             'availability' => 'nullable|string|max:255',
             'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
             'activity_area_id' => 'nullable|integer',
+            'service_categories' => 'nullable|array|max:5',
+            'service_categories.*' => 'exists:service_categories,id',
         ]);
 
         // Upload do CV se fornecido
@@ -105,6 +107,15 @@ class FreelancerController extends Controller
 
         // Criar perfil freelancer
         $freelancer = auth()->user()->createProfile('freelancer', $validated);
+
+        // Sincronizar categorias de serviço se fornecidas
+        if (isset($validated['service_categories'])) {
+            $validCategories = \App\Models\ServiceCategory::whereIn('id', $validated['service_categories'])
+                ->where('is_active', true)
+                ->pluck('id')
+                ->toArray();
+            $freelancer->serviceCategories()->sync($validCategories);
+        }
 
         // Definir freelancer como perfil ativo
         session(['active_role' => 'freelancer']);

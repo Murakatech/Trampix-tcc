@@ -87,7 +87,7 @@
                         @else
                             <!-- Dropdown para Trocar Perfil -->
                             <div class="relative inline-block" x-data="{ open: false }" @click.away="open = false">
-                                <button @click="open = !open" class="btn-trampix-secondary flex items-center gap-2">
+                                <button @click="open = !open" class="btn-trampix-primary flex items-center gap-2">
                                     Trocar Perfil Profissional
                                     <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -104,24 +104,23 @@
                                      class="absolute right-0 mt-2 w-64 trampix-card shadow-lg z-50">
                                     
                                     <!-- Opção ativa (desabilitada) -->
-                                    <div class="px-4 py-3 text-sm text-gray-500 border-b border-gray-200">
+                                    <div class="px-4 py-3 text-sm border-b border-gray-200 flex items-center justify-between">
                                         <div class="flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
-                                            Continuar no perfil de Freelancer
+                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700">🧑‍💻</span>
+                                            <span class="text-gray-700 font-medium">Perfil atual: Freelancer</span>
                                         </div>
+                                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
                                     </div>
                                     
                                     <!-- Opção para trocar -->
                                     <form method="post" action="{{ route('profile.switch-role') }}">
                                         @csrf
                                         <input type="hidden" name="role" value="company">
-                                        <button type="submit" class="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                                            </svg>
-                                            Mudar para perfil Empresa
+                                        <button type="submit" class="w-full px-4 py-3 text-left text-sm transition-colors duration-200 flex items-center gap-3 rounded-lg hover:bg-green-50">
+                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700">🏢</span>
+                                            <span class="text-gray-700">Trocar para perfil Empresa</span>
                                         </button>
                                     </form>
                                 </div>
@@ -135,7 +134,7 @@
                         @else
                             <!-- Dropdown para Trocar Perfil -->
                             <div class="relative inline-block" x-data="{ open: false }" @click.away="open = false">
-                                <button @click="open = !open" class="btn-trampix-secondary flex items-center gap-2">
+                                <button @click="open = !open" class="btn-trampix-company flex items-center gap-2">
                                     Trocar Perfil Profissional
                                     <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -152,24 +151,23 @@
                                      class="absolute right-0 mt-2 w-64 trampix-card shadow-lg z-50">
                                     
                                     <!-- Opção ativa (desabilitada) -->
-                                    <div class="px-4 py-3 text-sm text-gray-500 border-b border-gray-200">
+                                    <div class="px-4 py-3 text-sm border-b border-gray-200 flex items-center justify-between">
                                         <div class="flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                            </svg>
-                                            Continuar no perfil de Empresa
+                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700">🏢</span>
+                                            <span class="text-gray-700 font-medium">Perfil atual: Empresa</span>
                                         </div>
+                                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
                                     </div>
                                     
                                     <!-- Opção para trocar -->
                                     <form method="post" action="{{ route('profile.switch-role') }}">
                                         @csrf
                                         <input type="hidden" name="role" value="freelancer">
-                                        <button type="submit" class="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2">
-                                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
-                                            </svg>
-                                            Mudar para perfil Freelancer
+                                        <button type="submit" class="w-full px-4 py-3 text-left text-sm transition-colors duration-200 flex items-center gap-3 rounded-lg hover:bg-purple-50">
+                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700">🧑‍💻</span>
+                                            <span class="text-gray-700">Trocar para perfil Freelancer</span>
                                         </button>
                                     </form>
                                 </div>
@@ -307,7 +305,7 @@
                         <div class="space-y-4">
                             <button type="button" 
                                     onclick="openPhotoEditor('{{ (session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) ? asset('storage/' . $freelancer->profile_photo) : ((session('active_role') === 'company' && isset($company) && $company->profile_photo) ? asset('storage/' . $company->profile_photo) : '') }}')"
-                                    class="btn-trampix-primary">
+                                    class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }}">
                                 <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                           d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
@@ -629,7 +627,7 @@
                         <div class="text-sm text-gray-600">
                             <span class="font-medium">Campos alterados:</span> <span id="saveInfoCount">0</span>
                         </div>
-                        <button type="submit" form="profileMainForm" class="btn-trampix-primary">
+                        <button type="submit" form="profileMainForm" class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }}">
                             Salvar Alterações
                         </button>
                     </div>

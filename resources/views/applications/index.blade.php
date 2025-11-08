@@ -93,7 +93,7 @@
                                 <i class="fas fa-times-circle me-1"></i>Rejeitada
                             </span>
                         @else
-                            <span class="badge bg-warning fs-6">
+                            <span class="badge bg-warning fs-6" id="pending-applications">
                                 <i class="fas fa-clock me-1"></i>Pendente
                             </span>
                         @endif

@@ -1,7 +1,7 @@
 {{-- Modal de Criação de Freelancer --}}
-<div id="createFreelancerModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+<div id="createFreelancerModal" class="hidden fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 p-4 overflow-y-auto">
         
-        <div class="trampix-card w-full max-w-lg p-6 bg-white rounded-lg shadow-xl">
+        <div class="trampix-card w-full max-w-md sm:max-w-lg p-6 bg-white rounded-lg shadow-xl max-h-[85vh] overflow-y-auto">
         
         {{-- Cabeçalho do Modal --}}
         <div class="flex items-center justify-between mb-6">
@@ -69,10 +69,10 @@
                 {{-- Telefone --}}
                 
 
-                {{-- WhatsApp (Obrigatório) --}}
+                {{-- Telefone (Preferêncial Whatsapp) - Obrigatório --}}
                 <div>
                     <label for="freelancer_whatsapp" class="block text-sm font-medium text-gray-700 mb-2">
-                        WhatsApp *
+                        Telefone (Preferêncial Whatsapp) *
                     </label>
                     <input type="text" 
                            id="freelancer_whatsapp"

@@ -36,7 +36,7 @@
                         <div class="col-md-2 text-end">
                             <a href="{{ route('profile.edit') }}" class="btn btn-outline-primary">
                                 <i class="fas fa-user-cog me-1"></i>
-                                Configurar Conta
+                                Gerenciar Conta
                             </a>
                         </div>
                     </div>
@@ -52,7 +52,7 @@
                     </h4>
                     <div>
                         <span class="badge bg-primary me-2">{{ $vacancies->total() }} vagas</span>
-                        <a href="{{ route('vagas.create') }}" class="btn btn-success btn-sm">
+                        <a href="{{ route('vagas.create') }}" class="btn btn-trampix-company btn-sm">
                             <i class="fas fa-plus me-1"></i>
                             Nova Vaga
                         </a>
@@ -188,7 +188,7 @@
                             <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
                             <h5 class="text-muted">Nenhuma vaga criada</h5>
                             <p class="text-muted">Você ainda não criou nenhuma vaga de emprego.</p>
-                            <a href="{{ route('vagas.create') }}" class="btn btn-primary">
+                            <a href="{{ route('vagas.create') }}" class="btn btn-trampix-company">
                                 <i class="fas fa-plus me-1"></i>
                                 Criar Primeira Vaga
                             </a>

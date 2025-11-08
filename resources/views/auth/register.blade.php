@@ -14,6 +14,8 @@
         nameValid: false,
         emailValid: false,
         passwordValid: false,
+        hasSpecial: false,
+        hasUppercase: false,
         passwordMatch: false,
         showPasswordRequirements: false
     }">
@@ -70,7 +72,7 @@
                 name="password"
                 x-model="password"
                 @focus="showPasswordRequirements = true"
-                @input="passwordValid = password.length >= 8"
+                @input="passwordValid = password.length >= 8; hasSpecial = /[^A-Za-z0-9]/.test(password); hasUppercase = /[A-Z]/.test(password)"
                 required 
                 autocomplete="new-password"
                 placeholder="Mínimo 8 caracteres" />
@@ -107,6 +109,28 @@
             </div>
             <div x-show="passwordMatch && password_confirmation" class="mt-1 text-sm text-green-600">
                 ✓ Senhas coincidem
+            </div>
+
+            <!-- Requisitos da senha (abaixo da confirmação) -->
+            <div x-show="password || password_confirmation" class="mt-3 text-sm space-y-1">
+                <div class="flex items-center space-x-2" :class="passwordValid ? 'text-green-600' : 'text-gray-500'">
+                    <svg class="w-4 h-4" :class="passwordValid ? 'text-green-500' : 'text-gray-400'" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Mínimo 8 caracteres</span>
+                </div>
+                <div class="flex items-center space-x-2" :class="hasSpecial ? 'text-green-600' : 'text-gray-500'">
+                    <svg class="w-4 h-4" :class="hasSpecial ? 'text-green-500' : 'text-gray-400'" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Pelo menos 1 caractere especial (!@#$...)</span>
+                </div>
+                <div class="flex items-center space-x-2" :class="hasUppercase ? 'text-green-600' : 'text-gray-500'">
+                    <svg class="w-4 h-4" :class="hasUppercase ? 'text-green-500' : 'text-gray-400'" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span>Pelo menos 1 letra maiúscula (A-Z)</span>
+                </div>
             </div>
         </div>
 

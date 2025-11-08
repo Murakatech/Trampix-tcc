@@ -3,7 +3,7 @@
 @section('header')
 <div class="d-flex justify-content-between align-items-center">
     <h1 class="trampix-h1">Minhas Vagas</h1>
-    <a href="{{ route('vagas.create') }}" class="btn-trampix-primary btn-glow">
+    <a href="{{ route('vagas.create') }}" class="btn-trampix-company btn-glow">
         <i class="fas fa-plus me-2"></i>Nova Vaga
     </a>
 </div>
@@ -134,7 +134,7 @@
                 @else
                     <p class="text-muted mb-3">Comece criando sua primeira vaga de emprego</p>
                 @endif
-                <a href="{{ route('vagas.create') }}" class="btn-trampix-primary">
+                <a href="{{ route('vagas.create') }}" class="btn-trampix-company">
                     <i class="fas fa-plus me-1"></i>Criar Nova Vaga
                 </a>
             </div>

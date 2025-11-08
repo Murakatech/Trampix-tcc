@@ -24,7 +24,7 @@
                        onchange="loadImageForEditing(this)">
                 
                 <button onclick="document.getElementById('photoEditorInput').click()" 
-                        class="w-full btn-trampix-secondary text-sm py-3">
+                        class="w-full {{ $type === 'company' ? 'btn-trampix-company' : 'btn-trampix-secondary' }} text-sm py-3">
                     <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                               d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -84,7 +84,7 @@
                 <div class="mb-4">
                     <label class="text-sm text-gray-600 block mb-2">Tamanho:</label>
                     <div class="flex items-center space-x-3">
-                        <button onclick="scaleImage(-0.1)" class="btn-trampix-secondary text-xs px-3 py-1">-</button>
+                        <button onclick="scaleImage(-0.1)" class="{{ $type === 'company' ? 'btn-trampix-company' : 'btn-trampix-secondary' }} text-xs px-3 py-1">-</button>
                         <input type="range" 
                                id="scaleSlider" 
                                min="0.8" 
@@ -93,12 +93,12 @@
                                value="1" 
                                class="flex-1"
                                oninput="updateImageTransform()">
-                        <button onclick="scaleImage(0.1)" class="btn-trampix-secondary text-xs px-3 py-1">+</button>
+                        <button onclick="scaleImage(0.1)" class="{{ $type === 'company' ? 'btn-trampix-company' : 'btn-trampix-secondary' }} text-xs px-3 py-1">+</button>
                     </div>
                 </div>
 
                 <!-- Reset -->
-                <button onclick="resetPosition()" class="w-full btn-trampix-secondary text-sm">
+                <button onclick="resetPosition()" class="w-full {{ $type === 'company' ? 'btn-trampix-company' : 'btn-trampix-secondary' }} text-sm">
                     Centralizar
                 </button>
             </div>
@@ -106,11 +106,11 @@
 
         <!-- Rodapé com Ações -->
         <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <button onclick="closePhotoEditor()" class="btn-trampix-secondary">
+            <button onclick="closePhotoEditor()" class="{{ $type === 'company' ? 'btn-trampix-company' : 'btn-trampix-secondary' }}">
                 Cancelar
             </button>
             
-            <button onclick="confirmPhotoChanges()" class="btn-trampix-primary opacity-50 cursor-not-allowed" disabled id="confirmButton">
+            <button onclick="confirmPhotoChanges()" class="{{ $type === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }} opacity-50 cursor-not-allowed" disabled id="confirmButton">
                 Salvar
             </button>
         </div>

@@ -165,7 +165,7 @@
                                                            target="_blank"
                                                            class="btn btn-sm btn-outline-success"
                                                            title="Abrir no WhatsApp">
-                                                            <i class="fab fa-whatsapp"></i>
+                    <i class="fab fa-whatsapp me-2"></i>
                                                         </a>
                                                     @endif
                                                 </div>

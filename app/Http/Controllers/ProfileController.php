@@ -58,8 +58,8 @@ class ProfileController extends Controller
         if ($user->freelancer) {
             return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de freelancer.');
         }
-        
-        return view('freelancers.create');
+        // Direcionar para a tela unificada de seleção/criação de perfil
+        return redirect()->route('profile.selection');
     }
 
     /**
@@ -73,8 +73,8 @@ class ProfileController extends Controller
         if ($user->company) {
             return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de empresa.');
         }
-        
-        return view('companies.create');
+        // Direcionar para a tela unificada de seleção/criação de perfil
+        return redirect()->route('profile.selection');
     }
 
     /**

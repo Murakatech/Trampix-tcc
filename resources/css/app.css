@@ -51,6 +51,23 @@
     color: var(--trampix-black);
     transform: translateY(-2px);
   }
+  /* Variante para Empresa: verde base, roxo no hover */
+  .btn-trampix-company {
+    @apply btn;
+    background-color: var(--trampix-green);
+    border-color: var(--trampix-green);
+    color: var(--trampix-black);
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+  .btn-trampix-company:hover {
+    background-color: var(--trampix-purple);
+    border-color: var(--trampix-purple);
+    color: #ffffff;
+    transform: translateY(-2px);
+  }
   .btn-trampix-secondary {
     @apply btn;
     background-color: var(--trampix-light-gray);

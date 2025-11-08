@@ -11,6 +11,9 @@
         $activeRole = null;
         $activeProfile = null;
         $displayName = $user->name;
+        // Garantir que tenhamos as relações disponíveis
+        $company = $company ?? ($user->company ?? null);
+        $freelancer = $freelancer ?? ($user->freelancer ?? null);
         
         if (auth()->check() && auth()->id() === $user->id) {
             // Para o próprio usuário, usar a sessão active_role
@@ -20,6 +23,15 @@
             if ($company) {
                 $activeRole = 'company';
             } elseif ($freelancer) {
+                $activeRole = 'freelancer';
+            }
+        }
+        // Permitir troca de visualização via querystring, independente de login
+        $requestedRole = request('role');
+        if (in_array($requestedRole, ['company', 'freelancer'])) {
+            if ($requestedRole === 'company' && $company) {
+                $activeRole = 'company';
+            } elseif ($requestedRole === 'freelancer' && $freelancer) {
                 $activeRole = 'freelancer';
             }
         }
@@ -34,35 +46,48 @@
         }
     @endphp
 
-    {{-- Cabeçalho dinâmico --}}
+    {{-- Cabeçalho com visual Trampix --}}
     <div class="row mb-4">
-        <div class="col-12 d-flex align-items-center justify-content-between">
-            <div>
-                <h2 class="h3 mb-1">
-                    {{ $displayName }}
-                </h2>
-                <div>
-                    @if($activeRole === 'freelancer')
-                        <span class="badge bg-primary">Freelancer</span>
-                    @elseif($activeRole === 'company')
-                        <span class="badge bg-secondary">Empresa</span>
-                    @endif
+        <div class="col-12">
+            <div class="rounded-3 p-4 d-flex align-items-center justify-content-between text-white {{ $activeRole === 'company' ? '' : 'bg-gradient-to-r from-purple-600 to-indigo-600' }}" style="{{ $activeRole === 'company' ? 'background: linear-gradient(to right, #1ca751, var(--trampix-green));' : '' }}">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center justify-content-center bg-white bg-opacity-10 border border-white border-opacity-25 rounded-3" style="width:64px;height:64px;">
+                        @if($activeRole === 'company')
+                            <i class="fas fa-building fa-lg"></i>
+                        @else
+                            <i class="fas fa-user fa-lg"></i>
+                        @endif
+                    </div>
+                    <div>
+                        <h2 class="h4 mb-1 fw-bold">{{ $displayName }}</h2>
+                        @if($activeRole === 'freelancer')
+                            <span class="badge bg-light text-dark">Freelancer</span>
+                        @elseif($activeRole === 'company')
+                            <span class="badge bg-light text-dark">Empresa</span>
+                        @endif
+                    </div>
                 </div>
-            </div>
-            <div>
-                @auth
-                    @if(auth()->id() === $user->id)
-                        <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-user-cog"></i> Configurar Conta
-                        </a>
-                    @endif
-                @endauth
+                <div>
+                    <!-- Botões de troca de visualização do perfil (como antes, via querystring) -->
+                    <div class="d-inline-flex align-items-center gap-2 ms-2">
+                        @if($freelancer)
+                            <a href="{{ route('profiles.show', ['user' => $user->id, 'role' => 'freelancer']) }}" class="btn btn-sm btn-trampix-primary">
+                                🧑‍💻 Freelancer
+                            </a>
+                        @endif
+                        @if($company)
+                            <a href="{{ route('profiles.show', ['user' => $user->id, 'role' => 'company']) }}" class="btn btn-sm btn-trampix-company">
+                                🏢 Empresa
+                            </a>
+                        @endif
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     {{-- Card de Perfil unificado --}}
-    <div class="card shadow-sm">
+    <div class="card border-0 rounded-3 shadow-lg">
         <div class="card-body p-4">
             <div class="row g-4">
                 <div class="col-md-3 text-center">
@@ -70,7 +95,10 @@
                         $photo = $activeProfile->profile_photo ?? null;
                     @endphp
                     @if($photo)
-                        <img src="{{ asset('storage/' . $photo) }}" alt="Foto/Logo" class="img-thumbnail" style="width: 200px; height: 200px; object-fit: cover;">
+                        <img src="{{ asset('storage/' . $photo) }}" alt="Foto/Logo" class="img-thumbnail" style="width: 200px; height: 200px; object-fit: cover; cursor: pointer;" onclick="openImageModal(this.src)">
+                        <div class="mt-2">
+                            <small class="text-muted fst-italic">Clique para ver em tela inteira</small>
+                        </div>
                     @else
                         <div class="bg-light d-flex align-items-center justify-content-center" style="width: 200px; height: 200px; border-radius: 8px;">
                             @if($activeRole === 'company')
@@ -80,6 +108,7 @@
                             @endif
                         </div>
                     @endif
+                    
                 </div>
 
                 <div class="col-md-9">
@@ -102,24 +131,33 @@
                             </div>
                         @endif
 
-                        <div class="row">
-                            @if($activeProfile->location)
-                                <div class="col-md-6 mb-2">
-                                    <strong>Localização:</strong> {{ $activeProfile->location }}
-                                </div>
-                            @endif
-                            
-                            @if($activeProfile->hourly_rate)
-                                <div class="col-md-6 mb-2">
-                                    <strong>Valor por Hora:</strong> R$ {{ number_format($activeProfile->hourly_rate, 2, ',', '.') }}
-                                </div>
-                            @endif
-                            @if($activeProfile->availability)
-                                <div class="col-md-6 mb-2">
-                                    <strong>Disponibilidade:</strong> {{ $activeProfile->availability }}
-                                </div>
-                            @endif
-                        </div>
+                        @if($activeProfile->location)
+                            <div class="mb-2">
+                                <strong>Localização:</strong> {{ $activeProfile->location }}
+                            </div>
+                        @endif
+
+                        @if($activeProfile->hourly_rate)
+                            <div class="mb-2">
+                                <strong>Valor por Hora:</strong> R$ {{ number_format($activeProfile->hourly_rate, 2, ',', '.') }}
+                            </div>
+                        @endif
+
+                        @if($activeProfile->availability)
+                            @php
+                                $availabilityMap = [
+                                    'full_time' => 'Tempo Integral',
+                                    'part_time' => 'Meio Período',
+                                    'project_based' => 'Por Projeto',
+                                    'hourly' => 'Por Hora',
+                                    'weekends' => 'Fins de Semana',
+                                ];
+                                $availabilityLabel = $availabilityMap[$activeProfile->availability] ?? ucfirst(str_replace('_',' ',$activeProfile->availability));
+                            @endphp
+                            <div class="mb-2">
+                                <strong>Disponibilidade:</strong> {{ $availabilityLabel }}
+                            </div>
+                        @endif
 
                         @if($activeProfile->portfolio_url)
                             <div class="mb-3">
@@ -132,17 +170,31 @@
                             <div class="mb-3">
                                 <strong>WhatsApp:</strong>
                                 <a href="{{ $waLink }}" target="_blank" class="btn btn-sm btn-success ms-2">
-                                    <i class="fab fa-whatsapp"></i> Conversar no WhatsApp
+                                    <i class="fab fa-whatsapp me-2"></i> Conversar no WhatsApp
                                 </a>
                             </div>
                         @endif
+
+                        
 
                         @if($activeProfile->cv_url)
                             <div class="mb-3">
                                 <strong>Currículo:</strong>
                                 <a href="{{ route('freelancers.download-cv', $activeProfile) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-download"></i> Baixar CV
+                                    <i class="fas fa-download me-2"></i> Baixar CV
                                 </a>
+                            </div>
+                        @endif
+
+                        {{-- Áreas de Atuação (Categorias) --}}
+                        @if(method_exists($activeProfile, 'serviceCategories') && $activeProfile->serviceCategories && $activeProfile->serviceCategories->count())
+                            <div class="mb-2">
+                                <strong>Áreas de Atuação:</strong>
+                            </div>
+                            <div class="mb-3 d-flex flex-wrap gap-2">
+                                @foreach($activeProfile->serviceCategories as $cat)
+                                    <span class="badge bg-info text-dark">{{ $cat->name }}</span>
+                                @endforeach
                             </div>
                         @endif
                     @elseif($activeRole === 'company' && $activeProfile)
@@ -189,7 +241,20 @@
                         @if($activeProfile->website)
                             <div class="mb-3">
                                 <strong>Website:</strong> 
-                                <a href="{{ $activeProfile->website }}" target="_blank" class="text-primary">{{ $activeProfile->website }}</a>
+                                <a href="{{ $activeProfile->website }}" target="_blank" class="text-primary">
+                                    <i class="fas fa-external-link-alt me-2"></i>{{ $activeProfile->website }}
+                                </a>
+                            </div>
+                        @endif
+                        {{-- Áreas de Atuação (Categorias) da Empresa --}}
+                        @if(method_exists($activeProfile, 'serviceCategories') && $activeProfile->serviceCategories && $activeProfile->serviceCategories->count())
+                            <div class="mb-2">
+                                <strong>Áreas de Atuação:</strong>
+                            </div>
+                            <div class="mb-3 d-flex flex-wrap gap-2">
+                                @foreach($activeProfile->serviceCategories as $cat)
+                                    <span class="badge bg-info text-dark">{{ $cat->name }}</span>
+                                @endforeach
                             </div>
                         @endif
                     @endif
@@ -197,55 +262,81 @@
 
                 {{-- Ações contextuais --}}
                 <div class="col-12 mt-3">
-                    <div class="d-flex flex-wrap gap-2">
+                    <div class="row align-items-center mt-2">
+                        <div class="col-md-3 mb-2 mb-md-0">
+                            <a href="{{ route('dashboard') }}" class="{{ $activeRole === 'company' ? 'btn btn-trampix-company' : 'btn btn-trampix-primary' }}">
+                                <i class="fas fa-arrow-left me-2"></i> Voltar ao Dashboard
+                            </a>
+                        </div>
+                        <div class="col-md-9">
+                            <div class="d-flex flex-wrap gap-2 justify-content-start">
                         @auth
                             @if(auth()->id() === $user->id)
                                 {{-- Botão único de configurar conta --}}
-                                <a href="{{ route('profile.edit') }}" class="btn btn-primary">
-                                    <i class="fas fa-user-cog"></i> Configurar Conta
-                                </a>
+                            <a href="{{ route('profile.edit') }}" class="{{ $activeRole === 'company' ? 'btn btn-trampix-company' : 'btn btn-trampix-primary' }}">
+                                <i class="fas fa-user-cog me-2"></i> Gerenciar Conta
+                            </a>
+                            
                                 
                                 {{-- Ações específicas do perfil ativo --}}
                                 @if($activeRole === 'freelancer')
-                                    <a href="{{ route('applications.index') }}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-briefcase"></i> Minhas Candidaturas
+                                    <a href="{{ route('applications.index') }}" class="btn btn-trampix-primary">
+                                        <i class="fas fa-briefcase me-2"></i> Minhas Candidaturas
                                     </a>
-                                    <a href="{{ route('home') }}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-search"></i> Buscar Vagas
+                                    <a href="{{ route('vagas.index') }}" class="btn btn-trampix-primary">
+                                        <i class="fas fa-search me-2"></i> Buscar Vagas
                                     </a>
                                 @elseif($activeRole === 'company' && $activeProfile)
-                                    <a href="{{ route('companies.vacancies', $activeProfile) }}" class="btn btn-outline-secondary">
-                                        <i class="fas fa-briefcase"></i> Minhas Vagas
+                                    <a href="{{ route('companies.vacancies', $activeProfile) }}" class="btn btn-trampix-company">
+                                        <i class="fas fa-briefcase me-2"></i> Minhas Vagas
                                     </a>
                                 @endif
                             @else
                                 {{-- Visualização externa --}}
                                 @if($activeRole === 'freelancer' && $activeProfile && auth()->user() && auth()->user()->isCompany())
                                     @if($activeProfile->cv_url)
-                                        <a href="{{ route('freelancers.download-cv', $activeProfile) }}" class="btn btn-primary">
-                                            <i class="fas fa-download"></i> Baixar CV
+                                        <a href="{{ route('freelancers.download-cv', $activeProfile) }}" class="btn btn-trampix-company">
+                                            <i class="fas fa-download me-2"></i> Baixar CV
                                         </a>
                                     @endif
                                     <a href="mailto:{{ $user->email }}" class="btn btn-outline-primary">
-                                        <i class="fas fa-envelope"></i> Entrar em Contato
+                                        <i class="fas fa-envelope me-2"></i> Entrar em Contato
                                     </a>
                                     @if(isset($waLink) && $waLink)
                                         <a href="{{ $waLink }}" target="_blank" class="btn btn-success">
-                                            <i class="fab fa-whatsapp"></i> WhatsApp
+                                            <i class="fab fa-whatsapp me-2"></i> WhatsApp
                                         </a>
                                     @endif
                                 @endif
                             @endif
                         @endauth
-                        <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left"></i> Voltar
-                        </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    {{-- Modal simples para visualizar imagem em tamanho completo --}}
+    <div id="imageModal" class="image-modal" onclick="closeImageModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1050; align-items:center; justify-content:center;">
+        <span class="image-modal-close" onclick="closeImageModal()" style="position:absolute; top:20px; right:24px; color:#fff; font-size:28px; cursor:pointer;">&times;</span>
+        <img src="" alt="Imagem" style="max-width:90vw; max-height:90vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
+    </div>
+    <script>
+        function openImageModal(src) {
+            var modal = document.getElementById('imageModal');
+            var img = modal.querySelector('img');
+            img.src = src;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeImageModal() {
+            var modal = document.getElementById('imageModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    </script>
     {{-- Vagas recentes da empresa --}}
     @if($activeRole === 'company' && $activeProfile && $activeProfile->relationLoaded('vacancies') && $activeProfile->vacancies->count() > 0)
         <div class="card mt-4">

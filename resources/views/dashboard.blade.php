@@ -3,14 +3,17 @@
 @section('title', 'Dashboard')
 
 @section('content')
+@php
+    $activeRole = session('active_role') ?? (auth()->user()->isCompany() ? 'company' : (auth()->user()->isFreelancer() ? 'freelancer' : null));
+@endphp
 <div class="container mx-auto px-4 py-6">
     <!-- Header de Boas-vindas -->
     <div class="mb-8">
-        <h1 class="trampix-h1">
+        <h1 class="trampix-h1" style="{{ $activeRole === 'company' ? 'color: #1ca751;' : '' }}">
             Olá, 
             <span class="trampix-user-name">
                 {{ auth()->user()->display_name }}
-            </span>! 👋
+            </span>
         </h1>
         <p class="text-gray-600 mt-2">
             @if(auth()->user()->isAdmin())
@@ -26,9 +29,9 @@
     </div>
 
     <!-- Conteúdo Dinâmico baseado no tipo de usuário -->
-    @if(auth()->user()->isCompany())
+    @if($activeRole === 'company')
         @include('dashboard.partials.company')
-    @elseif(auth()->user()->isFreelancer())
+    @elseif($activeRole === 'freelancer')
         @include('dashboard.partials.freelancer')
     @else
         <!-- Usuário sem perfil definido -->

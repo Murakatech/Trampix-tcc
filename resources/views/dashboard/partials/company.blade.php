@@ -51,7 +51,7 @@
                 <h3 class="text-lg font-semibold text-gray-700 flex items-center">
                     <i class="fas fa-user-check text-blue-500 mr-2"></i> Aplicações Recentes
                 </h3>
-                <a href="{{ route('applications.manage') }}" class="btn-trampix-secondary text-sm">
+                <a href="{{ route('applications.manage') }}" class="btn-trampix-company text-sm">
                     <i class="fas fa-list mr-1"></i> Ver todas
                 </a>
             </div>
@@ -94,7 +94,7 @@
                 <div class="text-center py-8">
                     <i class="fas fa-user-check text-gray-300 text-3xl mb-3"></i>
                     <p class="text-gray-500 text-sm">Nenhuma aplicação ainda</p>
-                    <a href="{{ route('vagas.create') }}" class="btn-trampix-primary text-sm mt-3">
+                    <a href="{{ route('vagas.create') }}" class="btn-trampix-company text-sm mt-3">
                         Criar Primeira Vaga
                     </a>
                 </div>
@@ -108,7 +108,7 @@
                 <h3 class="text-lg font-semibold text-gray-700 flex items-center">
                     <i class="fas fa-briefcase text-green-500 mr-2"></i> Minhas Vagas Ativas
                 </h3>
-                <a href="{{ route('company.vagas.index') }}" class="btn-trampix-secondary text-sm">
+                <a href="{{ route('company.vagas.index') }}" class="btn-trampix-company text-sm">
                     <i class="fas fa-list mr-1"></i> Ver todas
                 </a>
             </div>
@@ -140,7 +140,7 @@
                             </div>
                         </div>
                         <div class="ml-3">
-                            <a href="{{ route('vagas.show', $job) }}" class="btn-trampix-primary text-xs px-3 py-1">
+                            <a href="{{ route('vagas.show', $job) }}" class="btn-trampix-company text-xs px-3 py-1">
                                 Ver
                             </a>
                         </div>
@@ -150,7 +150,7 @@
                 <div class="text-center py-8">
                     <i class="fas fa-briefcase text-gray-300 text-3xl mb-3"></i>
                     <p class="text-gray-500 text-sm">Nenhuma vaga ativa</p>
-                    <a href="{{ route('vagas.create') }}" class="btn-trampix-primary text-sm mt-3">
+                    <a href="{{ route('vagas.create') }}" class="btn-trampix-company text-sm mt-3">
                         Criar Primeira Vaga
                     </a>
                 </div>

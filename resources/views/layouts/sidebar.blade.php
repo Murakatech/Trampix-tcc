@@ -10,7 +10,7 @@
     <!-- Topo com card do usuário único -->
     <div class="p-4 border-b">
         <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+            <a href="{{ route('profiles.show', Auth::user()) }}" class="flex items-center gap-3 hover:opacity-90 transition-opacity">
                 <img class="h-10 w-10 rounded-full object-cover trampix-avatar-img" 
                      src="{{ Auth::user()->profile_photo_url ?? asset('images/avatar-placeholder.png') }}" 
                      alt="Avatar">
@@ -28,7 +28,7 @@
                     <div class="font-semibold text-gray-900 trampix-user-name">{{ $displayName }}</div>
                     <div class="text-xs text-gray-500 capitalize trampix-user-role">{{ session('active_role') ?? Auth::user()->role }}</div>
                 </div>
-            </div>
+            </a>
             <!-- Botão de colapso desktop -->
             <button type="button" 
                     class="hidden lg:block p-1.5 rounded-md hover:bg-gray-100 transition-colors" 
@@ -49,12 +49,13 @@
         <hr class="my-3">
         
         @if($role === 'freelancer')
+            <x-sidebar-item href="{{ route('profiles.show', Auth::user()) }}" :active="request()->routeIs('profiles.show')" icon="fa-solid fa-user">Meu Perfil</x-sidebar-item>
             <x-sidebar-item href="{{ route('vagas.index') }}" :active="request()->routeIs('vagas.index')" icon="fa-solid fa-magnifying-glass">Buscar Vagas</x-sidebar-item>
             <x-sidebar-item href="{{ route('applications.index') }}" :active="request()->routeIs('applications.index')">
                 <x-slot name="icon">
                     <img src="{{ asset('images/candidatura_icon.png') }}" alt="Candidaturas" class="w-4 h-4 object-contain">
                 </x-slot>
-                Minhas Candidaturas
+                Minhas Aplicações
             </x-sidebar-item>
         @elseif($role === 'company')
             @php
@@ -66,8 +67,8 @@
                     }
                 };
             @endphp
+            <x-sidebar-item href="{{ route('profiles.show', Auth::user()) }}" :active="request()->routeIs('profiles.show')" icon="fa-solid fa-user">Meu Perfil</x-sidebar-item>
             <x-sidebar-item href="{{ $routeExists('job_vacancies.index') ? route('job_vacancies.index') : url('/job-vacancies') }}" :active="request()->is('job-vacancies*') || request()->is('vagas*')" icon="fa-solid fa-briefcase">Minhas Vagas</x-sidebar-item>
-            <x-sidebar-item href="{{ url('/company/profile') }}" :active="request()->is('company/profile*')" icon="fa-solid fa-building">Perfil da Empresa</x-sidebar-item>
         @elseif($role === 'admin')
             <x-sidebar-item href="{{ url('/admin/users') }}" :active="request()->is('admin/users*')" icon="fa-solid fa-users">Usuários</x-sidebar-item>
             <x-sidebar-item href="{{ url('/admin/companies') }}" :active="request()->is('admin/companies*')" icon="fa-solid fa-building">Empresas</x-sidebar-item>

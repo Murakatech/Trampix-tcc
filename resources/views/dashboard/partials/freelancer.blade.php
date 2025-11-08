@@ -10,65 +10,40 @@
 
     <!-- Resumo Estatísticas -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="trampix-card text-center">
+        <a href="{{ route('applications.index') }}" class="trampix-card text-center block">
             <div class="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
                 <i class="fas fa-paper-plane text-blue-600 text-2xl"></i>
             </div>
             <h3 class="text-2xl font-bold text-gray-900">{{ $totalAplicacoes }}</h3>
             <p class="text-sm text-gray-500">Aplicações Enviadas</p>
-        </div>
+        </a>
 
-        <div class="trampix-card text-center">
+        <a href="{{ route('applications.index') }}#pending-applications" class="trampix-card text-center block">
             <div class="bg-orange-100 p-4 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
                 <i class="fas fa-clock text-orange-600 text-2xl"></i>
             </div>
             <h3 class="text-2xl font-bold text-gray-900">{{ $aplicacoesPendentes }}</h3>
             <p class="text-sm text-gray-500">Em Análise</p>
-        </div>
+        </a>
 
-        <div class="trampix-card text-center">
+        <a href="{{ route('applications.index') }}#accepted-applications" class="trampix-card text-center block">
             <div class="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
                 <i class="fas fa-check-circle text-green-600 text-2xl"></i>
             </div>
             <h3 class="text-2xl font-bold text-gray-900">{{ $aplicacoesAceitas }}</h3>
             <p class="text-sm text-gray-500">Aceitas</p>
-        </div>
+        </a>
 
-        <div class="trampix-card text-center">
+        <a href="{{ route('vagas.index') }}" class="trampix-card text-center block">
             <div class="bg-purple-100 p-4 rounded-full w-16 h-16 mx-auto mb-3 flex items-center justify-center">
                 <i class="fas fa-briefcase text-purple-600 text-2xl"></i>
             </div>
             <h3 class="text-2xl font-bold text-gray-900">{{ $vagasDisponiveis }}</h3>
             <p class="text-sm text-gray-500">Vagas Disponíveis</p>
-        </div>
-    </div>
-
-    <!-- Ações Rápidas -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <a href="{{ route('vagas.index') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
-            <div class="flex items-center">
-                <div class="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
-                    <i class="fas fa-search text-blue-600 text-xl"></i>
-                </div>
-                <div>
-                    <p class="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">Buscar Vagas</p>
-                    <p class="text-sm text-gray-500">Encontrar novas oportunidades</p>
-                </div>
-            </div>
-        </a>
-
-        <a href="{{ route('profile.edit') }}" class="trampix-card hover:scale-105 transition-all duration-300 group">
-            <div class="flex items-center">
-                <div class="bg-green-100 p-3 rounded-full mr-4 group-hover:bg-green-200 transition-colors">
-                    <i class="fas fa-user-edit text-green-600 text-xl"></i>
-                </div>
-                <div>
-                    <p class="font-bold text-gray-900 group-hover:text-green-600 transition-colors">Editar Perfil</p>
-                    <p class="text-sm text-gray-500">Atualizar informações</p>
-                </div>
-            </div>
         </a>
     </div>
+
+    <!-- Ações Rápidas removidas conforme solicitação -->
 
     <!-- Grid com os dois novos menus -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
@@ -78,7 +53,7 @@
                 <h3 class="text-lg font-semibold text-gray-700 flex items-center">
                     <i class="fas fa-paper-plane text-blue-500 mr-2"></i> Aplicações Recentes
                 </h3>
-                <a href="{{ route('applications.index') }}" class="btn-trampix-secondary text-sm">
+                <a href="{{ route('applications.index') }}" class="btn-trampix-primary text-sm">
                     <i class="fas fa-list mr-1"></i> Ver todas
                 </a>
             </div>
@@ -135,7 +110,7 @@
                 <h3 class="text-lg font-semibold text-gray-700 flex items-center">
                     <i class="fas fa-briefcase text-green-500 mr-2"></i> Vagas Ativas
                 </h3>
-                <a href="{{ route('vagas.index') }}" class="btn-trampix-secondary text-sm">
+                <a href="{{ route('vagas.index') }}" class="btn-trampix-primary text-sm">
                     <i class="fas fa-list mr-1"></i> Ver todas
                 </a>
             </div>
