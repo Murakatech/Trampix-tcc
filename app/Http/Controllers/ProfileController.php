@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Application;
 use App\Models\Segment;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\RedirectResponse;
@@ -47,6 +48,40 @@ class ProfileController extends Controller
             }
         }
 
+        // Métricas de avaliação pública (média) para exibição no perfil
+        $companyPublicRatingAvg = null;
+        $companyPublicRatingCount = 0;
+        $freelancerPublicRatingAvg = null;
+        $freelancerPublicRatingCount = 0;
+
+        if ($company) {
+            // Média das avaliações feitas PELOS freelancers sobre a empresa
+            $companyRatingsQuery = Application::query()
+                ->whereHas('jobVacancy', function ($q) use ($company) {
+                    $q->where('company_id', $company->id);
+                })
+                ->where('status', 'ended')
+                ->whereNotNull('freelancer_rating_avg');
+
+            $companyPublicRatingCount = (int) $companyRatingsQuery->count();
+            if ($companyPublicRatingCount > 0) {
+                $companyPublicRatingAvg = round((float) $companyRatingsQuery->avg('freelancer_rating_avg'), 1);
+            }
+        }
+
+        if ($freelancer) {
+            // Média das avaliações feitas PELAS empresas sobre o freelancer
+            $freelancerRatingsQuery = Application::query()
+                ->where('freelancer_id', $freelancer->id)
+                ->where('status', 'ended')
+                ->whereNotNull('company_rating_avg');
+
+            $freelancerPublicRatingCount = (int) $freelancerRatingsQuery->count();
+            if ($freelancerPublicRatingCount > 0) {
+                $freelancerPublicRatingAvg = round((float) $freelancerRatingsQuery->avg('company_rating_avg'), 1);
+            }
+        }
+
         // Carregar vagas recentes apenas se o perfil ativo for empresa
         if ($activeRole === 'company' && $company) {
             $company->load(['vacancies' => function($query) {
@@ -58,6 +93,11 @@ class ProfileController extends Controller
             'user' => $user,
             'freelancer' => $freelancer,
             'company' => $company,
+            // Avaliações públicas
+            'companyPublicRatingAvg' => $companyPublicRatingAvg,
+            'companyPublicRatingCount' => $companyPublicRatingCount,
+            'freelancerPublicRatingAvg' => $freelancerPublicRatingAvg,
+            'freelancerPublicRatingCount' => $freelancerPublicRatingCount,
         ]);
     }
 

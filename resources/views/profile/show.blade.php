@@ -65,6 +65,49 @@
                         @elseif($activeRole === 'company')
                             <span class="badge bg-light text-dark">Empresa</span>
                         @endif
+                        @php
+                            // Selecionar a média e contagem conforme o perfil ativo
+                            $visibleRatingAvg = null;
+                            $visibleRatingCount = 0;
+                            if ($activeRole === 'company') {
+                                $visibleRatingAvg = $companyPublicRatingAvg ?? null;
+                                $visibleRatingCount = $companyPublicRatingCount ?? 0;
+                            } elseif ($activeRole === 'freelancer') {
+                                $visibleRatingAvg = $freelancerPublicRatingAvg ?? null;
+                                $visibleRatingCount = $freelancerPublicRatingCount ?? 0;
+                            }
+
+                            $fullStars = $visibleRatingAvg ? floor($visibleRatingAvg) : 0;
+                            $hasHalfStar = $visibleRatingAvg ? (($visibleRatingAvg - $fullStars) >= 0.5) : false;
+                            $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
+                        @endphp
+                        <div class="mt-2">
+                            @if($visibleRatingCount > 0 && $visibleRatingAvg)
+                                <div class="d-inline-flex align-items-center gap-2 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-3 px-3 py-2" style="backdrop-filter:saturate(160%) blur(2px);">
+                                    <div class="d-flex align-items-center text-warning">
+                                        @for($i = 0; $i < $fullStars; $i++)
+                                            <i class="fas fa-star"></i>
+                                        @endfor
+                                        @if($hasHalfStar)
+                                            <i class="fas fa-star-half-alt"></i>
+                                        @endif
+                                        @for($i = 0; $i < $emptyStars; $i++)
+                                            <i class="far fa-star"></i>
+                                        @endfor
+                                    </div>
+                                    <div class="fw-bold">
+                                        {{ number_format($visibleRatingAvg, 1, ',', '.') }} / 5
+                                    </div>
+                                    <div class="small text-white-50">({{ $visibleRatingCount }} avaliação{{ $visibleRatingCount > 1 ? 'es' : '' }})</div>
+                                </div>
+                            @else
+                                <div class="d-inline-flex align-items-center gap-2 bg-white bg-opacity-10 border border-white border-opacity-25 rounded-3 px-3 py-2" style="backdrop-filter:saturate(160%) blur(2px);">
+                                    <div class="text-white-75">
+                                        <i class="far fa-smile me-1"></i> Ainda não há avaliações
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
                 <div>
