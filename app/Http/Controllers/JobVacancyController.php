@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JobVacancy;
 use App\Models\Category;
 use App\Models\Company;
+use App\Models\Segment;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -48,12 +49,20 @@ class JobVacancyController extends Controller
             return [
                 'availableCategories' => $availableCategories,
                 'contractTypes' => ['CLT', 'PJ', 'Freelance', 'Estágio', 'Temporário'],
-                'locationTypes' => ['Presencial', 'Remoto', 'Híbrido']
+                'locationTypes' => ['Presencial', 'Remoto', 'Híbrido'],
+                // Lista de segmentos disponíveis para filtro
+                'segments' => Segment::orderBy('name')->select('id','name')->get(),
             ];
         });
 
         // Query otimizada com eager loading
-        $query = JobVacancy::with(['company:id,name,user_id', 'applications:id,job_vacancy_id,freelancer_id', 'category:id,name'])
+        $query = JobVacancy::with([
+                'company:id,name,user_id,segment_id',
+                'company.segment:id,name',
+                'applications:id,job_vacancy_id,freelancer_id',
+                'category:id,name,segment_id',
+                'category.segment:id,name'
+            ])
             ->select(['id', 'title', 'description', 'requirements', 'category', 'category_id', 'contract_type', 'location_type', 'salary_range', 'status', 'company_id', 'created_at'])
             ->where('status', 'active')
             ->orderBy('created_at', 'desc');
@@ -89,6 +98,25 @@ class JobVacancyController extends Controller
                     $q->orWhereIn('category', $categories);
                 });
             }
+        }
+
+        // Filtro por segmento (novo)
+        if ($request->filled('segment_id')) {
+            $segmentId = (int) $request->get('segment_id');
+            // Categorias pertencentes ao segmento selecionado
+            $segmentCategoryQuery = Category::where('segment_id', $segmentId)->select('id','name');
+            $segmentCategoryIds = $segmentCategoryQuery->pluck('id');
+            $segmentCategoryNames = $segmentCategoryQuery->pluck('name');
+            // Aplica filtro por segment: aceita vagas com category_id nas categorias do segmento
+            // e também, por compatibilidade, categorias legadas (string) que tenham um nome correspondente
+            $query->where(function($q) use ($segmentCategoryIds, $segmentCategoryNames) {
+                if ($segmentCategoryIds->count() > 0) {
+                    $q->whereIn('category_id', $segmentCategoryIds);
+                }
+                if ($segmentCategoryNames->count() > 0) {
+                    $q->orWhereIn('category', $segmentCategoryNames);
+                }
+            });
         }
 
         // Filtro por tipo de contrato
@@ -135,15 +163,34 @@ class JobVacancyController extends Controller
         ], $filterData));
     }
 
+    /**
+     * Retorna categorias (nome) por segmento para popular o filtro dinamicamente
+     */
+    public function categoriesBySegment(Segment $segment)
+    {
+        $categories = Category::where('segment_id', $segment->id)
+            ->orderBy('name')
+            ->pluck('name');
+
+        return response()->json([
+            'segment' => [
+                'id' => $segment->id,
+                'name' => $segment->name,
+            ],
+            'categories' => $categories,
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
     // Formulário de criação de vaga (empresa/admin)
     public function create()
     {
         if (! Gate::allows('isCompany') && ! Gate::allows('isAdmin')) abort(403);
 
         $categories = Category::orderBy('name')->get();
+        $segments   = Segment::orderBy('name')->get();
         $companies  = Gate::allows('isAdmin') ? Company::orderBy('name')->select('id','name')->get() : null;
 
-        return view('vagas.create', compact('categories','companies'));
+        return view('vagas.create', compact('categories','companies','segments'));
     }
 
     // Salva nova vaga
@@ -151,10 +198,12 @@ class JobVacancyController extends Controller
     {
         if (! Gate::allows('isCompany') && ! Gate::allows('isAdmin')) abort(403);
 
-        $data = $req->validate([
+        // Validar com segmento obrigatório e categoria relacionada ao segmento
+        $validated = $req->validate([
             'title'         => 'required|string|max:255',
             'description'   => 'required|string',
             'requirements'  => 'nullable|string',
+            'segment_id'    => ['required','exists:segments,id'],
             'category_id'   => ['nullable','exists:categories,id'],
             'contract_type' => 'nullable|in:PJ,CLT,Estágio,Freelance',
             'location_type' => 'nullable|in:Remoto,Híbrido,Presencial',
@@ -172,12 +221,23 @@ class JobVacancyController extends Controller
             );
         }
 
+        $data = $validated;
         $data['company_id'] = $company->id;
 
-        // Garantir category_id e manter compatibilidade com campo legacy 'category'
+        // Mapear category (legado) se presente; em seguida validar relação categoria->segmento
         if (empty($data['category_id']) && $req->filled('category')) {
             $legacyName = $req->input('category');
             $data['category_id'] = Category::where('name', $legacyName)->value('id');
+        }
+        // Exigir category_id e garantir que pertença ao segmento escolhido
+        if (empty($data['category_id'])) {
+            return back()->withErrors(['category_id' => 'Selecione uma categoria relacionada ao segmento escolhido.'])->withInput();
+        }
+        $belongs = Category::where('id', $data['category_id'])
+            ->where('segment_id', $req->input('segment_id'))
+            ->exists();
+        if (! $belongs) {
+            return back()->withErrors(['category_id' => 'A categoria selecionada não pertence ao segmento escolhido.'])->withInput();
         }
 
         // Status padrão ativo
@@ -230,7 +290,8 @@ class JobVacancyController extends Controller
     {
         if (! Gate::allows('isCompany') || ($vaga->company?->user_id !== Auth::id())) abort(403);
         $categories = Category::orderBy('name')->get();
-        return view('vagas.edit', compact('vaga','categories'));
+        $segments   = Segment::orderBy('name')->get();
+        return view('vagas.edit', compact('vaga','categories','segments'));
     }
 
     // Atualiza vaga
@@ -238,10 +299,11 @@ class JobVacancyController extends Controller
     {
         if (! Gate::allows('isCompany') || ($vaga->company?->user_id !== Auth::id())) abort(403);
 
-        $data = $req->validate([
+        $validated = $req->validate([
             'title'         => 'required|string|max:255',
             'description'   => 'required|string',
             'requirements'  => 'nullable|string',
+            'segment_id'    => ['required','exists:segments,id'],
             'category_id'   => ['nullable','exists:categories,id'],
             'contract_type' => 'nullable|in:PJ,CLT,Estágio,Freelance',
             'location_type' => 'nullable|in:Remoto,Híbrido,Presencial',
@@ -249,10 +311,21 @@ class JobVacancyController extends Controller
             'status'        => 'nullable|in:active,closed',
         ]);
 
+        $data = $validated;
         // Garantir category_id (compatibilidade com campo legacy 'category')
         if (empty($data['category_id']) && $req->filled('category')) {
             $legacyName = $req->input('category');
             $data['category_id'] = Category::where('name', $legacyName)->value('id');
+        }
+        // Exigir category_id e garantir que pertença ao segmento escolhido
+        if (empty($data['category_id'])) {
+            return back()->withErrors(['category_id' => 'Selecione uma categoria relacionada ao segmento escolhido.'])->withInput();
+        }
+        $belongs = Category::where('id', $data['category_id'])
+            ->where('segment_id', $req->input('segment_id'))
+            ->exists();
+        if (! $belongs) {
+            return back()->withErrors(['category_id' => 'A categoria selecionada não pertence ao segmento escolhido.'])->withInput();
         }
 
         $vaga->update($data);

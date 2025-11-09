@@ -21,7 +21,10 @@ class Freelancer extends Model
         'availability',
         'is_active',
         'profile_photo',
+        // Deprecated: activity_area_id removed from UI; kept for legacy compatibility
         'activity_area_id',
+        // New primary segment association
+        'segment_id',
     ];
 
     protected $casts = [
@@ -62,5 +65,13 @@ class Freelancer extends Model
     public function activityArea()
     {
         return $this->belongsTo(\App\Models\ActivityArea::class);
+    }
+
+    /**
+     * Primary Segment the freelancer belongs to
+     */
+    public function segment()
+    {
+        return $this->belongsTo(\App\Models\Segment::class);
     }
 }

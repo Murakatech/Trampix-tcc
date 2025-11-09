@@ -370,50 +370,31 @@
                             @enderror
                         </div>
 
-                        <!-- Área de Atuação (ActivityArea) -->
+                        <!-- Removido: segmento principal único do freelancer -->
+
+                        <!-- Segmentos de Atuação -->
                         <div>
-                            <label for="activity_area_id" class="block text-sm font-medium text-gray-700">Área de Atuação</label>
-                            <select id="activity_area_id" name="activity_area_id"
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('activity_area_id') border-red-500 @enderror">
-                                <option value="">Selecione...</option>
-                                @foreach(\App\Models\ActivityArea::where('type', 'freelancer')->orderBy('name')->get() as $area)
-                                    <option value="{{ $area->id }}" {{ old('activity_area_id', $freelancer->activity_area_id ?? null) == $area->id ? 'selected' : '' }}>
-                                        {{ $area->name }}
-                                    </option>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Segmentos de Atuação</label>
+                            <p class="text-sm text-gray-600 mb-4">Selecione os segmentos econômicos em que você atua. Usamos isso para conectar você a vagas e empresas relevantes.</p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                @foreach(($segments ?? \App\Models\Segment::orderBy('name')->get()) as $segment)
+                                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
+                                        <input type="checkbox"
+                                               name="segments[]"
+                                               value="{{ $segment->id }}"
+                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                               {{ in_array($segment->id, old('segments', isset($freelancer) ? ($freelancer->segments->pluck('id')->toArray() ?? []) : [])) ? 'checked' : '' }}>
+                                        <span class="ml-3 text-sm font-medium text-gray-700">{{ $segment->name }}</span>
+                                    </label>
                                 @endforeach
-                            </select>
-                            @error('activity_area_id')
+                            </div>
+
+                            @error('segments')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Categorias de Serviços -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Categorias de Serviços</label>
-                            <p class="text-sm text-gray-600 mb-4">Selecione as áreas em que você atua como prestador de serviços:</p>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
-                                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
-                                        <input type="checkbox" 
-                                               name="service_categories[]" 
-                                               value="{{ $category->id }}"
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                               {{ in_array($category->id, old('service_categories', $freelancer->serviceCategories->pluck('id')->toArray() ?? [])) ? 'checked' : '' }}>
-                                        <div class="ml-3 flex items-center">
-                                            @if($category->icon)
-                                                <i class="{{ $category->icon }} text-gray-600 mr-2"></i>
-                                            @endif
-                                            <span class="text-sm font-medium text-gray-700">{{ $category->name }}</span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                            
-                            @error('service_categories')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
@@ -572,53 +553,31 @@
                             @enderror
                         </div>
 
-                        <!-- Área de Atuação (ActivityArea) da Empresa -->
+                        <!-- Segmentos de Atuação da Empresa (até 3) -->
                         <div>
-                            <label for="activity_area_id" class="block text-sm font-medium text-gray-700">Área de Atuação</label>
-                            <select id="activity_area_id" name="activity_area_id"
-                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('activity_area_id') border-red-500 @enderror">
-                                <option value="">Selecione...</option>
-                                @foreach(\App\Models\ActivityArea::where('type', 'company')->orderBy('name')->get() as $area)
-                                    <option value="{{ $area->id }}" {{ old('activity_area_id', $company->activity_area_id ?? null) == $area->id ? 'selected' : '' }}>
-                                        {{ $area->name }}
-                                    </option>
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Segmentos de Atuação</label>
+                            <p class="text-sm text-gray-600 mb-4">Selecione até 3 segmentos econômicos que representam sua empresa.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                @php
+                                    $selectedCompanySegments = old('segments', isset($company) ? ($company->segments->pluck('id')->toArray() ?? []) : []);
+                                @endphp
+                                @foreach(($segments ?? \App\Models\Segment::orderBy('name')->get()) as $segment)
+                                    <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
+                                        <input type="checkbox"
+                                               name="segments[]"
+                                               value="{{ $segment->id }}"
+                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                               {{ in_array($segment->id, $selectedCompanySegments) ? 'checked' : '' }}>
+                                        <span class="ml-3 text-sm font-medium text-gray-700">{{ $segment->name }}</span>
+                                    </label>
                                 @endforeach
-                            </select>
-                            @error('activity_area_id')
+                            </div>
+                            @error('segments')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
-                        <!-- Categorias de Serviços -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">Áreas de Atuação</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto border border-gray-300 rounded-md p-3">
-                                @php
-                                    $selectedCategories = old('service_categories', 
-                                        isset($company) ? $company->serviceCategories->pluck('id')->toArray() : []
-                                    );
-                                @endphp
-                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
-                                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
-                                        <input type="checkbox" 
-                                               name="service_categories[]" 
-                                               value="{{ $category->id }}"
-                                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                               {{ in_array($category->id, $selectedCategories) ? 'checked' : '' }}>
-                                        <div class="ml-3 flex items-center">
-                                            @if($category->icon)
-                                                <i class="{{ $category->icon }} text-gray-500 mr-2"></i>
-                                            @endif
-                                            <span class="text-sm text-gray-700">{{ $category->name }}</span>
-                                        </div>
-                                    </label>
-                                @endforeach
-                            </div>
-                            <p class="text-xs text-gray-500 mt-2">Selecione as áreas em que sua empresa atua</p>
-                            @error('service_categories')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        <!-- Removido: Áreas de Atuação (Categorias de Serviços) da Empresa -->
                     </div>
                 @endif
 
@@ -1232,6 +1191,105 @@ function initializeFormValidation() {
 <x-action-confirmation 
     actionType="generic" 
     modalId="removePhotoConfirmationModal" />
+
+@push('scripts')
+<script>
+    window.APP_SEGMENTS = {!! json_encode(($segments ?? \App\Models\Segment::orderBy('name')->get(['id','name']))->map(function($s){ return ['id' => $s->id, 'name' => $s->name]; })) !!};
+
+    function ensureSegmentModal() {
+        if (document.getElementById('segmentSelectionModal')) return;
+        const modalHtml = `
+        <div id="segmentSelectionModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+                <div class="px-4 py-3 border-b flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Selecionar Segmento</h3>
+                    <button type="button" class="text-gray-500 hover:text-gray-700" data-action="close">✖</button>
+                </div>
+                <div class="p-4 max-h-96 overflow-y-auto">
+                    <div id="segmentList" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+                </div>
+                <div class="px-4 py-3 border-t flex justify-end gap-2">
+                    <button type="button" class="btn-trampix-secondary" data-action="close">Cancelar</button>
+                </div>
+            </div>
+        </div>`;
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = modalHtml;
+        document.body.appendChild(wrapper.firstElementChild);
+
+        const segmentList = document.getElementById('segmentList');
+        window.APP_SEGMENTS.forEach(seg => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'text-left p-3 border rounded hover:bg-gray-50';
+            btn.dataset.segmentId = seg.id;
+            btn.dataset.segmentName = seg.name;
+            btn.innerHTML = `<span class="font-medium">${seg.name}</span>`;
+            segmentList.appendChild(btn);
+        });
+
+        document.querySelectorAll('#segmentSelectionModal [data-action="close"]').forEach(el => {
+            el.addEventListener('click', () => {
+                document.getElementById('segmentSelectionModal').classList.add('hidden');
+                document.getElementById('segmentSelectionModal').classList.remove('flex');
+            });
+        });
+    }
+
+    function openSegmentModal(targetPrefix) {
+        ensureSegmentModal();
+        const modal = document.getElementById('segmentSelectionModal');
+        modal.dataset.targetPrefix = targetPrefix;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        ensureSegmentModal();
+        const segmentList = document.getElementById('segmentList');
+        segmentList.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const segId = btn.dataset.segmentId;
+            const segName = btn.dataset.segmentName;
+            const modal = document.getElementById('segmentSelectionModal');
+            const prefix = modal.dataset.targetPrefix;
+            if (!prefix) return;
+            const idInput = document.getElementById(prefix + '_segment_id');
+            const nameInput = document.getElementById(prefix + '_segment_name');
+            if (idInput) idInput.value = segId;
+            if (nameInput) nameInput.value = segName;
+
+            // Close modal
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        });
+
+        const btnFreelancer = document.getElementById('btnChooseFreelancerSegment');
+        if (btnFreelancer) {
+            btnFreelancer.addEventListener('click', () => openSegmentModal('freelancer'));
+        }
+        const btnCompany = document.getElementById('btnChooseCompanySegment');
+        if (btnCompany) {
+            btnCompany.addEventListener('click', () => openSegmentModal('company'));
+        }
+
+        // Limitar seleção de segmentos (freelancer) a no máximo 3
+        const segmentCheckboxes = document.querySelectorAll('input[name="segments[]"]');
+        if (segmentCheckboxes.length) {
+            segmentCheckboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const checked = Array.from(segmentCheckboxes).filter(x => x.checked);
+                    if (checked.length > 3) {
+                        cb.checked = false;
+                        alert('Você pode selecionar no máximo 3 segmentos.');
+                    }
+                });
+            });
+        }
+    });
+</script>
+@endpush
 
 @push('scripts')
 <script>

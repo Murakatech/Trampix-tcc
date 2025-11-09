@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Freelancer;
+use App\Models\Segment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -80,6 +81,9 @@ class FreelancerController extends Controller
             'activity_area_id' => 'nullable|integer',
             'service_categories' => 'nullable|array|max:5',
             'service_categories.*' => 'exists:service_categories,id',
+            // Permitir seleção de segmentos (máximo 3)
+            'segments' => 'nullable|array|max:3',
+            'segments.*' => 'exists:segments,id',
         ]);
 
         // Upload do CV se fornecido
@@ -115,6 +119,15 @@ class FreelancerController extends Controller
                 ->pluck('id')
                 ->toArray();
             $freelancer->serviceCategories()->sync($validCategories);
+        }
+
+        // Sincronizar segmentos se fornecidos
+        if ($request->has('segments')) {
+            $segmentIds = $request->input('segments', []);
+            $validSegmentIds = Segment::whereIn('id', $segmentIds)
+                ->pluck('id')
+                ->toArray();
+            $freelancer->segments()->sync($validSegmentIds);
         }
 
         // Definir freelancer como perfil ativo

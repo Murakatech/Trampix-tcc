@@ -95,6 +95,9 @@ Route::get('/sidebar-demo', fn () => view('sidebar-demo'))
 Route::resource('vagas', JobVacancyController::class)->only(['index','show']);
 // API pública para sugestões de busca de vagas
 Route::get('/api/vagas/suggest', [JobVacancyController::class, 'suggest'])->name('api.vagas.suggest');
+// API pública: categorias por segmento (para filtro dinâmico)
+Route::get('/api/segments/{segment}/categories', [JobVacancyController::class, 'categoriesBySegment'])
+    ->name('api.segments.categories');
 Route::get('/companies/{company}', [CompanyController::class, 'show'])->name('companies.show');
 // Perfil público unificado (visualização)
 Route::get('/profiles/{user}', [ProfileController::class, 'show'])->name('profiles.show');

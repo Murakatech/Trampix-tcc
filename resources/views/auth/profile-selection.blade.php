@@ -16,7 +16,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <meta name="old-service-categories" content='@json(old("service_categories", []))'>
+        <meta name="old-segments" content='@json(old("segments", []))'>
 
         <!-- Estilos locais: esconder scrollbar mantendo rolagem -->
         <style>
@@ -188,24 +188,21 @@
                             @enderror
                         </div>
 
-                        <!-- Áreas de Atuação (Freelancer) -->
-                        <label class="block text-sm font-medium text-purple-100 mb-2">Áreas de Atuação (Max 5)</label>
-                        <div id="freelancerCategoriesPicker" class="space-y-2">
+                        <!-- Segmentos (Freelancer) -->
+                        <label class="block text-sm font-medium text-purple-100 mb-2">Segmento (Max 3)</label>
+                        <div id="freelancerSegmentsPicker" class="space-y-2">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto no-scrollbar">
-                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
+                                @foreach(\App\Models\Segment::orderBy('name')->get() as $segment)
                                     <button type="button"
-                                            class="category-option flex items-center p-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 cursor-pointer transition-colors duration-200 text-white"
-                                            data-id="{{ $category->id }}" data-name="{{ $category->name }}">
-                                        @if($category->icon)
-                                            <i class="{{ $category->icon }} text-purple-200 mr-2"></i>
-                                        @endif
-                                        <span class="text-sm">{{ $category->name }}</span>
+                                            class="segment-option flex items-center p-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 cursor-pointer transition-colors duration-200 text-white"
+                                            data-id="{{ $segment->id }}" data-name="{{ $segment->name }}">
+                                        <span class="text-sm">{{ $segment->name }}</span>
                                     </button>
                                 @endforeach
                             </div>
                             <div id="freelancerSelectedChips" class="flex flex-wrap gap-2"></div>
                             <div id="freelancerSelectedInputs"></div>
-                            @error('service_categories')
+                            @error('segments')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>
@@ -394,24 +391,21 @@
                             @enderror
                         </div>
 
-                        <!-- Áreas de Atuação (Empresa) -->
-                        <label class="block text-sm font-medium text-green-100 mb-2">Áreas de Atuação (Max 5)</label>
-                        <div id="companyCategoriesPicker" class="space-y-2">
+                        <!-- Segmentos (Empresa) -->
+                        <label class="block text-sm font-medium text-green-100 mb-2">Segmento (Max 3)</label>
+                        <div id="companySegmentsPicker" class="space-y-2">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-48 overflow-y-auto no-scrollbar">
-                                @foreach(\App\Models\ServiceCategory::where('is_active', true)->orderBy('name')->get() as $category)
+                                @foreach(\App\Models\Segment::orderBy('name')->get() as $segment)
                                     <button type="button"
-                                            class="category-option flex items-center p-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 cursor-pointer transition-colors duration-200 text-white"
-                                            data-id="{{ $category->id }}" data-name="{{ $category->name }}">
-                                        @if($category->icon)
-                                            <i class="{{ $category->icon }} text-green-200 mr-2"></i>
-                                        @endif
-                                        <span class="text-sm">{{ $category->name }}</span>
+                                            class="segment-option flex items-center p-3 bg-white/10 border border-white/20 rounded-lg hover:bg-white/20 cursor-pointer transition-colors duration-200 text-white"
+                                            data-id="{{ $segment->id }}" data-name="{{ $segment->name }}">
+                                        <span class="text-sm">{{ $segment->name }}</span>
                                     </button>
                                 @endforeach
                             </div>
                             <div id="companySelectedChips" class="flex flex-wrap gap-2"></div>
                             <div id="companySelectedInputs"></div>
-                            @error('service_categories')
+                            @error('segments')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>
@@ -470,14 +464,14 @@
 </body>
 </html>
 <script>
-// Picker de categorias com chips e limite de seleção
+// Picker de segmentos com chips e limite de seleção
 document.addEventListener('DOMContentLoaded', function () {
     const setupPicker = (rootId, chipsId, inputsId, limit, preselected = []) => {
         const root = document.getElementById(rootId);
         if (!root) return;
         const chips = document.getElementById(chipsId);
         const inputs = document.getElementById(inputsId);
-        const options = root.querySelectorAll('.category-option');
+        const options = root.querySelectorAll('.segment-option');
 
         const selectedSet = new Set(preselected.map(id => String(id)));
 
@@ -486,7 +480,7 @@ document.addEventListener('DOMContentLoaded', function () {
             chip.type = 'button';
             chip.className = 'chip px-3 py-1 bg-white text-purple-700 rounded-full text-sm shadow hover:bg-purple-200 transition';
             chip.dataset.id = id;
-            chip.setAttribute('aria-label', `Remover categoria ${name}`);
+            chip.setAttribute('aria-label', `Remover segmento ${name}`);
             chip.addEventListener('click', () => toggle(id, name));
 
             const labelSpan = document.createElement('span');
@@ -504,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const addHiddenInput = (id) => {
             const input = document.createElement('input');
             input.type = 'hidden';
-            input.name = 'service_categories[]';
+            input.name = 'segments[]';
             input.value = id;
             input.dataset.id = id;
             inputs.appendChild(input);
@@ -537,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 markOption(idStr, false);
             } else {
                 if (selectedSet.size >= limit) {
-                    alert(`Você pode selecionar no máximo ${limit} categorias.`);
+                    alert(`Você pode selecionar no máximo ${limit} segmentos.`);
                     return;
                 }
                 selectedSet.add(idStr);
@@ -563,11 +557,11 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const oldSelected = (function(){
-        try { return JSON.parse(document.querySelector('meta[name="old-service-categories"]')?.content || '[]'); } catch(e) { return []; }
+        try { return JSON.parse(document.querySelector('meta[name="old-segments"]')?.content || '[]'); } catch(e) { return []; }
     })();
 
-    setupPicker('freelancerCategoriesPicker', 'freelancerSelectedChips', 'freelancerSelectedInputs', 5, oldSelected);
-    setupPicker('companyCategoriesPicker', 'companySelectedChips', 'companySelectedInputs', 5, oldSelected);
+    setupPicker('freelancerSegmentsPicker', 'freelancerSelectedChips', 'freelancerSelectedInputs', 3, oldSelected);
+    setupPicker('companySegmentsPicker', 'companySelectedChips', 'companySelectedInputs', 3, oldSelected);
 });
 </script>
 <script>

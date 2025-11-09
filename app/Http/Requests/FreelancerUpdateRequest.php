@@ -36,6 +36,10 @@ class FreelancerUpdateRequest extends FormRequest
             'is_active' => 'nullable|boolean',
             'service_categories' => 'nullable|array|max:10',
             'service_categories.*' => 'exists:service_categories,id',
+            // Novos campos: segmentos do freelancer
+            'segments' => 'nullable|array|max:3',
+            'segments.*' => 'exists:segments,id',
+            // Removido: segmento principal único; usamos até 3 segmentos (acima)
         ];
     }
 

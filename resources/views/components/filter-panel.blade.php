@@ -5,8 +5,10 @@
     'applyLabel' => 'Aplicar Filtros',
     'resetHref' => null,
     'categories' => [],
+    'segments' => [],
     'locationTypes' => [],
     'selectedCategory' => null,
+    'selectedSegmentId' => request('segment_id'),
     'selectedLocationType' => null,
     'searchName' => 'search',
     'searchValue' => request('search'),
@@ -42,12 +44,32 @@
                 </div>
 
                 <div class="w-48">
-                    <label for="category" class="block text-xs font-medium text-gray-600 mb-1">Categoria</label>
-                    <select id="category" name="category" class="trampix-input w-full">
-                        <option value="">Todas</option>
-                        @foreach(($categories ?: []) as $cat)
-                            <option value="{{ $cat }}" {{ $selectedCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                    <label for="segment_id" class="block text-xs font-medium text-gray-600 mb-1">Segmento</label>
+                    <select id="segment_id" name="segment_id" class="trampix-input w-full" data-segment-select="true">
+                        <option value="">Todos</option>
+                        @foreach(($segments ?: []) as $seg)
+                            <option value="{{ $seg->id }}" {{ (string)$selectedSegmentId === (string)$seg->id ? 'selected' : '' }}>{{ $seg->name }}</option>
                         @endforeach
+                    </select>
+                </div>
+
+                <div class="w-48">
+                    <label for="category" class="block text-xs font-medium text-gray-600 mb-1">Categoria
+                        @if(!$selectedSegmentId)
+                            <span class="ml-2 inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 align-middle">
+                                <i class="fas fa-lock mr-1"></i>Bloqueado
+                            </span>
+                        @endif
+                    </label>
+                    <select id="category" name="category" class="trampix-input w-full {{ $selectedSegmentId ? '' : 'opacity-60 cursor-not-allowed' }}" data-category-select="true" {{ $selectedSegmentId ? '' : 'disabled aria-disabled=true' }}>
+                        @if($selectedSegmentId)
+                            <option value="">Todas</option>
+                            @foreach(($categories ?: []) as $cat)
+                                <option value="{{ $cat }}" {{ $selectedCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            @endforeach
+                        @else
+                            <option value="">Selecione um segmento</option>
+                        @endif
                     </select>
                 </div>
 
@@ -88,12 +110,32 @@
             </div>
 
             <div class="w-48">
-                <label for="category" class="block text-xs font-medium text-gray-600 mb-1">Categoria</label>
-                <select id="category" name="category" class="trampix-input w-full">
-                    <option value="">Todas</option>
-                    @foreach(($categories ?: []) as $cat)
-                        <option value="{{ $cat }}" {{ $selectedCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                <label for="segment_id" class="block text-xs font-medium text-gray-600 mb-1">Segmento</label>
+                <select id="segment_id" name="segment_id" class="trampix-input w-full" data-segment-select="true">
+                    <option value="">Todos</option>
+                    @foreach(($segments ?: []) as $seg)
+                        <option value="{{ $seg->id }}" {{ (string)$selectedSegmentId === (string)$seg->id ? 'selected' : '' }}>{{ $seg->name }}</option>
                     @endforeach
+                </select>
+            </div>
+
+            <div class="w-48">
+                <label for="category" class="block text-xs font-medium text-gray-600 mb-1">Categoria
+                    @if(!$selectedSegmentId)
+                        <span class="ml-2 inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 align-middle">
+                            <i class="fas fa-lock mr-1"></i>Bloqueado
+                        </span>
+                    @endif
+                </label>
+                <select id="category" name="category" class="trampix-input w-full {{ $selectedSegmentId ? '' : 'opacity-60 cursor-not-allowed' }}" data-category-select="true" {{ $selectedSegmentId ? '' : 'disabled aria-disabled=true' }}>
+                    @if($selectedSegmentId)
+                        <option value="">Todas</option>
+                        @foreach(($categories ?: []) as $cat)
+                            <option value="{{ $cat }}" {{ $selectedCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                        @endforeach
+                    @else
+                        <option value="">Selecione um segmento</option>
+                    @endif
                 </select>
             </div>
 

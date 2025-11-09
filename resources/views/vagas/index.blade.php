@@ -791,6 +791,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
             @php
                 $categoriesList = $availableCategories ?? [];
                 $locationsList  = $locationTypes ?? ['Remoto','Híbrido','Presencial'];
+                $segmentsList   = $segments ?? \App\Models\Segment::orderBy('name')->select('id','name')->get();
             @endphp
             <x-filter-panel
                 class="p-0 w-full"
@@ -801,8 +802,10 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
                 applyLabel="Aplicar Filtros"
                 :resetHref="route('vagas.index')"
                 :categories="$categoriesList"
+                :segments="$segmentsList"
                 :locationTypes="$locationsList"
                 :selectedCategory="request('category')"
+                :selectedSegmentId="request('segment_id')"
                 :selectedLocationType="request('location_type')"
                 searchName="search"
                 :searchValue="request('search')"
@@ -854,9 +857,32 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
                                     </a>
                                 </h3>
                                 <div id="job-company-{{ $vaga->id }}" 
-                                     class="flex items-center text-sm text-gray-600 mb-2">
-                                    <i class="fas fa-building mr-2 text-purple-500" aria-hidden="true"></i>
-                                    <span>{{ $vaga->company->name ?? 'Empresa não informada' }}</span>
+                                     class="flex items-center text-sm text-gray-600 mb-2 flex-wrap gap-2">
+                                    <span class="inline-flex items-center">
+                                        <i class="fas fa-building mr-2 text-purple-500" aria-hidden="true"></i>
+                                        <span>{{ $vaga->company->name ?? 'Empresa não informada' }}</span>
+                                    </span>
+                                    @php
+                                        // Em algumas vagas legadas, $vaga->category é uma string (nome da categoria)
+                                        // e há colisão de nome com a relação Eloquent "category".
+                                        // Para evitar "Attempt to read property 'segment' on string",
+                                        // usamos explicitamente o valor da relação se houver category_id.
+                                        $categoryRel = $vaga->category_id ? $vaga->getRelationValue('category') : null;
+                                        $jobSegmentName = $categoryRel?->segment?->name;
+                                        $companySegmentName = $vaga->company?->segment?->name;
+                                    @endphp
+                                    @if($jobSegmentName)
+                                        <span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200" title="Segmento da vaga">
+                                            <i class="fas fa-layer-group mr-1 text-gray-500" aria-hidden="true"></i>
+                                            {{ $jobSegmentName }}
+                                        </span>
+                                    @endif
+                                    @if($companySegmentName)
+                                        <span class="inline-flex items-center text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border border-gray-200" title="Segmento da empresa">
+                                            <i class="fas fa-industry mr-1 text-gray-500" aria-hidden="true"></i>
+                                            {{ $companySegmentName }}
+                                        </span>
+                                    @endif
                                 </div>
                             </div>
                             
@@ -882,7 +908,9 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
                         {{-- Badges de informação (destacadas) --}}
                         <div class="flex flex-wrap gap-3 mb-4" role="list" aria-label="Informações da vaga">
                             @php
-                                $categoryLabel = $vaga->category?->name ?? $vaga->category ?? null;
+                                // Evita acessar propriedade em string: prioriza relação carregada, senão usa string legada
+                                $categoryRel = $vaga->category_id ? $vaga->getRelationValue('category') : null;
+                                $categoryLabel = $categoryRel?->name ?? ($vaga->category ?? null);
                             @endphp
                             @if($categoryLabel)
                                 <span class="job-badge badge-category text-sm font-semibold px-3 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-purple-700 shadow-sm"
@@ -1088,6 +1116,54 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
                 scheduleSubmit();
             });
         });
+
+        // Lógica dinâmica: ao escolher segmento, buscar categorias relacionadas
+        const segmentSelect = form.querySelector('[data-segment-select="true"]');
+        const categorySelect = form.querySelector('[data-category-select="true"]');
+        async function loadCategoriesBySegment(segId, preselectValue){
+            if (!categorySelect) return;
+            // Reset options (placeholder depende do estado)
+            categorySelect.innerHTML = '<option value="">' + (segId ? 'Todas' : 'Selecione um segmento') + '</option>';
+            if (!segId){
+                categorySelect.setAttribute('disabled','disabled');
+                categorySelect.classList.add('opacity-60','cursor-not-allowed');
+                return;
+            }
+            try {
+                const res = await fetch(`/api/segments/${encodeURIComponent(segId)}/categories`);
+                const ct = res.headers.get('content-type') || '';
+                if (!res.ok || !ct.includes('application/json')) throw new Error('Resposta inválida');
+                const data = await res.json();
+                const cats = (data.categories || []);
+                cats.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    if (preselectValue && preselectValue === name) opt.selected = true;
+                    categorySelect.appendChild(opt);
+                });
+                categorySelect.removeAttribute('disabled');
+                categorySelect.classList.remove('opacity-60','cursor-not-allowed');
+            } catch(e) {
+                // Em erro, mantém desabilitado
+                categorySelect.setAttribute('disabled','disabled');
+                categorySelect.classList.add('opacity-60','cursor-not-allowed');
+            }
+        }
+        if (segmentSelect && categorySelect){
+            // Carregar na inicialização se já houver segmento selecionado
+            const initialSeg = segmentSelect.value;
+            const initialCat = categorySelect.getAttribute('data-initial') || '{{ addslashes(request('category')) }}';
+            if (initialSeg){
+                loadCategoriesBySegment(initialSeg, initialCat);
+            }
+            segmentSelect.addEventListener('change', (e) => {
+                const segId = e.target.value;
+                // Ao trocar segmento, limpa categoria e carrega novas opções
+                if (categorySelect){ categorySelect.value = ''; }
+                loadCategoriesBySegment(segId, null);
+            });
+        }
 
         // Sugestões no campo de busca com debounce
         const searchInput = form.querySelector('[data-search-input="true"]');

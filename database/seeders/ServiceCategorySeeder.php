@@ -2,92 +2,147 @@
 
 namespace Database\Seeders;
 
-use App\Models\ServiceCategory;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Segment;
+use App\Models\Category;
+use Illuminate\Support\Str;
 
 class ServiceCategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $categories = [
-            [
-                'name' => 'Desenvolvimento Web',
-                'slug' => 'desenvolvimento-web',
-                'description' => 'Criação de sites, aplicações web e sistemas online',
-                'icon' => 'fas fa-code',
-                'is_active' => true,
+        $data = [
+
+            // 💼 Negócios e Administração
+            'Negócios e Administração' => [
+                'Administração',
+                'Contabilidade',
+                'Finanças',
+                'Recursos Humanos',
+                'Marketing',
+                'Vendas e Comercial',
+                'Empreendedorismo',
+                'Comércio Exterior',
+                'Logística',
+                'Consultoria Empresarial',
             ],
-            [
-                'name' => 'Design Gráfico',
-                'slug' => 'design-grafico',
-                'description' => 'Criação de identidade visual, logos e materiais gráficos',
-                'icon' => 'fas fa-palette',
-                'is_active' => true,
+
+            // 💻 Tecnologia e Informação
+            'Tecnologia e Informação' => [
+                'Desenvolvimento de Software',
+                'Análise de Sistemas',
+                'Suporte Técnico / Help Desk',
+                'Banco de Dados',
+                'Cibersegurança',
+                'UX/UI Design',
+                'Inteligência Artificial',
+                'Ciência de Dados',
+                'Infraestrutura e Redes',
+                'Game Design',
             ],
-            [
-                'name' => 'Marketing Digital',
-                'slug' => 'marketing-digital',
-                'description' => 'Estratégias de marketing online, redes sociais e publicidade',
-                'icon' => 'fas fa-bullhorn',
-                'is_active' => true,
+
+            // 🏗️ Engenharia e Indústria
+            'Engenharia e Indústria' => [
+                'Engenharia Civil',
+                'Engenharia Mecânica',
+                'Engenharia Elétrica',
+                'Engenharia de Produção',
+                'Engenharia Ambiental',
+                'Engenharia Química',
+                'Manutenção Industrial',
+                'Desenho Técnico / CAD',
             ],
-            [
-                'name' => 'Redação e Copywriting',
-                'slug' => 'redacao-copywriting',
-                'description' => 'Criação de conteúdo, textos publicitários e artigos',
-                'icon' => 'fas fa-pen',
-                'is_active' => true,
+
+            // 🎨 Comunicação e Criatividade
+            'Comunicação e Criatividade' => [
+                'Design Gráfico',
+                'Publicidade e Propaganda',
+                'Jornalismo',
+                'Fotografia',
+                'Produção Audiovisual',
+                'Moda',
+                'Redação e Copywriting',
+                'Social Media',
+                'Edição de Vídeo',
             ],
-            [
-                'name' => 'Consultoria Empresarial',
-                'slug' => 'consultoria-empresarial',
-                'description' => 'Consultoria em gestão, processos e estratégia empresarial',
-                'icon' => 'fas fa-chart-line',
-                'is_active' => true,
+
+            // 🧑‍⚕️ Saúde e Bem-Estar
+            'Saúde e Bem-Estar' => [
+                'Enfermagem',
+                'Medicina',
+                'Psicologia',
+                'Fisioterapia',
+                'Nutrição',
+                'Educação Física',
+                'Estética e Beleza',
             ],
-            [
-                'name' => 'Tradução',
-                'slug' => 'traducao',
-                'description' => 'Serviços de tradução e interpretação de idiomas',
-                'icon' => 'fas fa-language',
-                'is_active' => true,
+
+            // 🏫 Educação e Pesquisa
+            'Educação e Pesquisa' => [
+                'Pedagogia',
+                'Letras',
+                'Ensino de Idiomas',
+                'Pesquisa Acadêmica',
+                'Tutoria / Aulas particulares',
             ],
-            [
-                'name' => 'Fotografia',
-                'slug' => 'fotografia',
-                'description' => 'Serviços fotográficos para eventos, produtos e retratos',
-                'icon' => 'fas fa-camera',
-                'is_active' => true,
+
+            // ⚖️ Jurídico e Público
+            'Jurídico e Público' => [
+                'Direito',
+                'Advocacia',
+                'Administração Pública',
+                'Contabilidade Pública',
+                'Gestão Governamental',
             ],
-            [
-                'name' => 'Desenvolvimento Mobile',
-                'slug' => 'desenvolvimento-mobile',
-                'description' => 'Criação de aplicativos para dispositivos móveis',
-                'icon' => 'fas fa-mobile-alt',
-                'is_active' => true,
+
+            // 🌱 Meio Ambiente e Sustentabilidade
+            'Meio Ambiente e Sustentabilidade' => [
+                'Gestão Ambiental',
+                'Agricultura / Agronegócio',
+                'Biotecnologia',
+                'Energias Renováveis',
             ],
-            [
-                'name' => 'Análise de Dados',
-                'slug' => 'analise-dados',
-                'description' => 'Análise estatística, business intelligence e ciência de dados',
-                'icon' => 'fas fa-chart-bar',
-                'is_active' => true,
+
+            // 🧱 Serviços e Operações
+            'Serviços e Operações' => [
+                'Construção Civil',
+                'Transporte e Logística',
+                'Serviços Gerais',
+                'Limpeza e Conservação',
+                'Segurança Patrimonial',
+                'Atendimento ao Cliente',
             ],
-            [
-                'name' => 'Suporte Técnico',
-                'slug' => 'suporte-tecnico',
-                'description' => 'Suporte técnico em TI, manutenção e helpdesk',
-                'icon' => 'fas fa-tools',
-                'is_active' => true,
+
+            // 🛍️ Comércio e Atendimento
+            'Comércio e Atendimento' => [
+                'Varejo',
+                'E-commerce',
+                'Atendimento ao Cliente',
+                'Telemarketing',
+                'Representação Comercial',
             ],
         ];
 
-        foreach ($categories as $category) {
-            ServiceCategory::create($category);
+        foreach ($data as $segmentName => $categories) {
+            $segment = Segment::firstOrCreate(['name' => $segmentName]);
+
+            foreach ($categories as $categoryName) {
+                $slug = Str::slug($categoryName);
+
+                // Use updateOrCreate keyed by unique slug to avoid duplicate slug errors
+                Category::updateOrCreate(
+                    [
+                        'slug' => $slug,
+                    ],
+                    [
+                        'name' => $categoryName,
+                        'segment_id' => $segment->id,
+                        'description' => null,
+                    ]
+                );
+            }
         }
+
+        $this->command->info('Segments and categories seeded successfully.');
     }
 }

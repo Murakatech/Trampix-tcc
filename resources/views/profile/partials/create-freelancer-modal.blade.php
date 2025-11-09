@@ -120,6 +120,24 @@
                     @enderror
                 </div>
 
+                {{-- Segmentos de Atuação (opcional) --}}
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Segmentos de Atuação</label>
+                    <p class="text-xs text-gray-600 mb-2">Selecione os segmentos econômicos em que você atua. Você pode ajustar isso depois.</p>
+                    @php($allSegments = \App\Models\Segment::orderBy('name')->get())
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        @foreach($allSegments as $seg)
+                            <label class="flex items-center p-2 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="segments[]" value="{{ $seg->id }}" class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">{{ $seg->name }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('segments')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Botões de Ação --}}
                 <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                     <button type="button" 

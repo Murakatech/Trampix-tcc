@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Segment;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -134,9 +135,9 @@ class ProfileController extends Controller
         $freelancer = $user->freelancer;
         $company = $user->company;
         
-        // Carregar categorias se o freelancer existir
+        // Carregar categorias e segmentos se o freelancer existir
         if ($freelancer) {
-            $freelancer->load('serviceCategories');
+            $freelancer->load(['serviceCategories', 'segments']);
         }
         
         // Carregar categorias se a empresa existir
@@ -152,6 +153,9 @@ class ProfileController extends Controller
             $profile = $company;
         }
         
+        // Carregar lista de segmentos para seleção (apenas uma vez)
+        $segments = Segment::orderBy('name')->get();
+
         return view('profile.edit', [
             'user' => $user,
             'activeRole' => $activeRole,
@@ -160,6 +164,7 @@ class ProfileController extends Controller
             'company' => $company,
             'hasFreelancer' => $user->isFreelancer(),
             'hasCompany' => $user->isCompany(),
+            'segments' => $segments,
         ]);
     }
 
@@ -291,20 +296,21 @@ class ProfileController extends Controller
                 }
             }
 
-            // Processar categorias de serviços
-            if ($request->has('service_categories')) {
-                $categoryIds = $request->input('service_categories', []);
-                // Validar que as categorias existem e estão ativas
-                $validCategoryIds = \App\Models\ServiceCategory::whereIn('id', $categoryIds)
-                    ->where('is_active', true)
+            // Removido: processamento de Categorias de Serviços do freelancer
+
+            // Processar segmentos do freelancer (múltipla seleção)
+            if ($request->has('segments')) {
+                $segmentIds = $request->input('segments', []);
+                $validSegmentIds = Segment::whereIn('id', $segmentIds)
                     ->pluck('id')
                     ->toArray();
-                
-                $freelancer->serviceCategories()->sync($validCategoryIds);
+                $freelancer->segments()->sync($validSegmentIds);
             } else {
-                // Se nenhuma categoria foi selecionada, remover todas
-                $freelancer->serviceCategories()->detach();
+                // Se nenhum segmento foi selecionado, remover todos
+                $freelancer->segments()->detach();
             }
+
+            // Removido: segmento principal único do freelancer (segment_id)
 
             // Garantir que o papel ativo permaneça como freelancer após salvar
             session(['active_role' => 'freelancer']);
@@ -363,35 +369,19 @@ class ProfileController extends Controller
                 $company = $user->createProfile('company', $validated);
             }
 
-            // Atualizar área de atuação (ActivityArea) para empresa
-            if ($request->filled('activity_area_id')) {
-                $areaId = (int) $request->input('activity_area_id');
-                $area = \App\Models\ActivityArea::where('id', $areaId)
-                    ->where('type', 'company')
-                    ->first();
-                $company->activity_area_id = $area?->id; // só define se for válida
-                $company->save();
-            } else {
-                // permitir limpar o campo
-                if ($company->activity_area_id) {
-                    $company->activity_area_id = null;
-                    $company->save();
-                }
-            }
-
-            // Sincronizar categorias de serviço se fornecidas
-            if ($request->has('service_categories')) {
-                $categoryIds = $request->input('service_categories', []);
-                $validCategories = \App\Models\ServiceCategory::whereIn('id', $categoryIds)
-                    ->where('is_active', true)
+            // Processar segmentos da empresa (múltipla seleção)
+            if ($request->has('segments')) {
+                $segmentIds = $request->input('segments', []);
+                $validSegmentIds = Segment::whereIn('id', $segmentIds)
                     ->pluck('id')
                     ->toArray();
-                
-                $company->serviceCategories()->sync($validCategories);
+                $company->segments()->sync($validSegmentIds);
             } else {
-                // Se nenhuma categoria foi selecionada, remover todas
-                $company->serviceCategories()->detach();
+                // Se nenhum segmento foi selecionado, remover todos
+                $company->segments()->detach();
             }
+
+            // Removido: processamento de Categorias de Serviços da empresa
 
             return Redirect::route('profile.edit')->with('success', 'Perfil de empresa atualizado com sucesso!');
         }
@@ -575,10 +565,20 @@ class ProfileController extends Controller
             'bio' => 'nullable|string|max:1000',
             'portfolio_url' => 'nullable|url|max:255',
             'hourly_rate' => 'nullable|numeric|min:0|max:9999.99',
+            // permitir seleção inicial de segmentos
+            'segments' => 'nullable|array|max:10',
+            'segments.*' => 'exists:segments,id',
         ]);
         
         // Criar perfil freelancer
         $freelancer = $user->createProfile('freelancer', $validated);
+
+        // Sincronizar segmentos se fornecidos
+        if ($request->has('segments')) {
+            $segmentIds = $request->input('segments', []);
+            $validSegmentIds = Segment::whereIn('id', $segmentIds)->pluck('id')->toArray();
+            $freelancer->segments()->sync($validSegmentIds);
+        }
         
         // Definir freelancer como perfil ativo
         session(['active_role' => 'freelancer']);

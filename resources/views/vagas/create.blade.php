@@ -58,11 +58,29 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
+                            <label for="segment_id" class="form-label">Segmento</label>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input type="hidden" id="segment_id" name="segment_id" value="{{ old('segment_id') }}">
+                                @php
+                                    $selectedSegmentName = '';
+                                    $oldSeg = old('segment_id');
+                                    if(!empty($oldSeg) && !empty($segments)){
+                                        foreach($segments as $seg){ if((string)$seg->id === (string)$oldSeg) { $selectedSegmentName = $seg->name; break; } }
+                                    }
+                                @endphp
+                                <input type="text" id="segment_name" class="form-control" value="{{ $selectedSegmentName }}" placeholder="Nenhum segmento selecionado" readonly>
+                                <button type="button" id="openSegmentModal" class="btn-trampix-primary btn-glow"><i class="fas fa-list me-1"></i>Escolher Segmento</button>
+                            </div>
+                            <small class="text-muted">Escolha um segmento para habilitar e listar as categorias relacionadas.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
                             <label for="category_id" class="form-label">Categoria da Vaga</label>
-                            <select id="category_id" name="category_id" class="form-select @error('category_id') is-invalid @enderror">
+                            <select id="category_id" name="category_id" class="form-select @error('category_id') is-invalid @enderror" disabled>
                                 <option value="">Selecione uma categoria...</option>
                                 @foreach(($categories ?? []) as $cat)
-                                    <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                    <option value="{{ $cat->id }}" data-segment-id="{{ $cat->segment_id ?? '' }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                                 @endforeach
                             </select>
                             @error('category_id')
@@ -70,7 +88,9 @@
                             @enderror
                         </div>
                     </div>
-                    
+                </div>
+                
+                <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label for="contract_type" class="form-label">Tipo de contrato</label>
@@ -143,6 +163,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Busca/filtro de empresas (apenas admin)
     const searchInput = document.getElementById('companySearch');
     const select = document.getElementById('company_id');
     if (!searchInput || !select) return;
@@ -167,4 +188,121 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endcan
+@push('styles')
+<style>
+    /* Modal simples para seleção de segmento */
+    #segmentModal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 1050; }
+    #segmentModal.show { display: flex; }
+    #segmentModal .modal-card { background: #fff; border-radius: 8px; max-width: 640px; width: calc(100% - 2rem); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+    #segmentModal .modal-header { padding: 12px 16px; border-bottom: 1px solid #eee; display:flex; justify-content: space-between; align-items:center; }
+    #segmentModal .modal-body { padding: 12px 16px; max-height: 380px; overflow-y: auto; }
+    #segmentModal .segments-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+    .segment-option { display:block; padding: 10px 12px; border:1px solid #ddd; border-radius:6px; cursor:pointer; text-decoration:none; color:#333; background:#fafafa; }
+    .segment-option:hover { background:#f0f8ff; border-color:#bcd; }
+</style>
+@endpush
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filtro dependente Segmento -> Categoria (disponível para todos)
+    const hiddenSegmentInput = document.getElementById('segment_id');
+    const segmentNameInput = document.getElementById('segment_name');
+    const categorySelect = document.getElementById('category_id');
+    const openSegmentModalBtn = document.getElementById('openSegmentModal');
+
+    // Dados de segmentos para obter nomes no front
+    const segmentsData = @json(($segments ?? []));
+    function getSegmentNameById(id){
+        const s = segmentsData.find(x => String(x.id) === String(id));
+        return s ? s.name : '';
+    }
+
+    if (hiddenSegmentInput && categorySelect) {
+        const allOptions = Array.from(categorySelect.querySelectorAll('option'));
+
+        function applyFilter() {
+            const selectedSegmentId = hiddenSegmentInput.value;
+            const placeholder = allOptions[0];
+            const filtered = allOptions.slice(1).filter(opt => {
+                const seg = opt.getAttribute('data-segment-id') || '';
+                return selectedSegmentId && seg === selectedSegmentId;
+            });
+
+            // Preservar valor selecionado atual se ainda existir
+            const currentValue = categorySelect.value;
+            categorySelect.innerHTML = '';
+            categorySelect.appendChild(placeholder.cloneNode(true));
+            filtered.forEach(opt => categorySelect.appendChild(opt.cloneNode(true)));
+
+            const hasCurrent = Array.from(categorySelect.options).some(o => o.value === currentValue);
+            if (hasCurrent) categorySelect.value = currentValue;
+
+            // Habilitar/Desabilitar categorias conforme segmento selecionado
+            categorySelect.disabled = !selectedSegmentId;
+        }
+
+        // Auto-definir segmento com base na categoria atual (ex.: retorno com erros de validação)
+        const selectedCategoryOption = categorySelect.querySelector('option:checked');
+        if (selectedCategoryOption) {
+            const segForCat = selectedCategoryOption.getAttribute('data-segment-id') || '';
+            if (segForCat) {
+                hiddenSegmentInput.value = segForCat;
+                if (segmentNameInput) segmentNameInput.value = getSegmentNameById(segForCat);
+            }
+        }
+        applyFilter();
+    }
+
+    // Modal simples para escolher segmento
+    if (openSegmentModalBtn && hiddenSegmentInput) {
+        openSegmentModalBtn.addEventListener('click', () => {
+            const modal = document.getElementById('segmentModal');
+            if (modal) modal.classList.add('show');
+        });
+    }
+    document.addEventListener('click', (e) => {
+        const modal = document.getElementById('segmentModal');
+        if (!modal) return;
+        if (e.target.matches('#closeSegmentModal') || e.target.matches('#segmentModal')) {
+            modal.classList.remove('show');
+        }
+        if (e.target.matches('.segment-option')) {
+            const id = e.target.getAttribute('data-id');
+            const name = e.target.textContent.trim();
+            hiddenSegmentInput.value = id;
+            if (segmentNameInput) segmentNameInput.value = name;
+            // Reaplicar filtro ao escolher segmento
+            if (typeof applyFilter === 'function') applyFilter();
+            modal.classList.remove('show');
+        }
+    });
+});
+</script>
+@endpush
+@push('scripts')
+<script>
+// Renderização do modal com opções de segmentos (geral)
+document.addEventListener('DOMContentLoaded', function(){
+    // Evitar dupla inserção do modal
+    if (document.getElementById('segmentModal')) return;
+    const container = document.createElement('div');
+    container.id = 'segmentModal';
+    container.innerHTML = `
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="segmentModalLabel">
+        <div class="modal-header">
+            <h5 id="segmentModalLabel" class="mb-0">Escolher Segmento</h5>
+            <button type="button" id="closeSegmentModal" class="btn btn-sm btn-outline-secondary">Fechar</button>
+        </div>
+        <div class="modal-body">
+            <div class="segments-grid">
+                @foreach(($segments ?? []) as $seg)
+                <button type="button" class="segment-option" data-id="{{ $seg->id }}">{{ $seg->name }}</button>
+                @endforeach
+            </div>
+        </div>
+    </div>`;
+    document.body.appendChild(container);
+});
+</script>
+@endpush
 @endsection

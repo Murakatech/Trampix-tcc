@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\Segment;
 use App\Models\ActivityArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -66,6 +67,9 @@ class CompanyController extends Controller
             'service_categories' => 'nullable|array',
             'service_categories.*' => 'exists:service_categories,id',
             'activity_area_id' => 'nullable|integer',
+            // Permitir seleção de segmentos (máximo 3)
+            'segments' => 'nullable|array|max:3',
+            'segments.*' => 'exists:segments,id',
         ]);
 
         // Mapear display_name para name
@@ -91,6 +95,15 @@ class CompanyController extends Controller
                 ->toArray();
             
             $company->serviceCategories()->sync($validCategories);
+        }
+
+        // Sincronizar segmentos se fornecidos
+        if ($request->has('segments')) {
+            $segmentIds = $request->input('segments', []);
+            $validSegmentIds = Segment::whereIn('id', $segmentIds)
+                ->pluck('id')
+                ->toArray();
+            $company->segments()->sync($validSegmentIds);
         }
 
         // Definir empresa como perfil ativo
