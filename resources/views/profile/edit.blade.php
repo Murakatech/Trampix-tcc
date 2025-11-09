@@ -361,24 +361,11 @@
             <form id="profileMainForm" method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="p-6">
                 @csrf
                 @method('patch')
-                <input type="hidden" name="section" value="{{ isset($freelancer) ? 'freelancer' : (isset($company) ? 'company' : session('active_role')) }}">
+                <input type="hidden" name="section" value="{{ session('active_role') }}">
 
                 @if(session('active_role') === 'freelancer')
-                    <!-- Formulário Freelancer (apenas E-mail visível) -->
+                    <!-- Formulário Freelancer -->
                     <div class="space-y-6">
-                        <div>
-                            <label for="freelancer_email" class="block text-sm font-medium text-gray-700">E-mail</label>
-                            <input type="email" id="freelancer_email" name="email"
-                                   class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('email') border-red-500 @enderror"
-                                   value="{{ old('email', auth()->user()->email ?? '') }}"
-                                   placeholder="seu@email.com">
-                            @error('email')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-                    <!-- Demais campos do freelancer permanecem ocultos -->
-                    <div class="space-y-6 hidden">
                         <div>
                             <label for="display_name" class="block text-sm font-medium text-gray-700">Nome de Exibição Profissional</label>
                             <input type="text" id="display_name" name="display_name" 
