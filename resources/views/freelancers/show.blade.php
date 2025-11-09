@@ -24,9 +24,22 @@
                 <div>
                     @auth
                         @if(auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id)
-                            <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-outline-light">
-                                <i class="fas fa-user-cog me-2"></i> Gerenciar Conta
-                            </a>
+                            <div class="d-inline-flex align-items-center gap-2">
+                                <a href="{{ route('profile.edit') }}" class="btn btn-sm btn-outline-light">
+                                    <i class="fas fa-user-cog me-2"></i> Gerenciar Conta
+                                </a>
+                                @if(auth()->user()->company)
+                                    {{-- Se o usuário também tiver perfil de empresa, oferecer acesso direto à edição da empresa --}}
+                                    <a href="{{ route('companies.edit', auth()->user()->company) }}" class="btn btn-sm btn-trampix-primary">
+                                        🏢 Editar Perfil de Empresa
+                                    </a>
+                                @else
+                                    {{-- Caso o usuário só tenha perfil de freelancer, abrir criação na própria tela de edição de perfil --}}
+                                    <a href="{{ route('profile.edit', ['openCompanyCreate' => 1]) }}" class="btn btn-sm btn-trampix-primary">
+                                        🏢 Criar Perfil de Empresa
+                                    </a>
+                                @endif
+                            </div>
                         @endif
                     @endauth
                 </div>

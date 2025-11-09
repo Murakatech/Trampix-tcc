@@ -123,6 +123,21 @@
                                 🏢 Empresa
                             </a>
                         @endif
+                        {{-- Botão para criar perfil inverso diretamente nesta tela (somente para o próprio usuário) --}}
+                        @auth
+                            @if(auth()->id() === $user->id)
+                                @if(!$company)
+                                    <button type="button" class="btn btn-sm btn-trampix-company" onclick="openModal('createCompanyModal')">
+                                        ➕ Criar Perfil de Empresa
+                                    </button>
+                                @endif
+                                @if(!$freelancer)
+                                    <button type="button" class="btn btn-sm btn-trampix-primary" onclick="openModal('createFreelancerModal')">
+                                        ➕ Criar Perfil Freelancer
+                                    </button>
+                                @endif
+                            @endif
+                        @endauth
                     </div>
                 </div>
             </div>
@@ -387,6 +402,87 @@
             modal.style.display = 'none';
             document.body.style.overflow = '';
         }
+    </script>
+    {{-- Modais de criação inline (empresa e freelancer) --}}
+    @include('profile.partials.create-company-modal')
+    @include('profile.partials.create-freelancer-modal')
+
+    {{-- Helpers JS para abrir/fechar modais e autoabrir via flags de URL --}}
+    <script>
+        // Evita redefinição se já existir
+        if (typeof window.openModal !== 'function') {
+            window.openModal = function(modalId) {
+                var modal = document.getElementById(modalId);
+                if (!modal) return;
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                // Foco no primeiro campo interativo para acessibilidade
+                var firstField = modal.querySelector('input, textarea, select, button');
+                if (firstField) {
+                    try { firstField.focus(); } catch (e) {}
+                }
+            };
+        }
+        if (typeof window.closeModal !== 'function') {
+            window.closeModal = function(modalId) {
+                var modal = document.getElementById(modalId);
+                if (!modal) return;
+                modal.style.display = 'none';
+                // Restaurar scroll do body se nenhum outro modal estiver aberto
+                var anyOpen = ['createCompanyModal','createFreelancerModal'].some(function(id){
+                    var m = document.getElementById(id);
+                    return m && m.style.display === 'flex';
+                });
+                if (!anyOpen) {
+                    document.body.style.overflow = '';
+                }
+            };
+        }
+        // Fechar com ESC
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape') {
+                ['createCompanyModal','createFreelancerModal'].forEach(function(id){
+                    var m = document.getElementById(id);
+                    if (m && m.style.display === 'flex') {
+                        closeModal(id);
+                    }
+                });
+            }
+        });
+        // Autoabrir via flags na URL
+        (function(){
+            var params = new URLSearchParams(window.location.search);
+            var openCompany = params.get('openCompanyCreate');
+            var openFreelancer = params.get('openFreelancerCreate');
+            if (openCompany && openCompany !== '0') {
+                var hasCompany = !!(@json((bool) ($company ?? ($user->company ?? null))));
+                if (!hasCompany) {
+                    openModal('createCompanyModal');
+                }
+            }
+            if (openFreelancer && openFreelancer !== '0') {
+                var hasFreelancer = !!(@json((bool) ($freelancer ?? ($user->freelancer ?? null))));
+                if (!hasFreelancer) {
+                    openModal('createFreelancerModal');
+                }
+            }
+            // Autoabrir com base em erros de validação do Laravel
+            // Pré-calcula em PHP e injeta booleanos simples para JS (evita erros de parsing do Blade)
+            @php
+                $companyFields = ['display_name','cnpj','email','website','linkedin_url','description','phone','company_size','founded_year','service_categories','segments','activity_area_id'];
+                $freelancerFields = ['display_name','bio','linkedin_url','whatsapp','location','hourly_rate','availability','service_categories','segments','cv','activity_area_id'];
+                $errorKeys = array_keys($errors->getMessages());
+                $hasCompanyErrors = count(array_intersect($errorKeys, $companyFields)) > 0;
+                $hasFreelancerErrors = count(array_intersect($errorKeys, $freelancerFields)) > 0;
+            @endphp
+            var hasCompanyErrors = @json($hasCompanyErrors);
+            var hasFreelancerErrors = @json($hasFreelancerErrors);
+            if (hasCompanyErrors) {
+                openModal('createCompanyModal');
+            } else if (hasFreelancerErrors) {
+                openModal('createFreelancerModal');
+            }
+        })();
     </script>
     {{-- Vagas recentes da empresa --}}
     @if($activeRole === 'company' && $activeProfile && $activeProfile->relationLoaded('vacancies') && $activeProfile->vacancies->count() > 0)

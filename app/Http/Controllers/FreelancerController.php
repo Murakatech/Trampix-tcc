@@ -133,8 +133,8 @@ class FreelancerController extends Controller
         // Definir freelancer como perfil ativo
         session(['active_role' => 'freelancer']);
 
-        // Redirecionar para o dashboard unificado, que renderiza o parcial conforme o perfil ativo
-        return redirect()->route('dashboard')
+        // Redirecionar para o perfil público do próprio usuário, já com a visualização do novo freelancer
+        return redirect()->route('profiles.show', ['user' => auth()->id(), 'role' => 'freelancer'])
             ->with('success', 'Perfil de freelancer criado com sucesso!');
     }
 

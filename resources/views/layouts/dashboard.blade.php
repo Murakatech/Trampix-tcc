@@ -400,6 +400,9 @@
         <!-- Bootstrap 5 JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         
+        <!-- Input masks and URL validators (CNPJ, LinkedIn, Portfolio) -->
+        <script src="{{ asset('js/masks.js') }}"></script>
+        
         <!-- Custom Scripts -->
         @stack('scripts')
     </body>

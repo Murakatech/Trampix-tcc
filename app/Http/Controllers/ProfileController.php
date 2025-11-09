@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -221,11 +222,20 @@ class ProfileController extends Controller
         }
         $validated = $request->validate(\App\Http\Requests\AccountUpdateRequest::rulesFor($user->id));
 
-        $user->fill($validated);
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
+        try {
+            $user->fill($validated);
+            if ($user->isDirty('email')) {
+                $user->email_verified_at = null;
+            }
+            $user->save();
+        } catch (\Throwable $e) {
+            // Não capturar erros de validação novamente
+            if ($e instanceof \Illuminate\Validation\ValidationException) {
+                throw $e;
+            }
+            Log::error('Erro ao atualizar conta do usuário', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            return Redirect::route('profile.edit')->with('error', 'Não foi possível atualizar a conta no momento. Tente novamente mais tarde.');
         }
-        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
@@ -248,8 +258,9 @@ class ProfileController extends Controller
             return $this->createFreelancerProfile($request);
         }
         
-        // Se é uma atualização de informações básicas da conta (sem section específica)
-        if (!$section || $section === 'account') {
+        // Se é uma atualização de informações básicas da conta
+        // Caso section seja 'account' OU (section ausente e vierem campos de conta)
+        if ($section === 'account' || (!$section && $request->hasAny(['name', 'email']))) {
             // Bloquear edição da conta para administradores
             if ($user->isAdmin()) {
                 return Redirect::route('admin.dashboard')->with('error', 'A conta do administrador não pode ser editada.');
@@ -267,6 +278,15 @@ class ProfileController extends Controller
         
         // Se a section é especificada, usar ela ao invés do activeRole
         $targetRole = $section ?: $activeRole;
+        
+        // Fallback robusto: deduzir pelo que o usuário possui caso a sessão/section esteja ausente
+        if (!$targetRole) {
+            if ($user->freelancer) {
+                $targetRole = 'freelancer';
+            } elseif ($user->company) {
+                $targetRole = 'company';
+            }
+        }
         
         if (!$targetRole) {
             return redirect()->route('dashboard');
@@ -309,15 +329,23 @@ class ProfileController extends Controller
                 }
             }
 
-            if ($freelancer) {
-                // Garantir atualização explícita do display_name
-                $freelancer->fill($validated);
-                if ($request->has('display_name')) {
-                    $freelancer->display_name = $request->input('display_name');
+            try {
+                if ($freelancer) {
+                    // Garantir atualização explícita do display_name
+                    $freelancer->fill($validated);
+                    if ($request->has('display_name')) {
+                        $freelancer->display_name = $request->input('display_name');
+                    }
+                    $freelancer->save();
+                } else {
+                    $freelancer = $user->createProfile('freelancer', $validated);
                 }
-                $freelancer->save();
-            } else {
-                $freelancer = $user->createProfile('freelancer', $validated);
+            } catch (\Throwable $e) {
+                if ($e instanceof \Illuminate\Validation\ValidationException) {
+                    throw $e;
+                }
+                Log::error('Erro ao atualizar perfil freelancer', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+                return Redirect::route('profile.edit')->with('error', 'Não foi possível atualizar o perfil de freelancer. Tente novamente mais tarde.');
             }
 
             // Atualizar área de atuação (ActivityArea) para freelancer
@@ -403,10 +431,18 @@ class ProfileController extends Controller
                 $validated['name'] = $validated['display_name'];
             }
 
-            if ($company) {
-                $company->update($validated);
-            } else {
-                $company = $user->createProfile('company', $validated);
+            try {
+                if ($company) {
+                    $company->update($validated);
+                } else {
+                    $company = $user->createProfile('company', $validated);
+                }
+            } catch (\Throwable $e) {
+                if ($e instanceof \Illuminate\Validation\ValidationException) {
+                    throw $e;
+                }
+                Log::error('Erro ao atualizar perfil empresa', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+                return Redirect::route('profile.edit')->with('error', 'Não foi possível atualizar o perfil de empresa. Tente novamente mais tarde.');
             }
 
             // Processar segmentos da empresa (múltipla seleção)

@@ -51,6 +51,24 @@
         </div>
     @endif
 
+    @if ($errors->any())
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+                <svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <div>
+                    <p class="text-red-800 font-semibold">Ocorreram erros ao salvar seu perfil:</p>
+                    <ul class="mt-2 list-disc list-inside text-red-700 text-sm">
+                        @foreach ($errors->all() as $message)
+                            <li>{{ $message }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Navegação por Tabs -->
     <div class="mb-8">
         <nav class="flex space-x-8" aria-label="Tabs">
@@ -81,14 +99,14 @@
                     <!-- Botão Dinâmico para Criar/Trocar Perfil -->
                     @if(session('active_role') === 'freelancer')
                         @if(!$user->company)
-                            <button onclick="openModal('createCompanyModal')" class="btn-trampix-primary">
+                            <button type="button" onclick="openModal('createCompanyModal')" class="btn-trampix-primary">
                                 Criar Perfil de Empresa
                             </button>
                         @else
                             <!-- Dropdown para Trocar Perfil -->
                             <div class="relative inline-block" x-data="{ open: false }" @click.away="open = false">
                                 <button @click="open = !open" class="btn-trampix-primary flex items-center gap-2">
-                                    Trocar Perfil Profissional
+                                    Mudar para perfil Empresa
                                     <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
@@ -120,7 +138,7 @@
                                         <input type="hidden" name="role" value="company">
                                         <button type="submit" class="w-full px-4 py-3 text-left text-sm transition-colors duration-200 flex items-center gap-3 rounded-lg hover:bg-green-50">
                                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700">🏢</span>
-                                            <span class="text-gray-700">Trocar para perfil Empresa</span>
+                                            <span class="text-gray-700">Mudar para perfil Empresa</span>
                                         </button>
                                     </form>
                                 </div>
@@ -128,14 +146,14 @@
                         @endif
                     @else
                         @if(!$user->freelancer)
-                            <button onclick="openModal('createFreelancerModal')" class="btn-trampix-primary">
+                            <button type="button" onclick="openModal('createFreelancerModal')" class="btn-trampix-primary">
                                 Criar Perfil Freelancer
                             </button>
                         @else
                             <!-- Dropdown para Trocar Perfil -->
                             <div class="relative inline-block" x-data="{ open: false }" @click.away="open = false">
                                 <button @click="open = !open" class="btn-trampix-company flex items-center gap-2">
-                                    Trocar Perfil Profissional
+                                    Mudar para perfil Freelancer
                                     <svg class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                                     </svg>
@@ -167,7 +185,7 @@
                                         <input type="hidden" name="role" value="freelancer">
                                         <button type="submit" class="w-full px-4 py-3 text-left text-sm transition-colors duration-200 flex items-center gap-3 rounded-lg hover:bg-purple-50">
                                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700">🧑‍💻</span>
-                                            <span class="text-gray-700">Trocar para perfil Freelancer</span>
+                                            <span class="text-gray-700">Mudar para perfil Freelancer</span>
                                         </button>
                                     </form>
                                 </div>
@@ -343,7 +361,7 @@
             <form id="profileMainForm" method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="p-6">
                 @csrf
                 @method('patch')
-                <input type="hidden" name="section" value="{{ session('active_role') }}">
+                <input type="hidden" name="section" value="{{ isset($freelancer) ? 'freelancer' : (isset($company) ? 'company' : session('active_role')) }}">
 
                 @if(session('active_role') === 'freelancer')
                     <!-- Formulário Freelancer -->
@@ -420,6 +438,19 @@
                             </div>
                         </div>
 
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="portfolio_url" class="block text-sm font-medium text-gray-700">Portfólio</label>
+                                <input type="url" id="portfolio_url" name="portfolio_url"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('portfolio_url') border-red-500 @enderror"
+                                       value="{{ old('portfolio_url', $freelancer->portfolio_url ?? '') }}"
+                                       placeholder="https://seu-portfolio.com">
+                                @error('portfolio_url')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <label for="location" class="block text-sm font-medium text-gray-700">Localização</label>
@@ -468,7 +499,7 @@
                     <!-- Formulário Empresa -->
                     <div class="space-y-6">
                         <div>
-                            <label for="display_name" class="block text-sm font-medium text-gray-700">Nome de Exibição Profissional</label>
+                            <label for="display_name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
                             <input type="text" id="display_name" name="display_name" 
                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('display_name') border-red-500 @enderror" 
                                    value="{{ old('display_name', $company->display_name ?? '') }}"
@@ -610,9 +641,14 @@
                         <div class="text-sm text-gray-600">
                             <span class="font-medium">Campos alterados:</span> <span id="saveInfoCount">0</span>
                         </div>
-                        <button type="submit" form="profileMainForm" class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }}">
-                            Salvar Alterações
-                        </button>
+                        <div class="flex items-center gap-3">
+                            <button type="button" class="btn-trampix-secondary" onclick="resetFormToOriginal('profileMainForm')">
+                                Cancelar Alterações
+                            </button>
+                            <button type="submit" form="profileMainForm" class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }}">
+                                Salvar Alterações
+                            </button>
+                        </div>
                     </div>
                 </div>
             </form>
@@ -657,8 +693,8 @@
 </div>
 
 <!-- Modais -->
-@include('profile.partials.create-company-modal')
-@include('profile.partials.create-freelancer-modal')
+{{-- Modais de criação removidos desta página para evitar exibir campos do outro perfil.
+     Utilize a página de seleção de perfil para criar novos perfis. --}}
 
 <script>
 // Sistema de Tabs
@@ -687,11 +723,22 @@ function showTab(tabName) {
 
 // Funções dos Modais
 function openModal(modalId) {
-    document.getElementById(modalId).classList.remove('hidden');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+    // Focar primeiro campo do formulário para acessibilidade
+    const firstInput = modal.querySelector('input, select, textarea, button');
+    if (firstInput) {
+        setTimeout(() => firstInput.focus(), 50);
+    }
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.add('hidden');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
 }
 
 // Inicializar primeira tab
@@ -1038,6 +1085,8 @@ function initializeFormChangeDetection() {
             originalValues.set(input.name, input.value);
         }
     });
+    // Tornar acessível globalmente para reset
+    window.ORIGINAL_FORM_VALUES = originalValues;
     
     // Adicionar listeners para detectar mudanças
     formInputs.forEach(input => {
@@ -1049,6 +1098,12 @@ function initializeFormChangeDetection() {
             });
         });
     });
+}
+
+// Função para resetar valores do formulário para o estado original
+function resetFormToOriginal(formId) {
+    // Para garantir reset completo e consistente (inclui arrays como segments[]), recarregar a página
+    window.location.reload();
 }
 
 // Função para verificar mudanças em um campo específico
@@ -1336,3 +1391,37 @@ function initializeFormValidation() {
 @endpush
 
 @endsection
+
+{{-- Modais Inline de Criação de Perfis (Empresa e Freelancer) --}}
+@include('profile.partials.create-company-modal')
+@include('profile.partials.create-freelancer-modal')
+
+@push('scripts')
+<script>
+    // Abrir automaticamente os modais de criação caso haja flags na URL
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('openCompanyCreate')) {
+            openModal('createCompanyModal');
+        }
+        if (urlParams.has('openFreelancerCreate')) {
+            openModal('createFreelancerModal');
+        }
+    });
+</script>
+@endpush
+@push('scripts')
+<script>
+    // Fechar modais de criação com tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            ['createCompanyModal','createFreelancerModal'].forEach(id => {
+                const modal = document.getElementById(id);
+                if (modal && !modal.classList.contains('hidden')) {
+                    closeModal(id);
+                }
+            });
+        }
+    });
+</script>
+@endpush

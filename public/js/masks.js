@@ -115,13 +115,44 @@
     });
   }
 
+  function isValidPortfolio(url) {
+    if (!url) return true; // opcional
+    try {
+      const u = new URL(url);
+      return /^https?:$/.test(u.protocol);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function attachPortfolioValidation() {
+    const inputs = document.querySelectorAll('input[name="portfolio_url"]');
+    inputs.forEach((input) => {
+      input.addEventListener('blur', () => {
+        const val = input.value.trim();
+        if (!val) {
+          input.setCustomValidity('');
+          return;
+        }
+        if (!isValidPortfolio(val)) {
+          input.setCustomValidity('Por favor, informe uma URL válida (http ou https).');
+        } else {
+          input.setCustomValidity('');
+        }
+      });
+      input.addEventListener('input', () => input.setCustomValidity(''));
+    });
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       attachCnpjMask();
       attachLinkedInValidation();
+      attachPortfolioValidation();
     });
   } else {
     attachCnpjMask();
     attachLinkedInValidation();
+    attachPortfolioValidation();
   }
 })();

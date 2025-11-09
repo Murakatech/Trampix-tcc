@@ -1,11 +1,11 @@
 {{-- Modal de Criação de Empresa --}}
-<div id="createCompanyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+<div id="createCompanyModal" class="hidden fixed inset-0 z-50 flex items-start sm:items-center justify-center bg-black/50 p-4 overflow-y-auto" onclick="if(event.target === this) closeModal('createCompanyModal')">
         
-        <div class="trampix-card w-full max-w-lg p-6 bg-white rounded-lg shadow-xl">
+    <div class="trampix-card w-full max-w-md sm:max-w-lg md:max-w-xl p-0 bg-white rounded-lg shadow-xl max-h-[85vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="createCompanyTitle">
         
         {{-- Cabeçalho do Modal --}}
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="trampix-h2 text-gray-900">Criar Perfil de Empresa</h2>
+        <div class="flex items-center justify-between px-6 py-4 sticky top-0 bg-white border-b">
+            <h2 id="createCompanyTitle" class="trampix-h2 text-gray-900">Criar Perfil de Empresa</h2>
             <button onclick="closeModal('createCompanyModal')" 
                     class="text-gray-400 hover:text-gray-600 transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,7 +15,7 @@
             </div>
 
             {{-- Formulário --}}
-            <form method="POST" action="{{ route('companies.store') }}" class="space-y-4">
+            <form method="POST" action="{{ route('companies.store') }}" class="space-y-4 px-6 py-4">
                 @csrf
                 
                 {{-- Nome da Empresa --}}
@@ -114,7 +114,7 @@
                 </div>
 
                 {{-- Botões de Ação --}}
-                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <div class="flex justify-end space-x-3 px-6 py-4 border-t border-gray-200 sticky bottom-0 bg-white">
                     <button type="button" 
                             onclick="closeModal('createCompanyModal')" 
                             class="btn-trampix-secondary">
