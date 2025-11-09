@@ -30,4 +30,4 @@ RUN mkdir -p storage bootstrap/cache \
 RUN php artisan config:clear || true && php artisan cache:clear || true && php artisan view:clear || true
 
 # Start Laravel's built-in server (exec via shell to expand $PORT provided by Render)
-CMD ["sh","-lc","php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
+CMD ["sh","-lc","php artisan migrate --force && php artisan storage:link || true; php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
