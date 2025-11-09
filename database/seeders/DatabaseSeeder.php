@@ -11,6 +11,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Primeiros: segmentos e categorias por segmento
+        $this->call([
+            SegmentSeeder::class,
+            CategoryPerSegmentSeeder::class,
+        ]);
+
+        // Demais dados de desenvolvimento
         $this->call(DevSeeder::class);
     }
 }

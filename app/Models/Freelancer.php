@@ -54,6 +54,11 @@ class Freelancer extends Model
         return $this->belongsToMany(\App\Models\Sector::class, 'freelancer_sector');
     }
 
+    public function segments()
+    {
+        return $this->belongsToMany(\App\Models\Segment::class, 'freelancer_segment');
+    }
+
     public function activityArea()
     {
         return $this->belongsTo(\App\Models\ActivityArea::class);

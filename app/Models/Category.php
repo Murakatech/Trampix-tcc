@@ -13,7 +13,13 @@ class Category extends Model
         'name',
         'slug',
         'description',
+        'segment_id',
     ];
+
+    public function segment()
+    {
+        return $this->belongsTo(Segment::class);
+    }
 
     public function jobVacancies()
     {
