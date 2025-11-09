@@ -47,11 +47,25 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="category" class="form-label">Categoria</label>
-                            <input type="text" id="category" name="category" 
-                                   class="form-control @error('category') is-invalid @enderror" 
-                                   value="{{ old('category', $vaga->category) }}" placeholder="Ex: Desenvolvimento, Design, Marketing">
-                            @error('category')
+                            <label for="segment_id" class="form-label">Segmento</label>
+                            <select id="segment_id" name="segment_id" class="form-select">
+                                <option value="">Todos os segmentos...</option>
+                                @foreach(($segments ?? []) as $seg)
+                                    @php($currentSeg = optional($vaga->category)->segment_id)
+                                    <option value="{{ $seg->id }}" {{ old('segment_id', $currentSeg) == $seg->id ? 'selected' : '' }}>{{ $seg->name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted">Selecione um segmento para filtrar as categorias.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Categoria da Vaga</label>
+                            <select id="category_id" name="category_id" class="form-select @error('category_id') is-invalid @enderror">
+                                <option value="">Selecione uma categoria...</option>
+                                @foreach(($categories ?? []) as $cat)
+                                    <option value="{{ $cat->id }}" data-segment-id="{{ $cat->segment_id ?? '' }}" {{ old('category_id', $vaga->category_id) == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('category_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -107,12 +121,8 @@
                 <div class="mb-3">
                     <label for="status" class="form-label">Status da vaga</label>
                     <select id="status" name="status" class="form-select @error('status') is-invalid @enderror">
-                        <option value="active" {{ old('status', $vaga->status) == 'active' ? 'selected' : '' }}>
-                            <i class="fas fa-check-circle text-success"></i> Ativa
-                        </option>
-                        <option value="closed" {{ old('status', $vaga->status) == 'closed' ? 'selected' : '' }}>
-                            <i class="fas fa-times-circle text-danger"></i> Encerrada
-                        </option>
+                        <option value="active" {{ old('status', $vaga->status) == 'active' ? 'selected' : '' }}>Ativa</option>
+                        <option value="closed" {{ old('status', $vaga->status) == 'closed' ? 'selected' : '' }}>Encerrada</option>
                     </select>
                     @error('status')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -135,3 +145,42 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const segmentSelect = document.getElementById('segment_id');
+    const categorySelect = document.getElementById('category_id');
+
+    if (segmentSelect && categorySelect) {
+        const allOptions = Array.from(categorySelect.querySelectorAll('option'));
+
+        function applyFilter() {
+            const selectedSegmentId = segmentSelect.value;
+            const placeholder = allOptions[0];
+            const filtered = allOptions.slice(1).filter(opt => {
+                const seg = opt.getAttribute('data-segment-id') || '';
+                return !selectedSegmentId || seg === selectedSegmentId;
+            });
+
+            const currentValue = categorySelect.value;
+            categorySelect.innerHTML = '';
+            categorySelect.appendChild(placeholder.cloneNode(true));
+            filtered.forEach(opt => categorySelect.appendChild(opt.cloneNode(true)));
+
+            const hasCurrent = Array.from(categorySelect.options).some(o => o.value === currentValue);
+            if (hasCurrent) categorySelect.value = currentValue;
+        }
+
+        segmentSelect.addEventListener('change', applyFilter);
+
+        const selectedOption = categorySelect.querySelector('option:checked');
+        if (selectedOption) {
+            const segForCat = selectedOption.getAttribute('data-segment-id') || '';
+            if (segForCat) segmentSelect.value = segForCat;
+        }
+        applyFilter();
+    }
+});
+</script>
+@endpush

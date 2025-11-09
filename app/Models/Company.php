@@ -11,17 +11,25 @@ class Company extends Model
 
     protected $fillable = [
         'user_id',
+        'display_name',
         'name',
         'cnpj',
         'sector',
         'location',
         'description',
         'website',
+        'linkedin_url',
+        'email',
         'phone',
+        'company_size',
         'employees_count',
         'founded_year',
         'is_active',
         'profile_photo',
+        // Deprecated: activity_area_id removed from UI; kept for legacy compatibility
+        'activity_area_id',
+        // New primary segment association
+        'segment_id',
     ];
 
     protected $casts = [
@@ -38,5 +46,41 @@ class Company extends Model
     public function vacancies()
     {
         return $this->hasMany(JobVacancy::class);
+    }
+
+    public function jobVacancies()
+    {
+        return $this->hasMany(JobVacancy::class, 'company_id');
+    }
+
+    public function serviceCategories()
+    {
+        return $this->belongsToMany(ServiceCategory::class);
+    }
+
+    public function sectors()
+    {
+        return $this->belongsToMany(\App\Models\Sector::class, 'company_sector');
+    }
+
+    public function activityArea()
+    {
+        return $this->belongsTo(\App\Models\ActivityArea::class);
+    }
+
+    /**
+     * Primary Segment the company belongs to
+     */
+    public function segment()
+    {
+        return $this->belongsTo(\App\Models\Segment::class);
+    }
+
+    /**
+     * Multiple segments the company defines itself in
+     */
+    public function segments()
+    {
+        return $this->belongsToMany(\App\Models\Segment::class, 'company_segment');
     }
 }

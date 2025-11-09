@@ -1,18 +1,30 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('header')
-<div class="bg-white shadow">
-    <div class="container py-4">
-        <h1 class="h2 mb-0">
-            <i class="fas fa-users me-2"></i>
-            Candidatos para: {{ $vacancy->title }}
-        </h1>
-    </div>
-</div>
+@php
+    // Normalizar variável da vaga para evitar null na view
+    $jobVacancy = $jobVacancy ?? ($vacancy ?? null);
+    $vacancy = $vacancy ?? $jobVacancy;
+@endphp
+@if($jobVacancy)
+    <span class="flex items-center gap-2">
+        <i class="fas fa-users"></i>
+        Candidatos para: {{ $jobVacancy->title ?? 'Vaga sem título' }}
+    </span>
+@else
+    <span class="flex items-center gap-2">
+        <i class="fas fa-users"></i>
+        Vaga não encontrada
+    </span>
+@endif
 @endsection
 
 @section('content')
 <div class="container mt-4">
+    @if(!$jobVacancy)
+        <p class="text-red-600">Vaga não encontrada.</p>
+        @php return; @endphp
+    @endif
     {{-- Mensagens de sucesso/erro --}}
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -30,9 +42,9 @@
 
     {{-- Informações da vaga --}}
     <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
+        <div class="card-header company-header">
             <h3 class="card-title mb-0">
-                <i class="fas fa-briefcase me-2"></i>{{ $vacancy->title }}
+                <i class="fas fa-briefcase me-2"></i>{{ $jobVacancy->title ?? 'Vaga sem título' }}
             </h3>
         </div>
         <div class="card-body">
@@ -83,7 +95,7 @@
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0">
-                        <thead class="table-light">
+                        <thead class="trampix-table-header">
                             <tr>
                                 <th>
                                     <i class="fas fa-user me-1"></i>Candidato
@@ -110,7 +122,7 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <div class="avatar-circle bg-primary text-white me-2">
+                                            <div class="avatar-circle company me-2">
                                                 {{ substr($application->freelancer->user->name, 0, 1) }}
                                             </div>
                                             <div>
@@ -128,19 +140,33 @@
                                     </td>
                                     <td>
                                         @if($application->status === 'pending')
-                                            <span class="badge bg-warning">
+                                            <span class="badge badge-soft-yellow">
                                                 <i class="fas fa-clock me-1"></i>Pendente
                                             </span>
                                         @elseif($application->status === 'accepted')
-                                            <span class="badge bg-success">
+                                            <span class="badge badge-soft-green">
                                                 <i class="fas fa-check me-1"></i>Aceito
                                             </span>
                                         @elseif($application->status === 'rejected')
-                                            <span class="badge bg-danger">
+                                            <span class="badge badge-soft-red">
                                                 <i class="fas fa-times me-1"></i>Rejeitado
                                             </span>
+                                        @elseif($application->status === 'ended')
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-flag-checkered me-1"></i>Finalizado
+                                            </span>
                                         @else
-                                            <span class="badge bg-secondary">{{ ucfirst($application->status) }}</span>
+                                            <span class="badge bg-secondary">
+                                                @if($application->status === 'pending')
+                                                    Pendente
+                                                @elseif($application->status === 'accepted')
+                                                    Aceito
+                                                @elseif($application->status === 'rejected')
+                                                    Rejeitado
+                                                @else
+                                                    {{ ucfirst($application->status) }}
+                                                @endif
+                                            </span>
                                         @endif
                                     </td>
                                     <td>
@@ -176,61 +202,73 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td>
+                                    <td class="actions-cell text-center">
                                         <small>{{ $application->created_at->format('d/m/Y') }}</small><br>
                                         <small class="text-muted">{{ $application->created_at->format('H:i') }}</small>
                                     </td>
-                                    <td>
-                                        <div class="btn-group" role="group">
+                                    <td class="actions-cell text-center">
+                                        <div class="application-actions">
                                             @if($application->status === 'pending')
-                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="acceptForm-{{ $application->id }}">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="accepted">
-                                                    <button type="submit" class="btn btn-sm btn-success" 
-                                                            onclick="return confirm('Aceitar esta candidatura?')">
+                                                    <button type="button" class="btn btn-company-primary btn-compact btn-glow" 
+                                                            onclick="showAcceptConfirmation({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
                                                         <i class="fas fa-check me-1"></i>Aceitar
                                                     </button>
                                                 </form>
 
-                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="rejectForm-{{ $application->id }}">
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="rejected">
-                                                    <button type="submit" class="btn btn-sm btn-danger" 
-                                                            onclick="return confirm('Rejeitar esta candidatura?')">
+                                                    <button type="button" class="btn btn-company-danger btn-compact" 
+                                                            onclick="showRejectConfirmation({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
                                                         <i class="fas fa-times me-1"></i>Rejeitar
                                                     </button>
                                                 </form>
-                                            @elseif($application->status === 'accepted')
-                                                <span class="badge bg-success me-2">
-                                                    <i class="fas fa-check me-1"></i>Aceito
-                                                </span>
-                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
-                                                    @csrf @method('PATCH')
-                                                    <input type="hidden" name="status" value="rejected">
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                            onclick="return confirm('Rejeitar esta candidatura?')">
-                                                        <i class="fas fa-times me-1"></i>Rejeitar
-                                                    </button>
-                                                </form>
-                                            @elseif($application->status === 'rejected')
-                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline">
-                                                    @csrf @method('PATCH')
-                                                    <input type="hidden" name="status" value="accepted">
-                                                    <button type="submit" class="btn btn-sm btn-outline-success" 
-                                                            onclick="return confirm('Aceitar esta candidatura?')">
-                                                        <i class="fas fa-check me-1"></i>Aceitar
-                                                    </button>
-                                                </form>
-                                                <span class="badge bg-danger ms-2">
-                                                    <i class="fas fa-times me-1"></i>Rejeitado
-                                                </span>
+                                                @elseif($application->status === 'accepted')
+                                                    <span class="badge badge-soft-green me-2">
+                                                        <i class="fas fa-check me-1"></i>Aceito
+                                                    </span>
+                                                    <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="finalizeForm-{{ $application->id }}">
+                                                        @csrf @method('PATCH')
+                                                        <input type="hidden" name="status" value="ended">
+                                                        <input type="hidden" name="finalize" value="1">
+                                                        <button type="submit" class="btn btn-company-outline-secondary btn-compact">
+                                                            <i class="fas fa-flag-checkered me-1"></i>Finalizar
+                                                        </button>
+                                                    </form>
+                                                @elseif($application->status === 'rejected')
+                                                    <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="acceptForm2-{{ $application->id }}">
+                                                        @csrf @method('PATCH')
+                                                        <input type="hidden" name="status" value="accepted">
+                                                        <button type="button" class="btn btn-company-outline-primary btn-compact btn-glow" 
+                                                                onclick="showAcceptConfirmation2({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
+                                                            <i class="fas fa-check me-1"></i>Aceitar
+                                                        </button>
+                                                    </form>
+                                                    <span class="badge badge-soft-red ms-2">
+                                                        <i class="fas fa-times me-1"></i>Rejeitado
+                                                    </span>
+                                                @elseif($application->status === 'ended')
+                                                    <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="reopenForm-{{ $application->id }}">
+                                                        @csrf @method('PATCH')
+                                                        <input type="hidden" name="status" value="accepted">
+                                                        <button type="button" class="btn btn-company-outline-primary btn-compact btn-glow" 
+                                                                onclick="showAcceptConfirmation2({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
+                                                            <i class="fas fa-redo me-1"></i>Reabrir parceria
+                                                        </button>
+                                                    </form>
+                                                    <span class="badge bg-secondary ms-2">
+                                                        <i class="fas fa-flag-checkered me-1"></i>Finalizado
+                                                    </span>
                                             @endif
                                         </div>
                                         
                                         {{-- Link para ver perfil do freelancer --}}
                                         <div class="mt-1">
                                             <a href="{{ route('freelancers.show', $application->freelancer) }}" 
-                                               class="btn btn-sm btn-outline-primary" target="_blank">
+                                               class="btn btn-company-outline-primary btn-compact" target="_blank">
                                                 <i class="fas fa-user me-1"></i>Ver Perfil
                                             </a>
                                         </div>
@@ -246,10 +284,10 @@
 
     {{-- Botões de navegação --}}
     <div class="mt-4 d-flex gap-2">
-        <a href="{{ route('dashboard') }}" class="btn btn-secondary">
+        <a href="{{ route('dashboard') }}" class="btn btn-company-secondary">
             <i class="fas fa-arrow-left me-1"></i>Voltar ao Dashboard
         </a>
-        <a href="{{ route('vagas.show', $vacancy) }}" class="btn btn-outline-primary">
+        <a href="{{ route('vagas.show', $vacancy) }}" class="btn btn-company-outline-primary">
             <i class="fas fa-eye me-1"></i>Ver Vaga Pública
         </a>
         <a href="{{ route('vagas.edit', $vacancy) }}" class="btn btn-outline-warning">
@@ -258,16 +296,203 @@
     </div>
 </div>
 
+{{-- Componentes de Confirmação --}}
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="acceptConfirmationModal" />
+
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="rejectConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para aceitar candidatura (primeira vez)
+    function showAcceptConfirmation(applicationId, freelancerName, jobTitle) {
+        showActionModal('acceptConfirmationModal', {
+            actionType: 'generic',
+            message: `Aceitar a candidatura de ${freelancerName} para a vaga "${jobTitle}"?`,
+            onConfirm: () => {
+                const form = document.getElementById(`acceptForm-${applicationId}`);
+                showNotification('Aceitando candidatura...', 'success');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Ação cancelada.', 'info');
+            }
+        });
+    }
+
+    // Função para aceitar candidatura (segunda vez - quando rejeitado)
+    function showAcceptConfirmation2(applicationId, freelancerName, jobTitle) {
+        showActionModal('acceptConfirmationModal', {
+            actionType: 'generic',
+            message: `Aceitar novamente a candidatura de ${freelancerName} para a vaga "${jobTitle}"?`,
+            onConfirm: () => {
+                const form = document.getElementById(`acceptForm2-${applicationId}`);
+                showNotification('Aceitando candidatura...', 'success');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Ação cancelada.', 'info');
+            }
+        });
+    }
+
+    // Função para rejeitar candidatura (primeira vez)
+    function showRejectConfirmation(applicationId, freelancerName, jobTitle) {
+        showActionModal('rejectConfirmationModal', {
+            actionType: 'generic',
+            message: `⚠️ Rejeitar a candidatura de ${freelancerName} para a vaga "${jobTitle}"?\n\nEsta ação pode ser revertida posteriormente.`,
+            onConfirm: () => {
+                const form = document.getElementById(`rejectForm-${applicationId}`);
+                showNotification('Rejeitando candidatura...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Ação cancelada.', 'info');
+            }
+        });
+    }
+
+    // Função para rejeitar candidatura (segunda vez - quando aceito)
+    function showRejectConfirmation2(applicationId, freelancerName, jobTitle) {
+        showActionModal('rejectConfirmationModal', {
+            actionType: 'generic',
+            message: `⚠️ Rejeitar a candidatura de ${freelancerName} para a vaga "${jobTitle}"?\n\nEsta candidatura estava aceita. Esta ação pode ser revertida posteriormente.`,
+            onConfirm: () => {
+                const form = document.getElementById(`rejectForm2-${applicationId}`);
+                showNotification('Rejeitando candidatura...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Ação cancelada.', 'info');
+            }
+        });
+    }
+</script>
+@endpush
+
+@push('styles')
 <style>
-.avatar-circle {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
-}
+    /* Company themed header for cards */
+    .company-header {
+        background: linear-gradient(to bottom right, #1ca751, var(--trampix-green));
+        color: var(--trampix-black);
+        border-bottom: 1px solid rgba(185, 255, 102, 0.35);
+    }
+
+    /* Soft badges aligned with company palette */
+    .badge-soft-green {
+        background-color: rgba(185, 255, 102, 0.18);
+        color: #3f3f46;
+        border: 1px solid rgba(185, 255, 102, 0.35);
+    }
+    .badge-soft-yellow {
+        background-color: rgba(255, 221, 87, 0.20);
+        color: #3f3f46;
+        border: 1px solid rgba(255, 221, 87, 0.35);
+    }
+    .badge-soft-red {
+        background-color: rgba(255, 76, 76, 0.15);
+        color: #3f3f46;
+        border: 1px solid rgba(255, 76, 76, 0.30);
+    }
+
+    /* Avatar adapted to company theme */
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 16px;
+    }
+    .avatar-circle.company {
+        background: linear-gradient(to bottom right, #1ca751, var(--trampix-green));
+        color: var(--trampix-black);
+        border: 1px solid rgba(185, 255, 102, 0.45);
+    }
+
+    /* Company themed buttons */
+    .btn-company-primary {
+        background-color: var(--trampix-green);
+        border: 1px solid var(--trampix-green);
+        color: var(--trampix-black);
+        border-radius: 10px;
+        padding: 6px 12px;
+    }
+    .btn-company-primary:hover {
+        filter: brightness(0.95);
+        transform: translateY(-1px);
+    }
+    .btn-company-outline-primary {
+        background: transparent;
+        border: 2px solid var(--trampix-green);
+        color: var(--trampix-black);
+        border-radius: 10px;
+        padding: 6px 12px;
+    }
+    .btn-company-outline-primary:hover {
+        background-color: var(--trampix-green);
+        color: var(--trampix-black);
+    }
+    .btn-company-secondary {
+        background-color: var(--trampix-light-gray);
+        border: 1px solid rgba(185, 255, 102, 0.45);
+        color: var(--trampix-black);
+        border-radius: 10px;
+        padding: 6px 12px;
+    }
+    .btn-company-secondary:hover {
+        background-color: rgba(185, 255, 102, 0.25);
+        border-color: rgba(185, 255, 102, 0.55);
+        transform: translateY(-1px);
+    }
+    .btn-company-danger {
+        background-color: var(--trampix-red);
+        border: 1px solid var(--trampix-red);
+        color: #fff;
+        border-radius: 10px;
+        padding: 6px 12px;
+    }
+    .btn-company-danger:hover {
+        filter: brightness(0.95);
+        transform: translateY(-1px);
+    }
+    .btn-company-outline-danger {
+        background: transparent;
+        border: 2px solid var(--trampix-red);
+        color: var(--trampix-red);
+        border-radius: 10px;
+        padding: 6px 12px;
+    }
+    .btn-company-outline-danger:hover {
+        background-color: var(--trampix-red);
+        color: #fff;
+    }
+
+    /* Compact actions layout in table */
+    .actions-cell { min-width: 280px; }
+    .application-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    @media (min-width: 576px) {
+        .application-actions {
+            flex-direction: row;
+            justify-content: center;
+        }
+    }
+    .btn-compact {
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
 </style>
+@endpush
 @endsection

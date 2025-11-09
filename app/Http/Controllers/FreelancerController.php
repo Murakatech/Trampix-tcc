@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Freelancer;
+use App\Models\Segment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -46,8 +47,8 @@ class FreelancerController extends Controller
         $freelancer = auth()->user()->freelancer;
         
         if (!$freelancer) {
-            return redirect()->route('freelancers.create')
-                ->with('info', 'Você precisa criar um perfil de freelancer primeiro.');
+            return redirect()->route('profile.selection')
+                ->with('info', 'Você precisa criar seu perfil na tela de seleção de perfil.');
         }
         
         return view('profile.show', [
@@ -60,8 +61,8 @@ class FreelancerController extends Controller
     public function create()
     {
         Gate::authorize('canCreateFreelancerProfile');
-        
-        return view('freelancers.create');
+        // Redirecionar para a tela unificada de seleção/criação de perfil
+        return redirect()->route('profile.selection');
     }
 
     public function store(Request $request)
@@ -69,13 +70,20 @@ class FreelancerController extends Controller
         Gate::authorize('canCreateFreelancerProfile');
         
         $validated = $request->validate([
+            'display_name' => 'required|string|min:2|max:255',
             'bio' => 'nullable|string|max:1000',
-            'portfolio_url' => 'nullable|url|max:255',
-            'phone' => 'nullable|string|max:20',
+            'linkedin_url' => 'nullable|url|max:255',
+            'whatsapp' => 'required|string',
             'location' => 'nullable|string|max:100',
             'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',
             'availability' => 'nullable|string|max:255',
             'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'activity_area_id' => 'nullable|integer',
+            'service_categories' => 'nullable|array|max:5',
+            'service_categories.*' => 'exists:service_categories,id',
+            // Permitir seleção de segmentos (máximo 3)
+            'segments' => 'nullable|array|max:3',
+            'segments.*' => 'exists:segments,id',
         ]);
 
         // Upload do CV se fornecido
@@ -84,10 +92,49 @@ class FreelancerController extends Controller
             $validated['cv_url'] = $cvPath;
         }
 
+        // Mapear área de atuação válida (type = freelancer)
+        if ($request->filled('activity_area_id')) {
+            $areaId = (int) $request->input('activity_area_id');
+            $area = \App\Models\ActivityArea::where('id', $areaId)
+                ->where('type', 'freelancer')
+                ->first();
+            $validated['activity_area_id'] = $area?->id; // define somente se existir
+        }
+
+        // Sanitizar WhatsApp: manter somente números
+        if ($request->filled('whatsapp')) {
+            $raw = preg_replace('/\D+/', '', $request->input('whatsapp'));
+            // limitar tamanho razoável (DDI 55 + DDD 2 + número 8-9)
+            $raw = substr($raw, 0, 14);
+            $validated['whatsapp'] = $raw;
+        }
+
         // Criar perfil freelancer
         $freelancer = auth()->user()->createProfile('freelancer', $validated);
 
-        return redirect()->route('freelancers.edit', $freelancer)
+        // Sincronizar categorias de serviço se fornecidas
+        if (isset($validated['service_categories'])) {
+            $validCategories = \App\Models\ServiceCategory::whereIn('id', $validated['service_categories'])
+                ->where('is_active', true)
+                ->pluck('id')
+                ->toArray();
+            $freelancer->serviceCategories()->sync($validCategories);
+        }
+
+        // Sincronizar segmentos se fornecidos
+        if ($request->has('segments')) {
+            $segmentIds = $request->input('segments', []);
+            $validSegmentIds = Segment::whereIn('id', $segmentIds)
+                ->pluck('id')
+                ->toArray();
+            $freelancer->segments()->sync($validSegmentIds);
+        }
+
+        // Definir freelancer como perfil ativo
+        session(['active_role' => 'freelancer']);
+
+        // Redirecionar para o dashboard unificado, que renderiza o parcial conforme o perfil ativo
+        return redirect()->route('dashboard')
             ->with('success', 'Perfil de freelancer criado com sucesso!');
     }
 
@@ -104,13 +151,14 @@ class FreelancerController extends Controller
         
         $validated = $request->validate([
             'bio' => 'nullable|string|max:1000',
-            'portfolio_url' => 'nullable|url|max:255',
-            'phone' => 'nullable|string|max:20',
+            'linkedin_url' => 'nullable|url|max:255',
+            'whatsapp' => 'nullable|string',
             'location' => 'nullable|string|max:100',
             'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',
             'availability' => 'nullable|string|max:255',
             'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
             'remove_cv' => 'nullable|boolean',
+            'activity_area_id' => 'nullable|integer',
         ]);
 
         // Remover CV se solicitado
@@ -128,6 +176,25 @@ class FreelancerController extends Controller
             
             $cvPath = $request->file('cv')->store('cvs', 'public');
             $validated['cv_url'] = $cvPath;
+        }
+
+        // Mapear área de atuação válida (type = freelancer)
+        if ($request->filled('activity_area_id')) {
+            $areaId = (int) $request->input('activity_area_id');
+            $area = \App\Models\ActivityArea::where('id', $areaId)
+                ->where('type', 'freelancer')
+                ->first();
+            $validated['activity_area_id'] = $area?->id; // define somente se existir
+        } else {
+            // permitir limpar o campo
+            $validated['activity_area_id'] = null;
+        }
+
+        // Sanitizar WhatsApp em atualizações: manter somente números e limitar tamanho
+        if ($request->filled('whatsapp')) {
+            $raw = preg_replace('/\D+/', '', $request->input('whatsapp'));
+            $raw = substr($raw, 0, 14);
+            $validated['whatsapp'] = $raw;
         }
 
         $freelancer->update($validated);

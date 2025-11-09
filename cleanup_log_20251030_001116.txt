@@ -1,0 +1,28 @@
+[2025-10-30 00:11:16] [START] === INICIANDO SIMULACAO DE LIMPEZA DO PROJETO TRAMPIX ===
+[2025-10-30 00:11:16] [INFO] Projeto: c:\laragon\www\trampix
+[2025-10-30 00:11:16] [INFO] Modo: EXECUCAO
+[2025-10-30 00:11:16] [REPORT] === RELATORIO DE SIMULACAO ===
+[2025-10-30 00:11:16] [INFO] Total de arquivos identificados para remocao: 5
+[2025-10-30 00:11:16] [ITEM] [Cache] Remove - c:\laragon\www\trampix\.phpunit.result.cache (0.01 MB) - Cache PHPUnit (sera regenerado)
+[2025-10-30 00:11:16] [ITEM] [Log] Truncate - C:\laragon\www\trampix\storage\logs\laravel.log (8.13 MB) - Log muito grande (>5MB) - sera truncado
+[2025-10-30 00:11:16] [ITEM] [Backup] Remove - c:\laragon\www\trampix\config_backup_20251025_152624 (0.01 MB) - Backup de configuracao antigo (25/10/2025)
+[2025-10-30 00:11:16] [ITEM] [Config] Remove - c:\laragon\www\trampix\mysql_config.php (0 MB) - Configuracao MySQL redundante (ja existe em config/)
+[2025-10-30 00:11:16] [ITEM] [Development] Remove - c:\laragon\www\trampix\check_current_data.php (0 MB) - Script de desenvolvimento/debug
+[2025-10-30 00:11:16] [SUMMARY] Espaco total a ser liberado: 8.15 MB
+[2025-10-30 00:11:16] [SECURITY] === VERIFICACAO DE SEGURANCA ===
+[2025-10-30 00:11:16] [SUCCESS] Verificacao de seguranca APROVADA - Nenhum arquivo essencial sera removido
+[2025-10-30 00:11:16] [EXECUTE] === INICIANDO EXECUCAO DA LIMPEZA ===
+[2025-10-30 00:11:17] [BACKUP] Criando backup em: c:\laragon\www\trampix\backup_20251030_001116
+[2025-10-30 00:11:17] [BACKUP] Backup criado: c:\laragon\www\trampix\backup_20251030_001116\.phpunit.result.cache
+[2025-10-30 00:11:17] [BACKUP] Backup criado: c:\laragon\www\trampix\backup_20251030_001116\C:\laragon\www\trampix\storage\logs\laravel.log
+[2025-10-30 00:11:17] [BACKUP] Backup criado: c:\laragon\www\trampix\backup_20251030_001116\config_backup_20251025_152624
+[2025-10-30 00:11:17] [BACKUP] Backup criado: c:\laragon\www\trampix\backup_20251030_001116\mysql_config.php
+[2025-10-30 00:11:17] [BACKUP] Backup criado: c:\laragon\www\trampix\backup_20251030_001116\check_current_data.php
+[2025-10-30 00:11:17] [SUCCESS] Removido: c:\laragon\www\trampix\.phpunit.result.cache
+[2025-10-30 00:11:17] [SUCCESS] Log truncado: C:\laragon\www\trampix\storage\logs\laravel.log
+[2025-10-30 00:11:17] [SUCCESS] Removido: c:\laragon\www\trampix\config_backup_20251025_152624
+[2025-10-30 00:11:17] [SUCCESS] Removido: c:\laragon\www\trampix\mysql_config.php
+[2025-10-30 00:11:17] [SUCCESS] Removido: c:\laragon\www\trampix\check_current_data.php
+[2025-10-30 00:11:17] [COMPLETE] === LIMPEZA CONCLUIDA ===
+[2025-10-30 00:11:17] [INFO] Log salvo em: c:\laragon\www\trampix\cleanup_log_20251030_001116.txt
+[2025-10-30 00:11:17] [INFO] Analise detalhada disponivel em: project_cleanup_analysis.md

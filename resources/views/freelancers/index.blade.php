@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('header')
     <h2 class="h4 mb-0">
@@ -42,8 +42,8 @@
                             <div class="col-md-3">
                                 <div class="card bg-warning text-white">
                                     <div class="card-body text-center">
-                                        <h3>{{ $freelancers->where('portfolio_url', '!=', null)->count() }}</h3>
-                                        <p class="mb-0">Com Portfólio</p>
+                                        <h3>{{ $freelancers->where('linkedin_url', '!=', null)->count() }}</h3>
+                                        <p class="mb-0">Com LinkedIn</p>
                                     </div>
                                 </div>
                             </div>
@@ -68,7 +68,7 @@
                                         <th>Localização</th>
                                         <th>Valor/Hora</th>
                                         <th>CV</th>
-                                        <th>Portfólio</th>
+                                        <th>LinkedIn</th>
                                         <th>Cadastro</th>
                                         <th>Ações</th>
                                     </tr>
@@ -132,15 +132,15 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if($freelancer->portfolio_url)
-                                                    <a href="{{ $freelancer->portfolio_url }}" 
+                                                @if($freelancer->linkedin_url)
+                                                    <a href="{{ $freelancer->linkedin_url }}" 
                                                        target="_blank" 
                                                        class="btn btn-sm btn-outline-info" 
-                                                       title="Ver Portfólio">
+                                                       title="Ver LinkedIn">
                                                         <i class="fas fa-external-link-alt"></i>
                                                     </a>
                                                 @else
-                                                    <span class="text-muted">Sem portfólio</span>
+                                                    <span class="text-muted">Sem LinkedIn</span>
                                                 @endif
                                             </td>
                                             <td>
@@ -160,6 +160,14 @@
                                                        title="Enviar Email">
                                                         <i class="fas fa-envelope"></i>
                                                     </a>
+                                                    @if($freelancer->whatsapp)
+                                                        <a href="{{ 'https://wa.me/55' . preg_replace('/\D+/', '', $freelancer->whatsapp) }}"
+                                                           target="_blank"
+                                                           class="btn btn-sm btn-outline-success"
+                                                           title="Abrir no WhatsApp">
+                    <i class="fab fa-whatsapp me-2"></i>
+                                                        </a>
+                                                    @endif
                                                 </div>
                                             </td>
                                         </tr>

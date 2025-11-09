@@ -27,7 +27,8 @@ class AuthenticationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // Após login, usuários sem perfil ativo devem ser redirecionados para seleção de perfil
+        $response->assertRedirect(route('profile.selection', absolute: false));
     }
 
     public function test_users_can_not_authenticate_with_invalid_password(): void

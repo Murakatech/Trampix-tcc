@@ -27,6 +27,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        // Após registro, o fluxo leva o usuário à seleção de perfil para criar/ligar o perfil
+        $response->assertRedirect(route('profile.selection', absolute: false));
     }
 }

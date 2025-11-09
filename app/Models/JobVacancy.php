@@ -15,6 +15,8 @@ class JobVacancy extends Model
         'description',
         'requirements',
         'category',
+        'category_id',
+        'service_category_id',
         'contract_type',
         'location_type',
         'salary_range',
@@ -29,5 +31,15 @@ class JobVacancy extends Model
     public function applications()
     {
         return $this->hasMany(Application::class);
+    }
+
+    public function serviceCategory()
+    {
+        return $this->belongsTo(ServiceCategory::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(\App\Models\Category::class);
     }
 }

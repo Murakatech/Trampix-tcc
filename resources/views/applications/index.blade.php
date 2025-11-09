@@ -1,7 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('header')
-    <h2 class="h4 mb-0">Minhas Candidaturas</h2>
+<h1 class="text-2xl font-bold text-gray-900">Minhas Candidaturas</h1>
 @endsection
 
 @section('content')
@@ -36,12 +36,17 @@
         </div>
     @endif
 
-    @if($rejectedCount > 0)
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-info-circle me-2"></i>
-            Você tem {{ $rejectedCount }} candidatura(s) que não foram selecionadas. 
-            <strong>Continue tentando!</strong> Novas oportunidades aparecem todos os dias.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    @if(isset($unackRejectedCount) && $unackRejectedCount > 0)
+        <div class="alert alert-warning d-flex align-items-center justify-content-between" role="alert">
+            <div>
+                <i class="fas fa-info-circle me-2"></i>
+                Você foi rejeitado em {{ $unackRejectedCount }} candidatura(s). Sua aplicação foi movida para "Trabalhos Finalizados".
+                <strong>Para ocultar este aviso, confirme que está ciente.</strong>
+            </div>
+            <form action="{{ route('applications.ack.all') }}" method="POST" class="ms-3">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-warning">OK, estou ciente</button>
+            </form>
         </div>
     @endif
 
@@ -80,7 +85,7 @@
                                         <small class="text-muted">{{ $application->jobVacancy->category }}</small>
                                     </td>
                                     <td>
-                                        <div>{{ $application->jobVacancy->company->company_name }}</div>
+                                        <div>{{ $application->jobVacancy->company->name }}</div>
                                         <small class="text-muted">{{ $application->jobVacancy->location_type }}</small>
                                     </td>
                                     <td>
@@ -93,7 +98,7 @@
                                 <i class="fas fa-times-circle me-1"></i>Rejeitada
                             </span>
                         @else
-                            <span class="badge bg-warning fs-6">
+                            <span class="badge bg-warning fs-6" id="pending-applications">
                                 <i class="fas fa-clock me-1"></i>Pendente
                             </span>
                         @endif
@@ -103,19 +108,27 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{ route('vagas.show', $application->jobVacancy) }}" 
-                                               class="btn btn-sm btn-outline-primary">
-                                                Ver Vaga
-                                            </a>
+                                            @if($application->status === 'accepted')
+                                                <a href="{{ route('vagas.status', $application->jobVacancy) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    Ver Vaga
+                                                </a>
+                                            @else
+                                                <a href="{{ route('vagas.show', $application->jobVacancy) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    Ver Vaga
+                                                </a>
+                                            @endif
                                             
                                             @if($application->status === 'pending')
                                                 <form action="{{ route('applications.cancel', $application) }}" 
                                                       method="POST" 
                                                       class="d-inline"
-                                                      onsubmit="return confirm('Tem certeza que deseja cancelar esta candidatura?')">
+                                                      id="cancelForm-{{ $application->id }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <button type="button" class="btn btn-sm btn-outline-danger"
+                                                            onclick="showCancelConfirmation({{ $application->id }}, '{{ $application->jobVacancy->title }}', '{{ $application->jobVacancy->company->name ?? 'Empresa' }}')">
                                                         Cancelar
                                                     </button>
                                                 </form>
@@ -149,14 +162,40 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="card-title text-warning">{{ $applications->where('status', 'pending')->count() }}</h3>
-                        <p class="card-text text-muted">Pendentes</p>
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="card-title text-warning">{{ $applications->where('status', 'pending')->count() }}</h3>
+                                <p class="card-text text-muted">Pendentes</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
     @endif
 </div>
+
+{{-- Componentes de Confirmação --}}
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="cancelConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para cancelar candidatura
+    function showCancelConfirmation(applicationId, jobTitle, companyName) {
+        showActionModal('cancelConfirmationModal', {
+            actionType: 'generic',
+            message: `⚠️ Tem certeza que deseja cancelar sua candidatura para a vaga "${jobTitle}" na empresa ${companyName}?\n\nEsta ação não pode ser desfeita.`,
+            onConfirm: () => {
+                const form = document.getElementById(`cancelForm-${applicationId}`);
+                showNotification('Cancelando candidatura...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Cancelamento cancelado.', 'info');
+            }
+        });
+    }
+</script>
+@endpush
+
 @endsection

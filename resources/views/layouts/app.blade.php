@@ -4,6 +4,19 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="user-authenticated" content="{{ auth()->check() ? 'true' : 'false' }}">
+    <meta name="app-debug" content="{{ config('app.debug') ? 'true' : 'false' }}">
+    @auth
+    <meta name="user-data" content="{{ json_encode([
+        'id' => auth()->id(),
+        'name' => auth()->user()->name,
+        'email' => auth()->user()->email,
+        // Priorizar papel ativo definido na sessão; se não houver, usar fallback baseado nos perfis do usuário
+        'role' => session('active_role') ?? (auth()->user()->isAdmin() ? 'admin' : (auth()->user()->isCompany() ? 'company' : 'freelancer')),
+        'permissions' => [], // Expandir conforme necessário
+        'profile_photo' => auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : null
+    ]) }}">
+    @endauth
 
         <title>{{ config('app.name', 'Trampix') }}</title>
 
@@ -12,6 +25,9 @@
         
         <!-- FontAwesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
 
         <!-- Custom Styles -->
         @stack('styles')
@@ -26,6 +42,9 @@
                 --trampix-red: #FF4C4C;
                 --trampix-dark-gray: #4A4A4A;
             }
+
+            /* Reset global para evitar faixa branca padrão do body */
+            html, body { margin: 0; padding: 0; }
 
             /* Tipografia básica do styleguide */
             .trampix-h1 { color: var(--trampix-purple); font-weight: 700; font-size: 2.5rem; }
@@ -84,7 +103,9 @@
     </head>
     <body>
         <div id="app">
-            @include('layouts.navigation')
+            @if (!request()->routeIs('vagas.index'))
+                @include('layouts.navigation')
+            @endif
 
             <!-- Page Heading -->
             @if(isset($header))
@@ -102,7 +123,7 @@
             @endif
 
             <!-- Page Content -->
-            <main class="py-4">
+            <main class="{{ request()->routeIs('vagas.index') ? '' : 'py-4' }}">
                 @if(isset($slot))
                     {{ $slot }}
                 @else
@@ -113,6 +134,11 @@
 
         <!-- Bootstrap 5 JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <!-- Input masks and client-side validation helpers -->
+        <script src="{{ asset('js/masks.js') }}"></script>
+        
+
         
         <!-- Custom Scripts -->
         @stack('scripts')

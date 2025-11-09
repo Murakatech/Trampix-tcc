@@ -24,23 +24,25 @@ class AuthServiceProvider extends ServiceProvider
 
         // Gates baseados em perfis ativos (novo sistema)
         Gate::define('isFreelancer', function ($user) {
-            return $user->isAdmin() || $user->isFreelancer();
+            return $user->freelancer()->where('is_active', true)->exists();
         });
 
         Gate::define('isCompany', function ($user) {
-            return $user->isAdmin() || $user->isCompany();
+            return $user->company()->where('is_active', true)->exists();
         });
 
         Gate::define('isAdmin', function ($user) {
-            return $user->isAdmin();
+            return $user->role === 'admin';
         });
 
-        // Gates para verificar se pode criar perfis
+        // Gates para verificar se pode criar perfis - Permite múltiplos perfis
         Gate::define('canCreateFreelancerProfile', function ($user) {
+            // Admins podem sempre criar, usuários podem criar se não tiverem perfil freelancer ativo
             return $user->isAdmin() || !$user->hasActiveProfile('freelancer');
         });
 
         Gate::define('canCreateCompanyProfile', function ($user) {
+            // Admins podem sempre criar, usuários podem criar se não tiverem perfil empresa ativo
             return $user->isAdmin() || !$user->hasActiveProfile('company');
         });
 

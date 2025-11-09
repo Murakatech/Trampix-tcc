@@ -23,6 +23,7 @@
                                     <i class="fas fa-building fa-4x text-muted"></i>
                                 </div>
                             @endif
+                            
                         </div>
                         <div class="col-md-9">
                             <div class="d-flex justify-content-between align-items-start mb-3">
@@ -30,10 +31,10 @@
                                 @auth
                                     @if(auth()->user()->id === $company->user_id)
                                         <div class="btn-group">
-                                            <a href="{{ route('companies.edit', $company) }}" class="btn btn-primary btn-sm">
+                                            <a href="{{ route('companies.edit', $company) }}" class="btn btn-trampix-company btn-sm">
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
-                                            <a href="{{ route('companies.vacancies', $company) }}" class="btn btn-outline-secondary btn-sm">
+                                            <a href="{{ route('company.vagas.index') }}" class="btn btn-trampix-company btn-sm">
                                                 <i class="fas fa-briefcase"></i> Minhas Vagas
                                             </a>
                                         </div>
@@ -165,7 +166,7 @@
                         
                         @auth
                             @if(auth()->user()->id === $company->user_id)
-                                <a href="{{ route('vagas.create') }}" class="btn btn-primary">
+                                <a href="{{ route('vagas.create') }}" class="btn btn-trampix-company">
                                     <i class="fas fa-plus"></i> Criar Primeira Vaga
                                 </a>
                             @endif

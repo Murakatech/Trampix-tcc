@@ -13,18 +13,18 @@
                 @else
                     <div class="bg-light d-flex align-items-center justify-content-center mb-3" 
                          style="width: 150px; height: 150px; border-radius: 8px;">
-                        <i class="fas fa-user fa-3x text-muted"></i>
+                        <span class="text-muted">Sem foto</span>
                     </div>
                 @endif
                 
                 @if($profilePhoto)
-                    <form action="{{ route('profile.photo.delete') }}" method="POST" class="d-inline">
+                    <form action="{{ route('profile.photo.delete') }}" method="POST" class="d-inline" id="removePhotoForm">
                         @csrf
                         @method('DELETE')
                         <input type="hidden" name="profile_type" value="{{ $profileType }}">
-                        <button type="submit" class="btn btn-outline-danger btn-sm" 
-                                onclick="return confirm('Tem certeza que deseja remover a foto?')">
-                            <i class="fas fa-trash"></i> Remover
+                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                onclick="showRemovePhotoConfirmation()">
+                            Remover
                         </button>
                     </form>
                 @endif
@@ -51,7 +51,6 @@
                     </div>
                     
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-upload"></i> 
                         {{ $profilePhoto ? 'Atualizar Foto' : 'Enviar Foto' }}
                     </button>
                 </form>
@@ -59,3 +58,28 @@
         </div>
     </div>
 </div>
+
+{{-- Componente de Confirmação --}}
+<x-action-confirmation 
+    actionType="generic" 
+    modalId="removePhotoConfirmationModal" />
+
+@push('scripts')
+<script>
+    // Função para remover foto
+    function showRemovePhotoConfirmation() {
+        showActionModal('removePhotoConfirmationModal', {
+            actionType: 'generic',
+            message: `🗑️ Tem certeza que deseja remover a foto?\n\nEsta ação não pode ser desfeita.`,
+            onConfirm: () => {
+                const form = document.getElementById('removePhotoForm');
+                showNotification('Removendo foto...', 'warning');
+                form.submit();
+            },
+            onCancel: () => {
+                showNotification('Remoção cancelada.', 'info');
+            }
+        });
+    }
+</script>
+@endpush

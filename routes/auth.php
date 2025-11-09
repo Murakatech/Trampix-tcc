@@ -8,6 +8,8 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\ProfileController;
+
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +38,16 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
+    // Profile selection and creation routes
+    Route::get('profile-selection', [RegisteredUserController::class, 'profileSelection'])
+        ->name('profile.selection');
+    
+    Route::get('profile/create/company', [ProfileController::class, 'showCreateCompany'])
+        ->name('profile.create.company');
+    
+    Route::post('profile/create/company', [ProfileController::class, 'createCompany'])
+        ->name('profile.store.company');
+
     Route::get('verify-email', EmailVerificationPromptController::class)
         ->name('verification.notice');
 
@@ -53,6 +65,8 @@ Route::middleware('auth')->group(function () {
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
 
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
+
+
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');

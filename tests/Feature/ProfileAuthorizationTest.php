@@ -21,7 +21,9 @@ class ProfileAuthorizationTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($user)->patch(route('profile.update'), [
+        $response = $this->withSession(['active_role' => 'freelancer'])
+            ->actingAs($user)
+            ->patch(route('profile.update'), [
             'section' => 'freelancer',
             'bio' => 'Bio atualizada',
         ]);
@@ -78,9 +80,11 @@ class ProfileAuthorizationTest extends TestCase
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($user)->patch(route('profile.update'), [
+        $response = $this->withSession(['active_role' => 'company'])
+            ->actingAs($user)
+            ->patch(route('profile.update'), [
             'section' => 'company',
-            'name' => 'Empresa Atualizada',
+            'display_name' => 'Empresa Atualizada',
         ]);
 
         $response->assertRedirect(route('profile.edit'));
@@ -132,7 +136,10 @@ class ProfileAuthorizationTest extends TestCase
 
         $this->assertNull($user->freelancer);
 
-        $response = $this->actingAs($user)->patch(route('profile.update'), [
+        $response = $this->withSession(['active_role' => 'freelancer'])
+            ->actingAs($user)
+            ->patch(route('profile.update'), [
+            'create_freelancer_profile' => true,
             'section' => 'freelancer',
             'bio' => 'Nova bio criada',
         ]);
@@ -149,9 +156,12 @@ class ProfileAuthorizationTest extends TestCase
 
         $this->assertNull($user->company);
 
-        $response = $this->actingAs($user)->patch(route('profile.update'), [
+        $response = $this->withSession(['active_role' => 'company'])
+            ->actingAs($user)
+            ->patch(route('profile.update'), [
+            'create_company_profile' => true,
             'section' => 'company',
-            'name' => 'Minha Nova Empresa',
+            'company_name' => 'Minha Nova Empresa',
         ]);
 
         $response->assertRedirect(route('profile.edit'));

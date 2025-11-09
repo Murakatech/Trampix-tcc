@@ -7,6 +7,9 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="{{ asset('storage/img/logo_trampix.png') }}">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -17,7 +20,7 @@
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col justify-center items-center px-4 bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
             <div class="mb-4">
-                <a href="/">
+                <a href="{{ route('vagas.index') }}">
                     <x-application-logo id="brand-icon" class="w-20 h-20 text-indigo-500 animate-float" />
                 </a>
             </div>
