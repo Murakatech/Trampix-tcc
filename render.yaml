@@ -4,7 +4,6 @@ services:
     env: docker
     dockerfilePath: ./Dockerfile
     autoDeploy: true
-    healthCheckPath: /
     plan: free
     envVars:
       - key: APP_ENV
@@ -20,7 +19,7 @@ services:
       - key: DB_HOST
         sync: false
       - key: DB_PORT
-        value: 3306
+        value: "3306"
       - key: DB_DATABASE
         sync: false
       - key: DB_USERNAME
@@ -29,6 +28,4 @@ services:
         sync: false
       - key: SESSION_DRIVER
         value: file
-      - key: PORT
-        value: 10000
-    postDeployCommand: "php artisan migrate --force"
+    postDeployCommand: "php artisan migrate --force && php artisan storage:link || true"

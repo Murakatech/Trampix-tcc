@@ -26,11 +26,8 @@ COPY . /app
 RUN mkdir -p storage bootstrap/cache \
     && chmod -R 777 storage bootstrap/cache
 
-# Expose port environment (Render uses $PORT)
-ENV PORT=8080
-
 # Optional caches (ignore failures if env not yet set)
 RUN php artisan config:clear || true && php artisan cache:clear || true && php artisan view:clear || true
 
-# Start Laravel's built-in server (suitable for demos; for production use nginx/apache)
-CMD ["php","artisan","serve","--host=0.0.0.0","--port","${PORT}"]
+# Start Laravel's built-in server (exec via shell to expand $PORT provided by Render)
+CMD ["sh","-lc","php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
