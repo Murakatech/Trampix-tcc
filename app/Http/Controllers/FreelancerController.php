@@ -61,8 +61,8 @@ class FreelancerController extends Controller
     public function create()
     {
         Gate::authorize('canCreateFreelancerProfile');
-        // Redirecionar para a tela unificada de seleção/criação de perfil
-        return redirect()->route('profile.selection');
+        // Exibir diretamente a tela unificada de seleção/criação de perfil
+        return view('auth.profile-selection');
     }
 
     public function store(Request $request)

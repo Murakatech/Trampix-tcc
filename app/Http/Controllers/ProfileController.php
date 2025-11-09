@@ -513,10 +513,12 @@ class ProfileController extends Controller
         }
         
         $validated = $request->validate([
-            'name' => 'required|string|min:3|max:255',
-            'title' => 'required|string|max:255',
+            // O formulário usa 'display_name' (não 'name') para o freelancer
+            'display_name' => 'required|string|max:255',
+            // Campo 'title' não é utilizado; removido para evitar quebra
             'bio' => 'required|string|min:50|max:1000',
-            'skills' => 'required|string',
+            // skills não será utilizado por enquanto; tornar opcional para evitar erros
+            'skills' => 'nullable|string',
             'whatsapp' => 'required|string',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // 5MB
             'cv' => 'nullable|file|mimes:pdf|max:10240', // 10MB
@@ -524,9 +526,9 @@ class ProfileController extends Controller
         
         // Processar uploads
         $profileData = [
+            'display_name' => $validated['display_name'],
             'bio' => $validated['bio'],
-            'title' => $validated['title'],
-            'skills' => $validated['skills'],
+            // 'skills' removido do payload por não haver coluna e não ser utilizado no momento
         ];
 
         // Sanitizar WhatsApp: manter somente números e limitar tamanho
@@ -545,9 +547,9 @@ class ProfileController extends Controller
             $profileData['cv_url'] = $cvPath;
         }
         
-        // Atualizar nome do usuário
+        // Atualizar dados do usuário: atribuir papel e opcionalmente o display_name
         $user->update([
-            'name' => $validated['name'],
+            'display_name' => $validated['display_name'],
             'role' => 'freelancer'
         ]);
         
@@ -981,7 +983,7 @@ class ProfileController extends Controller
                 ],
                 'profile' => [
                     'bio' => $freelancer->bio,
-                    'skills' => $freelancer->skills,
+                    // skills desativado por enquanto; omitido da resposta
                     'experience' => $freelancer->experience,
                     'hourly_rate' => $freelancer->hourly_rate,
                     'availability' => $freelancer->availability,

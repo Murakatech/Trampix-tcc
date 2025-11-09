@@ -3,7 +3,7 @@
 @section('header')
 <div class="bg-white shadow">
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <h1 class="trampix-h1">Conta</h1>
+        <h1 class="trampix-h1">Configurações da Conta</h1>
     </div>
 </div>
 @endsection
