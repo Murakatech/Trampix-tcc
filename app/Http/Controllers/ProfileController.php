@@ -800,15 +800,15 @@ class ProfileController extends Controller
 
         try {
             // Remover currículo anterior se existir
-            if ($freelancer->cv_path) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_path);
+            if ($freelancer->cv_url) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_url);
             }
 
             // Salvar novo currículo
             $cvPath = $request->file('cv')->store('cvs', 'public');
             
-            // Atualizar no banco de dados
-            $freelancer->update(['cv_path' => $cvPath]);
+            // Atualizar no banco de dados (usar coluna cv_url)
+            $freelancer->update(['cv_url' => $cvPath]);
 
             return response()->json([
                 'success' => true,
@@ -843,7 +843,7 @@ class ProfileController extends Controller
 
         try {
             // Verificar se existe currículo
-            if (!$freelancer->cv_path) {
+            if (!$freelancer->cv_url) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Nenhum currículo encontrado.'
@@ -851,10 +851,10 @@ class ProfileController extends Controller
             }
 
             // Remover arquivo do storage
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_path);
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_url);
             
             // Remover referência do banco
-            $freelancer->update(['cv_path' => null]);
+            $freelancer->update(['cv_url' => null]);
 
             return response()->json([
                 'success' => true,
