@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class JobVacancy extends Model
 {
@@ -41,5 +42,82 @@ class JobVacancy extends Model
     public function category()
     {
         return $this->belongsTo(\App\Models\Category::class);
+    }
+
+    /**
+     * Scopes utilitários para simplificar filtros no controlador
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('status', 'active');
+    }
+
+    public function scopePublicList(Builder $query): Builder
+    {
+        return $query->active()
+            ->whereDoesntHave('applications', function($q){
+                $q->whereIn('status', ['accepted', 'ended']);
+            });
+    }
+
+    public function scopeNotAppliedBy(Builder $query, ?int $freelancerId): Builder
+    {
+        if ($freelancerId) {
+            $query->whereDoesntHave('applications', function($q) use ($freelancerId) {
+                $q->where('freelancer_id', $freelancerId);
+            });
+        }
+        return $query;
+    }
+
+    public function scopeFilterCategories(Builder $query, array $categories): Builder
+    {
+        if (empty($categories)) return $query;
+        $categoryIds = \App\Models\Category::whereIn('name', $categories)->pluck('id');
+        return $query->where(function($q) use ($categories, $categoryIds) {
+            if ($categoryIds->count() > 0) {
+                $q->whereIn('category_id', $categoryIds);
+            }
+            $q->orWhereIn('category', $categories);
+        });
+    }
+
+    public function scopeFilterSegment(Builder $query, int $segmentId): Builder
+    {
+        if (! $segmentId) return $query;
+        $segmentCategoryQuery = \App\Models\Category::where('segment_id', $segmentId)->select('id','name');
+        $segmentCategoryIds = $segmentCategoryQuery->pluck('id');
+        $segmentCategoryNames = $segmentCategoryQuery->pluck('name');
+        return $query->where(function($q) use ($segmentCategoryIds, $segmentCategoryNames) {
+            if ($segmentCategoryIds->count() > 0) {
+                $q->whereIn('category_id', $segmentCategoryIds);
+            }
+            if ($segmentCategoryNames->count() > 0) {
+                $q->orWhereIn('category', $segmentCategoryNames);
+            }
+        });
+    }
+
+    public function scopeContractType(Builder $query, ?string $type): Builder
+    {
+        return $type ? $query->where('contract_type', $type) : $query;
+    }
+
+    public function scopeLocationType(Builder $query, ?string $type): Builder
+    {
+        return $type ? $query->where('location_type', $type) : $query;
+    }
+
+    public function scopeSearch(Builder $query, ?string $search): Builder
+    {
+        if (! $search) return $query;
+        return $query->where(function($q) use ($search) {
+            $q->where('title', 'like', "%{$search}%")
+              ->orWhere('description', 'like', "%{$search}%")
+              ->orWhere('requirements', 'like', "%{$search}%")
+              ->orWhereHas('company', function($companyQuery) use ($search) {
+                  $companyQuery->where('name', 'like', "%{$search}%");
+              });
+        });
     }
 }

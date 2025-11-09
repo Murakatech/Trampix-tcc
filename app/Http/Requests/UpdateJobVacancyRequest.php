@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class UpdateJobVacancyRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        // Autorização continua sendo verificada no Controller via Gate.
+        return true;
+    }
+
+    public function rules(): array
+    {
+        return [
+            'title'         => 'required|string|max:255',
+            'description'   => 'required|string',
+            'requirements'  => 'nullable|string',
+            'segment_id'    => ['required','exists:segments,id'],
+            'category_id'   => ['nullable','exists:categories,id'],
+            'contract_type' => 'nullable|in:PJ,CLT,Estágio,Freelance',
+            'location_type' => 'nullable|in:Remoto,Híbrido,Presencial',
+            'salary_range'  => 'nullable|string|max:100',
+            'status'        => 'nullable|in:active,closed',
+        ];
+    }
+}
