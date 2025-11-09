@@ -345,31 +345,7 @@
 
 
 
-        <!-- Development Tools -->
-        <div 
-            x-show="expanded"
-            x-transition:enter="transition-opacity duration-300 ease-in-out delay-100"
-            x-transition:enter-start="opacity-0"
-            x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity duration-200 ease-in-out"
-            x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0"
-            class="px-4 py-2 mt-6">
-            <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider whitespace-nowrap">Desenvolvimento</h3>
-        </div>
-        
-        <a href="{{ route('styleguide') }}" 
-           class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200 {{ request()->routeIs('styleguide') ? ($activeRole === 'company' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600') : '' }}">
-            <span 
-                x-show="expanded"
-                x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
-                x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100"
-                x-transition:leave="transition-opacity duration-200 ease-in-out"
-                x-transition:leave-start="opacity-100"
-                x-transition:leave-end="opacity-0"
-                class="ml-3 font-medium whitespace-nowrap overflow-hidden">Styleguide</span>
-        </a>
+        <!-- Development Tools removidos -->
     </nav>
 </aside>
 
