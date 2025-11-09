@@ -128,8 +128,9 @@ class CompanyController extends Controller
         
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            // No update, don't force CNPJ if it's not being changed. Allow partial PATCH updates.
             'cnpj' => [
-                'required',
+                'sometimes',
                 'string',
                 'max:18',
                 Rule::unique('companies', 'cnpj')->ignore($company->id)
