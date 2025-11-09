@@ -109,10 +109,27 @@ class ProfilePhotoController extends Controller
         }
 
         // Montar payload esperado pelo teste
+        $activeRole = $this->getActiveRole($user);
+        $displayName = $this->getDisplayName($user, $activeRole);
         $photoUrl = $this->getProfilePhotoUrl($user);
+        $hasPhoto = !empty($photoUrl);
+        $initials = $this->generateInitials($displayName);
         $lastModifiedStr = $lastModified->format('D, d M Y H:i:s \G\M\T');
 
         return response()->json([
+            // New contract
+            'success' => true,
+            'changed' => true,
+            'data' => [
+                'photo_url' => $photoUrl,
+                'display_name' => $displayName,
+                'initials' => $initials,
+                'role' => $activeRole,
+                'email' => $user->email,
+                'has_photo' => $hasPhoto,
+            ],
+            'timestamp' => $lastModifiedStr,
+            // Legacy keys expected by older tests
             'has_updates' => true,
             'last_modified' => $lastModifiedStr,
             'profile_photo_url' => $photoUrl,
@@ -131,19 +148,33 @@ class ProfilePhotoController extends Controller
             return response()->json([], 401);
         }
 
-        $name = $user->name;
-        $profilePhotoUrl = $this->getProfilePhotoUrl($user);
-        $initials = $this->generateInitials($name);
+        $activeRole = $this->getActiveRole($user);
+        $displayName = $this->getDisplayName($user, $activeRole);
+        $photoUrl = $this->getProfilePhotoUrl($user);
+        $hasPhoto = !empty($photoUrl);
+        $initials = $this->generateInitials($displayName);
 
         return response()->json([
+            // New contract
+            'success' => true,
+            'data' => [
+                'id' => $user->id,
+                'display_name' => $displayName,
+                'email' => $user->email,
+                'role' => $activeRole,
+                'photo_url' => $photoUrl,
+                'has_photo' => $hasPhoto,
+                'initials' => $initials,
+            ],
+            // Legacy contract for compatibility
             'user' => [
                 'id' => $user->id,
-                'name' => $name,
+                'name' => $user->name,
                 'email' => $user->email,
-                'role' => $user->role ?? 'freelancer',
-                'profile_photo_url' => $profilePhotoUrl,
-                'initials' => $initials,
-            ]
+                'role' => $activeRole,
+                'profile_photo_url' => $photoUrl,
+                'initials' => $this->generateInitials($user->name),
+            ],
         ]);
     }
 

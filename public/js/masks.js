@@ -115,13 +115,73 @@
     });
   }
 
+  // BR Phone mask: (99) 99999-9999 or (99) 9999-9999 as user types
+  function formatBrPhone(value) {
+    const digits = (value || '').replace(/\D/g, '').slice(0, 11);
+    if (digits.length === 0) return '';
+    if (digits.length <= 2) return `(${digits}`;
+    const ddd = digits.slice(0, 2);
+    const after = digits.slice(2);
+    if (after.length <= 4) return `(${ddd}) ${after}`;
+    if (digits.length <= 10) return `(${ddd}) ${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+    return `(${ddd}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+  }
+
+  function handlePhoneInput(e) {
+    const el = e.target;
+    el.value = formatBrPhone(el.value);
+    const len = el.value.length;
+    try { el.setSelectionRange(len, len); } catch(_) {}
+  }
+
+  function attachPhoneMask() {
+    const inputs = document.querySelectorAll('input[data-mask="br-phone"]');
+    inputs.forEach((input) => {
+      input.setAttribute('inputmode', 'numeric');
+      input.addEventListener('input', handlePhoneInput);
+      if (input.value) input.value = formatBrPhone(input.value);
+    });
+  }
+
+  // BR Currency mask: R$ 1.234,56 (type=text only)
+  function formatBRL(value) {
+    const prefix = 'R$ ';
+    if (!value) return '';
+    const raw = String(value).replace(/^R\$\s*/, '');
+    const parts = raw.split(',');
+    let integer = (parts[0] || '').replace(/\D/g, '');
+    let decimals = (parts[1] || '').replace(/\D/g, '').slice(0, 2);
+    if (!integer) return '';
+    const integerFormatted = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return prefix + integerFormatted + (decimals ? ',' + decimals : '');
+  }
+
+  function handleCurrencyInput(e) {
+    const el = e.target;
+    el.value = formatBRL(el.value);
+    const len = el.value.length;
+    try { el.setSelectionRange(len, len); } catch(_) {}
+  }
+
+  function attachCurrencyMask() {
+    const inputs = document.querySelectorAll('input[data-mask="br-currency"]');
+    inputs.forEach((input) => {
+      input.addEventListener('input', handleCurrencyInput);
+      if (input.value) input.value = formatBRL(input.value);
+    });
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       attachCnpjMask();
       attachLinkedInValidation();
+      attachPhoneMask();
+      attachCurrencyMask();
     });
   } else {
     attachCnpjMask();
     attachLinkedInValidation();
+    attachPhoneMask();
+    attachCurrencyMask();
   }
 })();

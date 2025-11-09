@@ -248,28 +248,19 @@ class ProfileController extends Controller
             return $this->createFreelancerProfile($request);
         }
         
-        // Se é uma atualização de informações básicas da conta (sem section específica)
-        if (!$section || $section === 'account') {
-            // Bloquear edição da conta para administradores
-            if ($user->isAdmin()) {
-                return Redirect::route('admin.dashboard')->with('error', 'A conta do administrador não pode ser editada.');
-            }
-            $validated = $request->validate(\App\Http\Requests\AccountUpdateRequest::rulesFor($user->id));
-
-            $user->fill($validated);
-            if ($user->isDirty('email')) {
-                $user->email_verified_at = null;
-            }
-            $user->save();
-
-            return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        // Atualização de informações básicas da conta
+        // 1) Quando section === 'account'
+        // 2) Quando section é nula e foram enviados campos da conta (name/email)
+        if ($section === 'account' || ($section === null && ($request->has('name') || $request->has('email')))) {
+            return $this->updateAccount($request);
         }
         
-        // Se a section é especificada, usar ela ao invés do activeRole
+        // Se a section não for especificada, usar o papel ativo da sessão
         $targetRole = $section ?: $activeRole;
         
         if (!$targetRole) {
-            return redirect()->route('dashboard');
+            // Sem role ativo e sem section → manter usuário na página de perfil
+            return Redirect::route('profile.edit');
         }
 
         if ($targetRole === 'freelancer') {

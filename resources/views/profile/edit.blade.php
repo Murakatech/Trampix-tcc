@@ -81,9 +81,9 @@
                     <!-- Botão Dinâmico para Criar/Trocar Perfil -->
                     @if(session('active_role') === 'freelancer')
                         @if(!$user->company)
-                            <button onclick="openModal('createCompanyModal')" class="btn-trampix-primary">
+                            <a href="{{ route('companies.create') }}" class="btn-trampix-primary">
                                 Criar Perfil de Empresa
-                            </button>
+                            </a>
                         @else
                             <!-- Dropdown para Trocar Perfil -->
                             <div class="relative inline-block" x-data="{ open: false }" @click.away="open = false">
@@ -120,7 +120,7 @@
                                         <input type="hidden" name="role" value="company">
                                         <button type="submit" class="w-full px-4 py-3 text-left text-sm transition-colors duration-200 flex items-center gap-3 rounded-lg hover:bg-green-50">
                                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100 text-green-700">🏢</span>
-                                            <span class="text-gray-700">Trocar para perfil Empresa</span>
+                                            <span class="text-gray-700">Mudar para perfil Empresa</span>
                                         </button>
                                     </form>
                                 </div>
@@ -128,9 +128,9 @@
                         @endif
                     @else
                         @if(!$user->freelancer)
-                            <button onclick="openModal('createFreelancerModal')" class="btn-trampix-primary">
+                            <a href="{{ route('freelancers.create') }}" class="btn-trampix-primary">
                                 Criar Perfil Freelancer
-                            </button>
+                            </a>
                         @else
                             <!-- Dropdown para Trocar Perfil -->
                             <div class="relative inline-block" x-data="{ open: false }" @click.away="open = false">
@@ -167,7 +167,7 @@
                                         <input type="hidden" name="role" value="freelancer">
                                         <button type="submit" class="w-full px-4 py-3 text-left text-sm transition-colors duration-200 flex items-center gap-3 rounded-lg hover:bg-purple-50">
                                             <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-700">🧑‍💻</span>
-                                            <span class="text-gray-700">Trocar para perfil Freelancer</span>
+                                            <span class="text-gray-700">Mudar para perfil Freelancer</span>
                                         </button>
                                     </form>
                                 </div>
@@ -398,12 +398,13 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="linkedin_url" class="block text-sm font-medium text-gray-700">LinkedIn</label>
-                                <input type="url" id="linkedin_url" name="linkedin_url" 
-                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('linkedin_url') border-red-500 @enderror" 
-                                       value="{{ old('linkedin_url', $freelancer->linkedin_url ?? '') }}"
-                                       placeholder="https://www.linkedin.com/in/seu-perfil">
-                                @error('linkedin_url')
+<label for="linkedin_url" class="block text-sm font-medium text-gray-700">LinkedIn</label>
+<input type="url" id="linkedin_url" name="linkedin_url"
+class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('linkedin_url') border-red-500 @enderror"
+value="{{ old('linkedin_url', $freelancer->linkedin_url ?? '') }}"
+placeholder="https://www.linkedin.com/in/seu-perfil">
+<p class="text-xs text-gray-500 mt-1">Portfólio</p>
+@error('linkedin_url')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -468,7 +469,7 @@
                     <!-- Formulário Empresa -->
                     <div class="space-y-6">
                         <div>
-                            <label for="display_name" class="block text-sm font-medium text-gray-700">Nome de Exibição Profissional</label>
+                            <label for="display_name" class="block text-sm font-medium text-gray-700">Nome da Empresa</label>
                             <input type="text" id="display_name" name="display_name" 
                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('display_name') border-red-500 @enderror" 
                                    value="{{ old('display_name', $company->display_name ?? '') }}"
@@ -656,9 +657,7 @@
     </div>
 </div>
 
-<!-- Modais -->
-@include('profile.partials.create-company-modal')
-@include('profile.partials.create-freelancer-modal')
+<!-- Modais removidos para evitar exibição cruzada de campos de perfis diferentes -->
 
 <script>
 // Sistema de Tabs
