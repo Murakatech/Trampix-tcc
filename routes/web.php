@@ -178,9 +178,16 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/my-applications', [ApplicationController::class, 'index'])
         ->name('applications.index');
+    // Trabalhos finalizados (empresa ou freelancer, despacha para a view correta)
+    Route::get('/finished-jobs', [ApplicationController::class, 'finishedIndex'])
+        ->name('finished.index');
     
     Route::delete('/applications/{application}', [ApplicationController::class, 'cancel'])
         ->name('applications.cancel')
+        ->middleware('can:isFreelancer');
+    // Reconhecer todas as rejeições (freelancer) para ocultar aviso
+    Route::post('/applications/ack-rejections', [ApplicationController::class, 'acknowledgeAllRejections'])
+        ->name('applications.ack.all')
         ->middleware('can:isFreelancer');
 
     // Freelancer se demite de uma parceria ativa

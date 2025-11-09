@@ -122,6 +122,22 @@
                     class="ml-3 font-medium whitespace-nowrap overflow-hidden">Minhas Candidaturas</span>
             </a>
 
+            <!-- Trabalhos finalizados (Freelancer) -->
+            <a href="{{ route('finished.index') }}" 
+               data-menu-item="finished-jobs"
+               class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200 {{ request()->routeIs('finished.index') ? ($activeRole === 'company' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600') : '' }}">
+                <i class="fa-solid fa-check-double text-lg flex-shrink-0"></i>
+                <span 
+                    x-show="expanded"
+                    x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity duration-200 ease-in-out"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Trabalhos Finalizados</span>
+            </a>
+
             <a href="{{ route('profiles.show', auth()->user()) }}" 
                data-menu-item="my-profile"
                class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200">
@@ -167,6 +183,22 @@
                     x-transition:leave-start="opacity-100"
                     x-transition:leave-end="opacity-0"
                     class="ml-3 font-medium whitespace-nowrap overflow-hidden">Gerenciar Candidaturas</span>
+            </a>
+
+            <!-- Trabalhos finalizados (Empresa) -->
+            <a href="{{ route('finished.index') }}" 
+               data-menu-item="finished-jobs"
+               class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200 {{ request()->routeIs('finished.index') ? ($activeRole === 'company' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600') : '' }}">
+                <i class="fa-solid fa-check-double text-lg flex-shrink-0"></i>
+                <span 
+                    x-show="expanded"
+                    x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
+                    x-transition:enter-start="opacity-0"
+                    x-transition:enter-end="opacity-100"
+                    x-transition:leave="transition-opacity duration-200 ease-in-out"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Trabalhos Finalizados</span>
             </a>
 
             <a href="{{ route('profiles.show', auth()->user()) }}" 

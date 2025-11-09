@@ -18,12 +18,31 @@ class ApplicationController extends Controller
             return redirect()->route('dashboard')->with('error', 'Você precisa completar seu perfil de freelancer primeiro.');
         }
 
+        // Exibir apenas candidaturas que ainda fazem sentido na tela principal:
+        // - Ocultar rejeitadas (vão para Trabalhos Finalizados)
+        // - Ocultar finalizadas com avaliação enviada pelo freelancer
         $applications = Application::with('jobVacancy.company')
             ->where('freelancer_id', $freelancer->id)
+            ->where(function($q) {
+                $q->where('status', '!=', 'rejected')
+                  ->where(function($q2) {
+                      $q2->where('status', '!=', 'ended')
+                         ->orWhereNull('evaluated_by_freelancer_at');
+                  });
+            })
             ->latest()
             ->get();
 
-        return view('applications.index', compact('applications'));
+        // Contagem de rejeições não reconhecidas para mostrar o aviso até o freela apertar "OK"
+        $unackRejectedCount = Application::where('freelancer_id', $freelancer->id)
+            ->where('status', 'rejected')
+            ->where(function($q) {
+                $q->whereNull('rejected_acknowledged')
+                  ->orWhere('rejected_acknowledged', false);
+            })
+            ->count();
+
+        return view('applications.index', compact('applications', 'unackRejectedCount'));
     }
 
     // Aplicar em uma vaga (freelancer)
@@ -61,6 +80,13 @@ class ApplicationController extends Controller
         // Buscar todas as candidaturas para vagas da empresa
         $applications = Application::whereHas('jobVacancy', function($query) use ($company) {
                 $query->where('company_id', $company->id);
+            })
+            // Ocultar finalizadas que já foram avaliadas pela empresa (migram para Trabalhos Finalizados)
+            ->where(function($q) {
+                $q->where('status', '!=', 'ended')
+                  ->orWhere(function($q2) {
+                      $q2->where('status', 'ended')->whereNull('evaluated_by_company_at');
+                  });
             })
             ->with(['jobVacancy', 'freelancer.user'])
             ->orderBy('created_at', 'desc')
@@ -139,6 +165,63 @@ class ApplicationController extends Controller
         $oldLabel = $statusLabels[$oldStatus] ?? ucfirst($oldStatus);
         $newLabel = $statusLabels[$newStatus] ?? ucfirst($newStatus);
         return back()->with('success', "Status alterado de '{$oldLabel}' para '{$newLabel}' com sucesso!");
+    }
+
+    /**
+     * Trabalhos finalizados (empresa e freelancer) — roteamento por papel ativo.
+     */
+    public function finishedIndex()
+    {
+        $user = Auth::user();
+
+        if ($user?->company) {
+            $company = $user->company;
+            $applications = Application::whereHas('jobVacancy', function($q) use ($company) {
+                    $q->where('company_id', $company->id);
+                })
+                ->where('status', 'ended')
+                ->whereNotNull('evaluated_by_company_at')
+                ->with(['jobVacancy.company', 'freelancer.user'])
+                ->latest()
+                ->paginate(12);
+
+            return view('finished.company', compact('applications', 'company'));
+        }
+
+        if ($user?->freelancer) {
+            $freelancer = $user->freelancer;
+            $applications = Application::where('freelancer_id', $freelancer->id)
+                ->where(function($q) {
+                    $q->where('status', 'rejected')
+                      ->orWhere(function($q2) {
+                          $q2->where('status', 'ended')->whereNotNull('evaluated_by_freelancer_at');
+                      });
+                })
+                ->with(['jobVacancy.company.user'])
+                ->latest()
+                ->paginate(12);
+
+            return view('finished.freelancer', compact('applications', 'freelancer'));
+        }
+
+        return redirect()->route('dashboard')->with('error', 'Perfil não identificado para acessar Trabalhos Finalizados.');
+    }
+
+    /**
+     * Freelancer reconhece rejeições para ocultar aviso em "Minhas Candidaturas".
+     */
+    public function acknowledgeAllRejections()
+    {
+        $user = Auth::user();
+        if (!$user?->freelancer) {
+            abort(403, 'Apenas freelancers podem reconhecer rejeições.');
+        }
+
+        \App\Models\Application::where('freelancer_id', $user->freelancer->id)
+            ->where('status', 'rejected')
+            ->update(['rejected_acknowledged' => true]);
+
+        return redirect()->back()->with('success', 'Aviso de rejeição reconhecido.');
     }
 
     public function cancel(Application $application)

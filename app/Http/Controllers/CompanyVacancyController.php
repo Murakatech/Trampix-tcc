@@ -35,7 +35,12 @@ class CompanyVacancyController extends Controller
             }
 
             // Query base para vagas da empresa
-            $query = JobVacancy::where('company_id', $company->id)->with('applications');
+            $query = JobVacancy::where('company_id', $company->id)
+                ->with('applications')
+                // Oculta vagas cujo trabalho principal já foi finalizado e avaliado pela empresa
+                ->whereDoesntHave('applications', function($q) {
+                    $q->where('status', 'ended')->whereNotNull('evaluated_by_company_at');
+                });
 
             // Filtros
             if ($request->filled('category')) {

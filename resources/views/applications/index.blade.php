@@ -36,12 +36,17 @@
         </div>
     @endif
 
-    @if($rejectedCount > 0)
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="fas fa-info-circle me-2"></i>
-            Você tem {{ $rejectedCount }} candidatura(s) que não foram selecionadas. 
-            <strong>Continue tentando!</strong> Novas oportunidades aparecem todos os dias.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    @if(isset($unackRejectedCount) && $unackRejectedCount > 0)
+        <div class="alert alert-warning d-flex align-items-center justify-content-between" role="alert">
+            <div>
+                <i class="fas fa-info-circle me-2"></i>
+                Você foi rejeitado em {{ $unackRejectedCount }} candidatura(s). Sua aplicação foi movida para "Trabalhos Finalizados".
+                <strong>Para ocultar este aviso, confirme que está ciente.</strong>
+            </div>
+            <form action="{{ route('applications.ack.all') }}" method="POST" class="ms-3">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-outline-warning">OK, estou ciente</button>
+            </form>
         </div>
     @endif
 
@@ -157,14 +162,14 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="card-title text-warning">{{ $applications->where('status', 'pending')->count() }}</h3>
-                        <p class="card-text text-muted">Pendentes</p>
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h3 class="card-title text-warning">{{ $applications->where('status', 'pending')->count() }}</h3>
+                                <p class="card-text text-muted">Pendentes</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
     @endif
 </div>
 
