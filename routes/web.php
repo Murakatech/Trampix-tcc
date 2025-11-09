@@ -172,6 +172,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('applications.evaluate.create');
     Route::post('/applications/{application}/evaluate', [EvaluationController::class, 'store'])
         ->name('applications.evaluate.store');
+    Route::get('/applications/{application}/evaluation', [EvaluationController::class, 'show'])
+        ->name('applications.evaluate.show');
     Route::post('/job-vacancies/{id}/apply', [ApplicationController::class, 'store'])
         ->name('applications.store')
         ->middleware('can:isFreelancer');

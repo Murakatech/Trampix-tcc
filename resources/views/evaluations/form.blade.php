@@ -56,16 +56,33 @@
                     ];
                 @endphp
 
+                <style>
+                    /* Melhoria visual das notas (estrelas) */
+                    .rating-group .btn { min-width: 42px; }
+                    .rating-group .btn.active,
+                    .rating-group input.btn-check:checked + label.btn {
+                        border-color: #ffb400;
+                        background-color: #fff8e6;
+                        color: #cc7a00;
+                    }
+                    .rating-group label .fa-star { color: #c8c8c8; }
+                    .rating-group input.btn-check:checked + label .fa-star { color: #ffb400; }
+                </style>
+
+                <div class="alert alert-info py-2"><i class="fas fa-info-circle me-2"></i>Selecione pelo menos 3 perguntas para avaliar (1 a 5 estrelas).</div>
+
                 <div class="row">
                     @foreach($questions as $idx => $q)
                         @if($idx < 10)
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-6 mb-4">
                             <label class="form-label fw-semibold">{{ $q }}</label>
-                            <div class="d-flex align-items-center gap-2">
+                            <div class="d-flex align-items-center gap-2 rating-group" role="radiogroup" aria-label="{{ $q }}">
+                                @php $prefill = old('ratings.'.$idx) ?? ($existingRatings[$idx] ?? null); @endphp
                                 @for($i = 1; $i <= 5; $i++)
-                                    <label class="btn btn-sm btn-outline-secondary">
-                                        <input type="radio" name="ratings[{{ $idx }}]" value="{{ $i }}" class="visually-hidden" required>
-                                        <i class="fas fa-star{{ $i <= 3 ? '' : ' text-warning' }}"></i> {{ $i }}
+                                    <input type="radio" class="btn-check" name="ratings[{{ $idx }}]" id="q{{ $idx }}-r{{ $i }}" value="{{ $i }}" autocomplete="off" {{ ($prefill == $i) ? 'checked' : '' }}>
+                                    <label class="btn btn-sm btn-outline-secondary" for="q{{ $idx }}-r{{ $i }}" aria-label="Nota {{ $i }}">
+                                        <i class="fas fa-star"></i>
+                                        <span class="ms-1">{{ $i }}</span>
                                     </label>
                                 @endfor
                             </div>
@@ -79,13 +96,16 @@
 
                 <div class="mb-3">
                     <label class="form-label">Comentário (opcional)</label>
-                    <textarea name="comments" class="form-control" rows="3" placeholder="Escreva um breve feedback"></textarea>
+                    <textarea name="comments" class="form-control" rows="3" placeholder="Escreva um breve feedback">{{ old('comments', $existingComment ?? null) }}</textarea>
                     @error('comments')<div class="text-danger small">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="d-flex justify-content-between">
                     <a href="{{ route('vagas.status', $application->job_vacancy_id) }}" class="btn-trampix-secondary"><i class="fas fa-arrow-left me-2"></i>Voltar</a>
-                    <button type="submit" class="btn-trampix-primary btn-glow"><i class="fas fa-paper-plane me-2"></i>Enviar avaliação</button>
+                    <div class="d-flex gap-2">
+                        <a href="{{ route('applications.evaluate.show', $application) }}" class="btn btn-outline-secondary"><i class="fas fa-list me-2"></i>Avaliação Completa</a>
+                        <button type="submit" class="btn-trampix-primary btn-glow"><i class="fas fa-paper-plane me-2"></i>Enviar avaliação</button>
+                    </div>
                 </div>
             </form>
         </div>

@@ -164,16 +164,36 @@
                                     </div>
                                 @endif
                             </div>
-                            <div class="d-flex gap-2">
+                            <div class="d-flex align-items-center gap-2">
                                 @if($isCompanyOwner)
-                                    <a href="{{ route('applications.evaluate.create', $app) }}" class="btn btn-sm btn-company-primary">
-                                        <i class="fas fa-star me-1"></i>Avaliar {{ $app->freelancer->user->name }}
-                                    </a>
+                                    @if(empty($app->evaluated_by_company_at))
+                                        <a href="{{ route('applications.evaluate.create', $app) }}" class="btn btn-sm btn-company-primary btn-glow">
+                                            <i class="fas fa-star me-1"></i>Avaliar {{ $app->freelancer->user->name }}
+                                        </a>
+                                        <span class="badge bg-warning text-dark">Avaliação pendente</span>
+                                    @else
+                                        <span class="badge bg-success">Avaliação enviada</span>
+                                        @php $myAvg = $app->company_rating_avg ?? $app->company_rating; @endphp
+                                        @if(!empty($myAvg))
+                                            <span class="badge bg-primary">{{ number_format((float)$myAvg, 1) }}/5</span>
+                                            <a href="{{ route('applications.evaluate.show', $app) }}" class="btn btn-sm btn-outline-secondary">Avaliação Completa</a>
+                                        @endif
+                                    @endif
                                 @else
                                     @php $companyDisplayBtn = $vaga->company->display_name ?? $vaga->company->name ?? $vaga->company->user->name; @endphp
-                                    <a href="{{ route('applications.evaluate.create', $app) }}" class="btn btn-sm btn-company-primary">
-                                        <i class="fas fa-star me-1"></i>Avaliar {{ $companyDisplayBtn }}
-                                    </a>
+                                    @if(empty($app->evaluated_by_freelancer_at))
+                                        <a href="{{ route('applications.evaluate.create', $app) }}" class="btn btn-sm btn-company-primary btn-glow">
+                                            <i class="fas fa-star me-1"></i>Avaliar {{ $companyDisplayBtn }}
+                                        </a>
+                                        <span class="badge bg-warning text-dark">Avaliação pendente</span>
+                                    @else
+                                        <span class="badge bg-success">Avaliação enviada</span>
+                                        @php $myAvgF = $app->freelancer_rating_avg ?? $app->freelancer_rating; @endphp
+                                        @if(!empty($myAvgF))
+                                            <span class="badge bg-warning text-dark">{{ number_format((float)$myAvgF, 1) }}/5</span>
+                                            <a href="{{ route('applications.evaluate.show', $app) }}" class="btn btn-sm btn-outline-secondary">Avaliação Completa</a>
+                                        @endif
+                                    @endif
                                 @endif
                             </div>
                         </div>

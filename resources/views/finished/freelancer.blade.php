@@ -44,8 +44,9 @@
                             </div>
                             <div class="mb-2">
                                 <strong>Nota que você recebeu da empresa:</strong>
-                                @if($application->company_rating)
-                                    <span class="badge bg-primary">{{ $application->company_rating }}/5</span>
+                                @php $fromCompanyAvg = $application->company_rating_avg ?? $application->company_rating; @endphp
+                                @if($fromCompanyAvg)
+                                    <span class="badge bg-primary">{{ number_format((float)$fromCompanyAvg, 1) }}/5</span>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
@@ -60,6 +61,12 @@
                         <div class="card-footer bg-transparent d-flex gap-2">
                             <a href="{{ route('vagas.show', $application->jobVacancy->id) }}" class="btn btn-sm btn-outline-primary">Ver detalhes da vaga</a>
                             <a href="{{ route('companies.show', $application->jobVacancy->company->id) }}" class="btn btn-sm btn-outline-secondary">Ver perfil da empresa</a>
+                            @if($application->company_rating || $application->company_rating_avg)
+                                <a href="{{ route('applications.evaluate.show', $application) }}" class="btn btn-sm btn-outline-secondary">Avaliação Completa</a>
+                            @endif
+                            @if($application->status === 'ended' && !$application->freelancer_rating && !$application->freelancer_rating_avg)
+                                <a href="{{ route('applications.evaluate.create', $application) }}" class="btn btn-sm btn-primary">Avaliar empresa</a>
+                            @endif
                         </div>
                     </div>
                 </div>
