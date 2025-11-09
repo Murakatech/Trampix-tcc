@@ -59,3 +59,29 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Deploy online via GitHub (usando Render)
+
+Este projeto é Laravel (PHP), então o GitHub Pages sozinho não executa o app. A forma mais simples de deixá-lo online “através do GitHub” é conectar o repositório a um provedor que roda PHP (ex.: Render) e usar auto-deploy a cada push.
+
+### Passo a passo
+
+1. Confirme que seu código está no GitHub (este repo já aponta para `origin`).
+2. Crie uma conta no Render (https://render.com/) e conecte seu GitHub.
+3. Na tela “New +” escolha “Blueprint” e selecione este repositório. O arquivo `render.yaml` já está configurado.
+4. Defina variáveis de ambiente no Render:
+   - `APP_ENV=production`, `APP_DEBUG=false`
+   - `APP_KEY` (execute localmente `php artisan key:generate --show` e cole o valor)
+   - `APP_URL` (URL pública que o Render fornecer)
+   - Banco de dados: `DB_CONNECTION=mysql`, `DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (crie um MySQL no Render ou use um fornecedor externo)
+5. Render criará o serviço web e fará deploy automático a cada push na `main`. Após o deploy, o comando `php artisan migrate --force` será executado.
+
+### Observações
+
+- O `Dockerfile` usa `php artisan serve` (adequado para demo). Para produção, recomenda-se usar Nginx/Apache com PHP-FPM.
+- Se você precisa de PostgreSQL em vez de MySQL, ajuste `DB_CONNECTION=pgsql` e crie um banco no Render.
+- Uploads são salvos em `storage/app/public`; crie um volume persistente se necessário ou um bucket (S3) e configure `FILESYSTEM_DISK=s3`.
+
+### Alternativas
+
+- Railway, Fly.io, VPS + Docker, ou Laravel Vapor (AWS).
+- Se quiser “link público” rápido, GitHub Codespaces também gera uma URL temporária; mas não é produção.
