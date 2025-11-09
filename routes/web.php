@@ -6,6 +6,8 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\FreelancerController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\CompanyVacancyController;
+use App\Http\Controllers\JobVacancyStatusController;
+use App\Http\Controllers\EvaluationController;
 use App\Http\Controllers\ProfilePhotoController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\FreelancerDashboardController;
@@ -162,6 +164,14 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
+    // Página de Status da Vaga (empresa dona ou freelancer aceito)
+    Route::get('/vagas/{vaga}/status', [JobVacancyStatusController::class, 'show'])
+        ->name('vagas.status');
+    // Avaliações pós-contrato (empresa ou freelancer)
+    Route::get('/applications/{application}/evaluate', [EvaluationController::class, 'create'])
+        ->name('applications.evaluate.create');
+    Route::post('/applications/{application}/evaluate', [EvaluationController::class, 'store'])
+        ->name('applications.evaluate.store');
     Route::post('/job-vacancies/{id}/apply', [ApplicationController::class, 'store'])
         ->name('applications.store')
         ->middleware('can:isFreelancer');
@@ -171,6 +181,11 @@ Route::middleware(['auth'])->group(function () {
     
     Route::delete('/applications/{application}', [ApplicationController::class, 'cancel'])
         ->name('applications.cancel')
+        ->middleware('can:isFreelancer');
+
+    // Freelancer se demite de uma parceria ativa
+    Route::patch('/applications/{application}/resign', [ApplicationController::class, 'resign'])
+        ->name('applications.resign')
         ->middleware('can:isFreelancer');
 });
 

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\JobVacancy;
-use App\Models\Company;
 use App\Models\Category;
+use App\Models\Company;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,6 +16,13 @@ class JobVacancyController extends Controller
     // Lista pública de vagas
     public function index(Request $request)
     {
+        // Garantir papel ativo correto na tela de busca de vagas
+        // Se o usuário autenticado possuir perfil de Freelancer, definimos o papel ativo
+        // para "freelancer" nesta tela, para que a sidebar reflita as opções corretas.
+        if (Auth::check() && optional(Auth::user())->isFreelancer()) {
+            session(['active_role' => 'freelancer']);
+        }
+
         // Cache key baseado nos parâmetros de filtro
         $cacheKey = 'vagas_index_' . md5(serialize($request->all()));
         
@@ -119,34 +126,30 @@ class JobVacancyController extends Controller
             });
         }
 
-        return view('vagas.index', array_merge(
-            compact('vagas'), 
-            $filterData
-        ));
+        return view('vagas.index', array_merge([
+            'vagas' => $vagas,
+            'selectedCategories'   => (array) $request->get('categories', $request->filled('category') ? [$request->get('category')] : []),
+            'selectedContractType' => $request->get('contract_type'),
+            'selectedLocationType' => $request->get('location_type'),
+            'search'               => $request->get('search'),
+        ], $filterData));
     }
 
-    // Form de criação (somente logado + company)
+    // Formulário de criação de vaga (empresa/admin)
     public function create()
     {
-        // Permitir acesso para Empresa OU Admin
-        if (! (Gate::allows('isCompany') || Gate::allows('isAdmin'))) {
-            abort(403);
-        }
+        if (! Gate::allows('isCompany') && ! Gate::allows('isAdmin')) abort(403);
+
         $categories = Category::orderBy('name')->get();
-        // Para admin, disponibilizar lista de empresas para seleção
-        $companies = Gate::allows('isAdmin')
-            ? Company::orderBy('name')->select('id', 'name')->get()
-            : collect();
-        return view('vagas.create', compact('categories', 'companies'));
+        $companies  = Gate::allows('isAdmin') ? Company::orderBy('name')->select('id','name')->get() : null;
+
+        return view('vagas.create', compact('categories','companies'));
     }
 
-    // Salva vaga
+    // Salva nova vaga
     public function store(Request $req)
     {
-        // Permitir criação por Empresa OU Admin
-        if (! (Gate::allows('isCompany') || Gate::allows('isAdmin'))) {
-            abort(403);
-        }
+        if (! Gate::allows('isCompany') && ! Gate::allows('isAdmin')) abort(403);
 
         $data = $req->validate([
             'title'         => 'required|string|max:255',
@@ -156,7 +159,6 @@ class JobVacancyController extends Controller
             'contract_type' => 'nullable|in:PJ,CLT,Estágio,Freelance',
             'location_type' => 'nullable|in:Remoto,Híbrido,Presencial',
             'salary_range'  => 'nullable|string|max:100',
-            // Para admin, permitir company_id opcional e válido
             'company_id'    => ['nullable','exists:companies,id'],
         ]);
 
@@ -178,7 +180,14 @@ class JobVacancyController extends Controller
             $data['category_id'] = Category::where('name', $legacyName)->value('id');
         }
 
+        // Status padrão ativo
+        $data['status'] = $data['status'] ?? 'active';
+
         $vaga = JobVacancy::create($data);
+
+        // Invalidar caches relacionados
+        Cache::forget('vagas_filter_data');
+        Cache::flush();
 
         return redirect()->route('vagas.show', $vaga)->with('ok', 'Vaga criada.');
     }

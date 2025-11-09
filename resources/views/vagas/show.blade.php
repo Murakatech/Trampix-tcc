@@ -110,60 +110,41 @@ document.addEventListener('DOMContentLoaded', function() {
     const applicationForm = document.querySelector('form[action*="applications"]');
     if (applicationForm) {
         applicationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
             const submitButton = this.querySelector('button[type="submit"]');
             const coverLetter = this.querySelector('textarea[name="cover_letter"]');
-            
-            try {
-                // Validação básica
-                if (coverLetter && coverLetter.value.trim().length > 1000) {
-                    e.preventDefault();
-                    showNotification('A carta de apresentação deve ter no máximo 1000 caracteres.', 'warning');
-                    coverLetter.focus();
-                    return;
-                }
 
-                // Confirmação antes de enviar usando modal personalizado
-                e.preventDefault();
-                
-                    showActionModal('applicationConfirmationModal', {
-                    actionType: 'candidatura',
-                    jobTitle: '{{ $vaga->title }}',
-    companyName: '{{ $vaga->company->name ?? "Empresa" }}',
-    message: `Você está prestes a se candidatar à vaga "${'{{ $vaga->title }}'}" na empresa "${'{{ $vaga->company->name ?? "Empresa" }}'}". Deseja continuar?`,
-                    onConfirm: () => {
-                        // Adicionar loading ao botão
-                        if (submitButton) {
-                            const originalContent = submitButton.innerHTML;
-                            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
-                            submitButton.disabled = true;
-                        }
-                        
-                        // Submeter o formulário
-                        applicationForm.submit();
-                    },
-                    onCancel: () => {
-                        showNotification('Candidatura cancelada.', 'info');
-                    }
-                });
-                    setTimeout(() => {
-                        submitButton.innerHTML = originalContent;
-                        submitButton.disabled = false;
-                    }, 10000);
-                }
-
-                showNotification('Enviando candidatura...', 'info');
-
-            } catch (error) {
-                e.preventDefault();
-                console.error('Erro ao processar candidatura:', error);
-                showNotification('Erro ao processar candidatura. Tente novamente.', 'error');
-                
-                // Restaurar botão
-                if (submitButton) {
-                    submitButton.innerHTML = submitButton.dataset.originalContent || 'Candidatar-se';
-                    submitButton.disabled = false;
-                }
+            // Validação básica
+            if (coverLetter && coverLetter.value.trim().length > 1000) {
+                showNotification('A carta de apresentação deve ter no máximo 1000 caracteres.', 'warning');
+                coverLetter.focus();
+                return;
             }
+
+            const jobTitle = @json($vaga->title);
+            const companyName = @json($vaga->company->name ?? 'Empresa');
+
+            showActionModal('applicationConfirmationModal', {
+                actionType: 'candidatura',
+                jobTitle,
+                companyName,
+                message: `Você está prestes a se candidatar à vaga "${jobTitle}" na empresa "${companyName}". Deseja continuar?`,
+                onConfirm: () => {
+                    if (submitButton) {
+                        submitButton.dataset.originalContent = submitButton.innerHTML;
+                        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Enviando...';
+                        submitButton.disabled = true;
+                    }
+                    applicationForm.submit();
+                },
+                onCancel: () => {
+                    showNotification('Candidatura cancelada.', 'info');
+                    if (submitButton) {
+                        submitButton.innerHTML = submitButton.dataset.originalContent || submitButton.innerHTML;
+                        submitButton.disabled = false;
+                    }
+                }
+            });
         });
     }
 

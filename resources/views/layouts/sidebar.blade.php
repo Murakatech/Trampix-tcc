@@ -53,9 +53,9 @@
             <x-sidebar-item href="{{ route('vagas.index') }}" :active="request()->routeIs('vagas.index')" icon="fa-solid fa-magnifying-glass">Buscar Vagas</x-sidebar-item>
             <x-sidebar-item href="{{ route('applications.index') }}" :active="request()->routeIs('applications.index')">
                 <x-slot name="icon">
-                    <img src="{{ asset('images/candidatura_icon.png') }}" alt="Candidaturas" class="w-4 h-4 object-contain">
+                    <i class="fa-solid fa-file-lines w-4 h-4"></i>
                 </x-slot>
-                Minhas Aplicações
+                Minhas Candidaturas
             </x-sidebar-item>
         @elseif($role === 'company')
             @php

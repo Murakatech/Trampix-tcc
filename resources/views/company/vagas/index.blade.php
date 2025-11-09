@@ -1,16 +1,22 @@
 @extends('layouts.dashboard')
 
 @section('header')
-<div class="d-flex justify-content-between align-items-center">
-    <h1 class="trampix-h1">Minhas Vagas</h1>
-    <a href="{{ route('vagas.create') }}" class="btn-trampix-company btn-glow">
-        <i class="fas fa-plus me-2"></i>Nova Vaga
-    </a>
+@php
+    $activeRole = session('active_role') ?? (auth()->user()->isCompany() ? 'company' : (auth()->user()->isFreelancer() ? 'freelancer' : null));
+@endphp
+<div class="d-flex justify-content-center align-items-center">
+    <h1 class="font-medium text-gray-900 text-center" style="font-size: 25px; color: #000;">Minhas Vagas</h1>
 </div>
 @endsection
 
 @section('content')
 <div class="container mt-4">
+    <!-- Ação: Nova Vaga fora da navbar -->
+    <div class="mb-3">
+        <a href="{{ route('vagas.create') }}" class="btn-trampix-company btn-glow d-block w-100 text-center py-3">
+            <i class="fas fa-plus me-2"></i>Nova Vaga
+        </a>
+    </div>
     {{-- Alerts de sessão --}}
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -66,61 +72,62 @@
         </div>
     </div>
 
-    {{-- Filtros --}}
-    <div class="trampix-card mb-4">
-        <div class="card-body">
-            <form method="GET" action="{{ route('company.vagas.index') }}" class="row g-3">
-                <div class="col-md-3">
-                    <label for="category" class="form-label">Categoria</label>
-                    <select name="category" id="category" class="trampix-input">
-                        <option value="">Todas as categorias</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
-                                {{ $category }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="status" class="form-label">Status</label>
-                    <select name="status" id="status" class="trampix-input">
-                        <option value="">Todos os status</option>
-                        <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Ativa</option>
-                        <option value="closed" {{ request('status') == 'closed' ? 'selected' : '' }}>Encerrada</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="contract_type" class="form-label">Tipo de Contrato</label>
-                    <select name="contract_type" id="contract_type" class="trampix-input">
-                        <option value="">Todos os tipos</option>
-                        <option value="CLT" {{ request('contract_type') == 'CLT' ? 'selected' : '' }}>CLT</option>
-                        <option value="PJ" {{ request('contract_type') == 'PJ' ? 'selected' : '' }}>PJ</option>
-                        <option value="Freelance" {{ request('contract_type') == 'Freelance' ? 'selected' : '' }}>Freelance</option>
-                        <option value="Estágio" {{ request('contract_type') == 'Estágio' ? 'selected' : '' }}>Estágio</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label for="location_type" class="form-label">Modalidade</label>
-                    <select name="location_type" id="location_type" class="trampix-input">
-                        <option value="">Todas as modalidades</option>
-                        <option value="Presencial" {{ request('location_type') == 'Presencial' ? 'selected' : '' }}>Presencial</option>
-                        <option value="Remoto" {{ request('location_type') == 'Remoto' ? 'selected' : '' }}>Remoto</option>
-                        <option value="Híbrido" {{ request('location_type') == 'Híbrido' ? 'selected' : '' }}>Híbrido</option>
-                    </select>
-                </div>
-                <div class="col-12">
-                    <button type="submit" class="btn-trampix-primary me-2">
-                        <i class="fas fa-filter me-1"></i>Filtrar
-                    </button>
-                    <a href="{{ route('company.vagas.index') }}" class="btn-trampix-secondary">
-                        <i class="fas fa-times me-1"></i>Limpar Filtros
-                    </a>
-                </div>
-            </form>
+    {{-- Filtros (copiados da tela pública de Vagas) --}}
+    @php
+        $filtersApplied = request()->hasAny(['category', 'contract_type', 'location_type', 'search']);
+        $locationsList = ['Remoto','Híbrido','Presencial'];
+        $categoriesList = $categories ?? [];
+    @endphp
+    @push('styles')
+    <style>
+        .filter-section { background:#fff; border:1px solid #e5e7eb; border-radius:8px; transition: border-color .2s ease, background-color .2s ease; }
+        .filter-section:hover { box-shadow:none; border-color:#d1d5db; }
+    </style>
+    @endpush
+    <div class="filter-section p-4 mb-4" role="search" aria-label="Filtros de busca de vagas da empresa">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 class="trampix-h2 text-gray-900 d-flex align-items-center" id="filters-heading">
+                <i class="fas fa-filter me-2 {{ $activeRole === 'company' ? 'text-green-600' : 'text-purple-600' }}"></i>Filtros de Busca
+            </h2>
+            <button id="toggleFilters"
+                    class="btn-trampix-secondary text-sm"
+                    aria-expanded="{{ $filtersApplied ? 'true' : 'false' }}"
+                    aria-controls="filtersContent"
+                    aria-describedby="filters-heading">
+                <i class="fas {{ $filtersApplied ? 'fa-chevron-up' : 'fa-chevron-down' }} me-2" id="filterIcon"></i>
+                <span>{{ $filtersApplied ? 'Ocultar' : 'Mostrar' }}</span>
+            </button>
+        </div>
+
+        <div id="filtersContent" class="{{ $filtersApplied ? '' : 'hidden' }}">
+            <x-filter-panel
+                class="p-0 w-100"
+                :showHeader="false"
+                noContainer="true"
+                :action="route('company.vagas.index')"
+                method="GET"
+                applyLabel="Aplicar Filtros"
+                :resetHref="route('company.vagas.index')"
+                :categories="$categoriesList"
+                :locationTypes="$locationsList"
+                :selectedCategory="request('category')"
+                :selectedLocationType="request('location_type')"
+                searchName="search"
+                :searchValue="request('search')"
+            />
+        </div>
+    </div>
+
+    {{-- Loading indicator para filtros --}}
+    <div id="loadingIndicator" class="hidden">
+        <div class="d-flex align-items-center justify-content-center py-3">
+            <i class="fas fa-spinner fa-spin me-2 text-purple-600"></i>
+            <span class="text-muted">Carregando vagas...</span>
         </div>
     </div>
 
     {{-- Lista de Vagas --}}
+    <div id="resultsContainer">
     @if ($vagas->isEmpty())
         <div class="trampix-card text-center py-5">
             <div class="card-body">
@@ -168,11 +175,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if($vaga->category)
-                                            <span class="badge bg-secondary">{{ $vaga->category }}</span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
+                                        <span class="badge bg-secondary">{{ $vaga->category?->name ?? $vaga->category ?? 'Sem categoria' }}</span>
                                     </td>
                                     <td>
                                         @if($vaga->contract_type)
@@ -213,8 +216,9 @@
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             
+                                            @php $activeRole = session('active_role') ?? (auth()->user()->isCompany() ? 'company' : (auth()->user()->isFreelancer() ? 'freelancer' : null)); @endphp
                                             <a href="{{ route('vagas.edit', $vaga->id) }}" 
-                                               class="btn-trampix-primary btn-glow px-3 py-2 text-sm"
+                                               class="{{ $activeRole === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }} btn-glow px-3 py-2 text-sm"
                                                title="Editar vaga">
                                                 <i class="fas fa-edit"></i>
                                             </a>
@@ -259,6 +263,7 @@
             </div>
         </div>
     @endif
+    </div>
 </div>
 
 {{-- Componente de Confirmação --}}
@@ -268,6 +273,111 @@
 
 @push('scripts')
 <script>
+    // Toggle suave dos filtros
+    (function(){
+        const filterToggle = document.getElementById('toggleFilters');
+        const filterSection = document.getElementById('filtersContent');
+        if (!filterToggle || !filterSection) return;
+        filterToggle.addEventListener('click', function(){
+            const isHidden = filterSection.classList.contains('hidden');
+            const icon = this.querySelector('i');
+            const toggleText = this.querySelector('span');
+            if (isHidden){
+                filterSection.classList.remove('hidden');
+                filterSection.style.maxHeight = '0';
+                filterSection.style.overflow = 'hidden';
+                requestAnimationFrame(()=>{
+                    filterSection.style.transition = 'max-height .3s ease-out';
+                    filterSection.style.maxHeight = filterSection.scrollHeight + 'px';
+                });
+                this.setAttribute('aria-expanded', 'true');
+                if (icon){ icon.classList.remove('fa-chevron-down'); icon.classList.add('fa-chevron-up'); }
+                if (toggleText){ toggleText.textContent = 'Ocultar'; }
+            } else {
+                filterSection.style.maxHeight = '0';
+                setTimeout(()=>{
+                    filterSection.classList.add('hidden');
+                    filterSection.style.maxHeight = '';
+                    filterSection.style.overflow = '';
+                    filterSection.style.transition = '';
+                }, 300);
+                this.setAttribute('aria-expanded', 'false');
+                if (icon){ icon.classList.remove('fa-chevron-up'); icon.classList.add('fa-chevron-down'); }
+                if (toggleText){ toggleText.textContent = 'Mostrar'; }
+            }
+        });
+    })();
+
+    // Busca suave (AJAX) baseada em data-filter-form
+    (function(){
+        const filtersContent = document.getElementById('filtersContent');
+        if (!filtersContent) return;
+        const form = filtersContent.querySelector('form[data-filter-form="true"]');
+        if (!form) return;
+        const resultsSel = form.getAttribute('data-results-container') || '#resultsContainer';
+        const loadingSel = form.getAttribute('data-loading') || '#loadingIndicator';
+        const resultsEl = document.querySelector(resultsSel);
+        const loadingEl = document.querySelector(loadingSel);
+        let currentFetchController = null;
+        let latestRequestId = 0;
+        let submitTimer = null;
+        const SUBMIT_DEBOUNCE_MS = 250;
+
+        function showLoading(state){ if (!loadingEl) return; loadingEl.classList[state ? 'remove' : 'add']('hidden'); }
+
+        async function fetchResults(url){
+            const myRequestId = ++latestRequestId;
+            showLoading(true);
+            try {
+                if (currentFetchController) currentFetchController.abort();
+                currentFetchController = new AbortController();
+                const res = await fetch(url, { headers: { 'X-Requested-With':'XMLHttpRequest' }, signal: currentFetchController.signal });
+                if (!res.ok) return;
+                const html = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newResults = doc.querySelector(resultsSel);
+                if (myRequestId !== latestRequestId) return;
+                if (newResults && resultsEl) resultsEl.innerHTML = newResults.innerHTML;
+            } catch(e){ if (e && e.name === 'AbortError') return; }
+            finally { showLoading(false); currentFetchController = null; }
+        }
+
+        function scheduleSubmit(){
+            if (submitTimer) clearTimeout(submitTimer);
+            submitTimer = setTimeout(()=>{
+                const params = new URLSearchParams(new FormData(form));
+                const url = `${form.action}?${params.toString()}`;
+                window.history.replaceState({}, '', url);
+                fetchResults(url);
+            }, SUBMIT_DEBOUNCE_MS);
+        }
+
+        form.addEventListener('submit', function(ev){ ev.preventDefault(); scheduleSubmit(); });
+        form.querySelectorAll('select').forEach(sel=> sel.addEventListener('change', scheduleSubmit));
+
+        const searchInput = form.querySelector('[data-search-input="true"]');
+        const suggestTargetSel = searchInput ? searchInput.getAttribute('data-suggest-target') : null;
+        const suggestBox = suggestTargetSel ? document.querySelector(suggestTargetSel) : null;
+        let tId;
+        function debounce(fn, ms){ return function(){ clearTimeout(tId); const args = arguments; tId = setTimeout(()=>fn.apply(null, args), ms); } }
+        async function loadSuggestions(q){
+            if (!suggestBox) return;
+            if (!q || q.length < 2){ suggestBox.classList.add('hidden'); suggestBox.innerHTML=''; return; }
+            try{
+                const res = await fetch(`/api/vagas/suggest?search=${encodeURIComponent(q)}`);
+                const ct = res.headers.get('content-type') || '';
+                if (!res.ok || !ct.includes('application/json')) throw new Error(`Resposta inválida (${res.status})`);
+                const data = await res.json();
+                const items = (data.suggestions || []).slice(0,8);
+                if (!items.length){ suggestBox.classList.add('hidden'); suggestBox.innerHTML=''; return; }
+                suggestBox.innerHTML = items.map(s => `<button type="button" class="block w-100 text-start px-3 py-2 hover:bg-purple-50">${s}</button>`).join('');
+                suggestBox.classList.remove('hidden');
+                suggestBox.querySelectorAll('button').forEach(btn => btn.addEventListener('click', ()=>{ if (searchInput) searchInput.value = btn.textContent; suggestBox.classList.add('hidden'); scheduleSubmit(); }));
+            }catch(e){ suggestBox.classList.add('hidden'); suggestBox.innerHTML=''; }
+        }
+        if (searchInput && suggestBox){ const debounced = debounce(loadSuggestions, 250); searchInput.addEventListener('input', (e)=> debounced(e.target.value)); document.addEventListener('click', (e)=>{ if (!suggestBox.contains(e.target) && e.target !== searchInput){ suggestBox.classList.add('hidden'); } }); }
+    })();
     // Função para excluir vaga
     function showDeleteConfirmation(vagaId, jobTitle, companyName) {
         showActionModal('deleteConfirmationModal', {

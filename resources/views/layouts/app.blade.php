@@ -11,7 +11,8 @@
         'id' => auth()->id(),
         'name' => auth()->user()->name,
         'email' => auth()->user()->email,
-        'role' => auth()->user()->isAdmin() ? 'admin' : (auth()->user()->isCompany() ? 'company' : 'freelancer'),
+        // Priorizar papel ativo definido na sessão; se não houver, usar fallback baseado nos perfis do usuário
+        'role' => session('active_role') ?? (auth()->user()->isAdmin() ? 'admin' : (auth()->user()->isCompany() ? 'company' : 'freelancer')),
         'permissions' => [], // Expandir conforme necessário
         'profile_photo' => auth()->user()->profile_photo ? asset('storage/' . auth()->user()->profile_photo) : null
     ]) }}">

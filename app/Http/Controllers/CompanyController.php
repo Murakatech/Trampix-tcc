@@ -96,7 +96,8 @@ class CompanyController extends Controller
         // Definir empresa como perfil ativo
         session(['active_role' => 'company']);
 
-        return redirect()->route('dashboard')
+        // Após criar, enviar usuário para a tela de seleção/criação de perfil
+        return redirect()->route('profile.selection')
             ->with('success', 'Perfil de empresa criado com sucesso!');
     }
 

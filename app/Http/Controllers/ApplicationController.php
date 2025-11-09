@@ -111,7 +111,7 @@ class ApplicationController extends Controller
     // Atualizar status da candidatura (empresa)
     public function updateStatus(Request $request, \App\Models\Application $application)
     {
-        $request->validate(['status' => 'required|in:pending,accepted,rejected']);
+        $request->validate(['status' => 'required|in:pending,accepted,rejected,ended']);
 
         $companyId = Auth::user()?->company?->id;
         if (!$companyId || $application->jobVacancy->company_id !== $companyId) {
@@ -120,10 +120,25 @@ class ApplicationController extends Controller
 
         $oldStatus = $application->status;
         $newStatus = $request->status;
+        // Mapear rótulos em PT-BR para exibição consistente em mensagens
+        $statusLabels = [
+            'pending' => 'Pendente',
+            'accepted' => 'Aceito',
+            'rejected' => 'Rejeitado',
+            'ended' => 'Finalizado',
+        ];
         
         $application->update(['status' => $newStatus]);
 
-        return back()->with('success', "Status alterado de '{$oldStatus}' para '{$newStatus}' com sucesso!");
+        // Mensagem customizada para finalização de contrato
+        $finalize = $request->boolean('finalize');
+        if ($finalize && $oldStatus === 'accepted' && $newStatus === 'ended') {
+            return back()->with('success', 'Parceria finalizada com sucesso!');
+        }
+
+        $oldLabel = $statusLabels[$oldStatus] ?? ucfirst($oldStatus);
+        $newLabel = $statusLabels[$newStatus] ?? ucfirst($newStatus);
+        return back()->with('success', "Status alterado de '{$oldLabel}' para '{$newLabel}' com sucesso!");
     }
 
     public function cancel(Application $application)
@@ -143,6 +158,24 @@ class ApplicationController extends Controller
         $application->delete();
 
         return back()->with('success', "Candidatura para '{$jobTitle}' cancelada com sucesso!");
+    }
+
+    /**
+     * Freela se demite (encerra parceria) mudando status de 'accepted' para 'rejected'.
+     */
+    public function resign(\App\Models\Application $application)
+    {
+        $user = Auth::user();
+        if (!$user?->freelancer || $application->freelancer_id !== $user->freelancer->id) {
+            return back()->with('error', 'Você não tem permissão para encerrar esta parceria.');
+        }
+
+        if ($application->status !== 'accepted') {
+            return back()->with('error', 'A parceria não está ativa.');
+        }
+
+        $application->update(['status' => 'ended']);
+        return back()->with('success', 'Parceria finalizada com sucesso!');
     }
 
     // Área administrativa - todas as candidaturas

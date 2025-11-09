@@ -130,6 +130,11 @@
                                                     <i class="fas fa-times mr-1"></i>Rejeitada
                                                 </span>
                                                 @break
+                                            @case('ended')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 text-gray-800">
+                                                    <i class="fas fa-flag-checkered mr-1"></i>Finalizada
+                                                </span>
+                                                @break
                                         @endswitch
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -160,6 +165,54 @@
                                                             class="text-red-600 hover:text-red-900 transition-colors duration-200" 
                                                             title="Rejeitar candidatura">
                                                         <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            @elseif($application->status === 'rejected')
+                                                {{-- Permitir reverter rejeição: voltar para pendente ou aceitar diretamente --}}
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status" value="pending">
+                                                    <button type="submit" 
+                                                            class="text-yellow-600 hover:text-yellow-900 transition-colors duration-200" 
+                                                            title="Mover para Pendente">
+                                                        <i class="fas fa-undo"></i>
+                                                    </button>
+                                                </form>
+
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status" value="accepted">
+                                                    <button type="submit" 
+                                                            class="text-green-600 hover:text-green-900 transition-colors duration-200" 
+                                                            title="Aceitar novamente">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                            @elseif($application->status === 'accepted')
+                                                {{-- Finalizar contrato a partir da tela de gerenciamento --}}
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status" value="ended">
+                                                    <input type="hidden" name="finalize" value="1">
+                                                    <button type="submit" 
+                                                            class="text-gray-700 hover:text-gray-900 transition-colors duration-200" 
+                                                            title="Finalizar contrato">
+                                                        <i class="fas fa-flag-checkered"></i>
+                                                    </button>
+                                                </form>
+                                            @elseif($application->status === 'ended')
+                                                {{-- Reabrir parceria (aceitar novamente) --}}
+                                                <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="inline">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status" value="accepted">
+                                                    <button type="submit" 
+                                                            class="text-green-600 hover:text-green-900 transition-colors duration-200" 
+                                                            title="Reabrir parceria">
+                                                        <i class="fas fa-redo"></i>
                                                     </button>
                                                 </form>
                                             @endif

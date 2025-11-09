@@ -103,10 +103,17 @@
                                     </td>
                                     <td>
                                         <div class="d-flex gap-2">
-                                            <a href="{{ route('vagas.show', $application->jobVacancy) }}" 
-                                               class="btn btn-sm btn-outline-primary">
-                                                Ver Vaga
-                                            </a>
+                                            @if($application->status === 'accepted')
+                                                <a href="{{ route('vagas.status', $application->jobVacancy) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    Ver Vaga
+                                                </a>
+                                            @else
+                                                <a href="{{ route('vagas.show', $application->jobVacancy) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    Ver Vaga
+                                                </a>
+                                            @endif
                                             
                                             @if($application->status === 'pending')
                                                 <form action="{{ route('applications.cancel', $application) }}" 

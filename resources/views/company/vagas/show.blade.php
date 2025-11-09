@@ -11,19 +11,7 @@
             </ol>
         </nav>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{{ route('vagas.edit', $vaga->id) }}" class="btn-trampix-primary">
-            <i class="fas fa-edit me-2"></i>Editar Vaga
-        </a>
-        <form action="{{ route('company.vagas.toggle-status', $vaga->id) }}" method="POST" class="d-inline">
-            @csrf
-            @method('PATCH')
-            <button type="submit" class="btn-trampix-{{ $vaga->status === 'active' ? 'warning' : 'success' }}">
-                    <i class="fas fa-{{ $vaga->status === 'active' ? 'pause' : 'play' }} me-2"></i>
-                    {{ $vaga->status === 'active' ? 'Encerrar Vaga' : 'Reativar Vaga' }}
-            </button>
-        </form>
-    </div>
+    <div class="d-flex gap-2"></div>
 </div>
 @endsection
 
@@ -149,10 +137,80 @@
                     </div>
                 </div>
             </div>
+
+            {{-- Ações essenciais --}}
+            <div class="trampix-card mb-4">
+                <div class="card-header">
+                    <h3 class="trampix-h3 mb-0">Ações</h3>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if($vagaStats['total_applications'] > 0)
+                            <a href="{{ route('applications.byVacancy', $vaga->id) }}" class="btn-trampix-secondary">
+                                <i class="fas fa-users me-2"></i>Gerenciar Candidaturas
+                            </a>
+                        @endif
+                        <form action="{{ route('vagas.destroy', $vaga->id) }}" method="POST" id="deleteForm">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" 
+                                    class="btn-trampix-danger w-100" 
+                                    onclick="showDeleteConfirmation('{{ $vaga->title }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')">
+                                <i class="fas fa-trash me-2"></i>Excluir Vaga
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        {{-- Estatísticas das Candidaturas --}}
+        {{-- Painel Direito (priorizar Parcerias Ativas) --}}
         <div class="col-lg-4">
+            {{-- Parcerias Ativas em destaque --}}
+            @php
+                $acceptedApplications = $vaga->applications->where('status', 'accepted');
+            @endphp
+            <div class="trampix-card mb-4 card-featured">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="trampix-h3 mb-0">Parcerias Ativas</h3>
+                    <span class="badge bg-success">{{ $acceptedApplications->count() }}
+                        {{ $acceptedApplications->count() === 1 ? 'ativo' : 'ativos' }}</span>
+                </div>
+                <div class="card-body">
+                    @if($acceptedApplications->isEmpty())
+                        <div class="text-center text-muted py-3">
+                            <i class="fas fa-handshake mb-2" style="font-size: 1.5rem;"></i>
+                            <div>Nenhuma parceria ativa ainda.</div>
+                        </div>
+                    @else
+                        <ul class="list-group list-group-flush">
+                            @foreach($acceptedApplications as $app)
+                                <li class="list-group-item d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle company me-2">
+                                            {{ substr($app->freelancer->user->name, 0, 1) }}
+                                        </div>
+                                        <div>
+                                            <div class="fw-medium">{{ $app->freelancer->user->name }}</div>
+                                            <small class="text-muted">{{ $app->freelancer->profession ?? 'Freelancer' }}</small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('freelancers.show', $app->freelancer) }}" class="btn btn-sm btn-company-outline-primary" target="_blank">
+                                            <i class="fas fa-user me-1"></i>Ver Perfil
+                                        </a>
+                                        <a href="{{ route('vagas.status', $vaga->id) }}" class="btn btn-company-primary btn-prominent btn-glow btn-pulse">
+                                            <i class="fas fa-info-circle me-1"></i>Status da Vaga
+                                        </a>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Estatísticas das Candidaturas --}}
             <div class="trampix-card mb-4">
                 <div class="card-header">
                     <h3 class="trampix-h3 mb-0">Estatísticas de Candidaturas</h3>
@@ -193,46 +251,6 @@
                 </div>
             </div>
 
-            {{-- Ações Rápidas --}}
-            <div class="trampix-card">
-                <div class="card-header">
-                    <h3 class="trampix-h3 mb-0">Ações Rápidas</h3>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{{ route('vagas.edit', $vaga->id) }}" class="btn-trampix-primary">
-                            <i class="fas fa-edit me-2"></i>Editar Vaga
-                        </a>
-                        
-                        @if($vagaStats['total_applications'] > 0)
-                            <a href="{{ route('applications.byVacancy', $vaga->id) }}" class="btn-trampix-secondary">
-                                <i class="fas fa-users me-2"></i>Gerenciar Candidaturas
-                            </a>
-                        @endif
-
-                        <form action="{{ route('company.vagas.toggle-status', $vaga->id) }}" method="POST">
-                            @csrf
-                            @method('PATCH')
-                            <button type="submit" class="btn-trampix-{{ $vaga->status === 'active' ? 'warning' : 'success' }} w-100">
-                    <i class="fas fa-{{ $vaga->status === 'active' ? 'pause' : 'play' }} me-2"></i>
-                    {{ $vaga->status === 'active' ? 'Encerrar Vaga' : 'Reativar Vaga' }}
-                            </button>
-                        </form>
-
-                        <hr>
-
-                        <form action="{{ route('vagas.destroy', $vaga->id) }}" method="POST" id="deleteForm">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button" 
-                                    class="btn-trampix-danger w-100" 
-                                    onclick="showDeleteConfirmation('{{ $vaga->title }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')">
-                                <i class="fas fa-trash me-2"></i>Excluir Vaga
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 

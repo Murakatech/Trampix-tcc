@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
+
+    <!-- Sidebar (apenas para usuários autenticados) -->
     @auth
-        <!-- Sidebar integrada -->
         <x-sidebar />
     @endauth
 
@@ -44,48 +44,44 @@
 
 @push('scripts')
 <script>
-    // Função para mostrar confirmação de candidatura
-    function showApplicationConfirmation(vagaId, jobTitle, companyName, redirectUrl) {
-        showActionModal('applicationConfirmationModal', {
-            actionType: 'candidatura',
-            jobTitle: jobTitle,
-            companyName: companyName,
-            message: `Você será redirecionado para a página da vaga "${jobTitle}". Lá você poderá enviar sua candidatura com uma mensagem personalizada. Deseja continuar?`,
-            onConfirm: () => {
-                // Redirecionar para a página de detalhes da vaga
-                showNotification('Redirecionando para a vaga...', 'info');
-                window.location.href = redirectUrl;
-            },
-            onCancel: () => {
-                showNotification('Candidatura cancelada.', 'info');
-            }
-        });
-    }
+function showApplicationConfirmation(vagaId, jobTitle, companyName, redirectUrl) {
+    showActionModal('applicationConfirmationModal', {
+        actionType: 'candidatura',
+        jobTitle,
+        companyName,
+        message: `Você será redirecionado para a página da vaga "${jobTitle}". Lá você poderá enviar sua candidatura com uma mensagem personalizada. Deseja continuar?`,
+        onConfirm: () => {
+            showNotification('Redirecionando para a vaga...', 'info');
+            window.location.href = redirectUrl;
+        },
+        onCancel: () => {
+            showNotification('Candidatura cancelada.', 'info');
+        }
+    });
+}
 
-    // Função para mostrar confirmação de exclusão
-    function showDeleteConfirmation(vagaId, jobTitle, companyName) {
-        showActionModal('deleteConfirmationModal', {
-            actionType: 'exclusao',
-            jobTitle: jobTitle,
-            companyName: companyName,
-            message: `⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir a vaga "${jobTitle}"?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.`,
-            onConfirm: () => {
-                const form = document.getElementById(`deleteForm-${vagaId}`);
-                showNotification('Excluindo vaga...', 'warning');
-                form.submit();
-            },
-            onCancel: () => {
-                showNotification('Exclusão cancelada.', 'info');
-            }
-        });
-    }
+function showDeleteConfirmation(vagaId, jobTitle, companyName) {
+    showActionModal('deleteConfirmationModal', {
+        actionType: 'exclusao',
+        jobTitle,
+        companyName,
+        message: `⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir a vaga "${jobTitle}"?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.`,
+        onConfirm: () => {
+            const form = document.getElementById(`deleteForm-${vagaId}`);
+            showNotification('Excluindo vaga...', 'warning');
+            form?.submit();
+        },
+        onCancel: () => {
+            showNotification('Exclusão cancelada.', 'info');
+        }
+    });
+}
 </script>
 @endpush
 
 @push('styles')
 <style>
     /* Animações para os cards */
-    .job-card {
         opacity: 0;
         transform: translateY(20px);
         animation: fadeInUp 0.6s ease-out forwards;
@@ -459,7 +455,6 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
     // Sistema de notificações
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
@@ -509,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Funcionalidade dos filtros
     const filterForm = document.getElementById('filterForm');
-    const filterToggle = document.getElementById('toggleFilters');
+    const filterToggle = document.getElementById('toggleFiltersBtn');
     const filterSection = document.getElementById('filtersContent');
     const loadingIndicator = document.getElementById('loadingIndicator');
 
@@ -763,10 +758,9 @@ document.addEventListener('DOMContentLoaded', function() {
             resizeTimeout = setTimeout(handleResize, 150);
         });
     @endauth
-});
 </script>
 @endpush
-
+ 
 <div class="space-y-6">
     {{-- Alerts de sessão --}}
     @if (session('ok'))
@@ -777,28 +771,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     {{-- Sistema de Filtros --}}
     @php
-        $filtersApplied = request()->hasAny(['categories', 'contract_type', 'location_type', 'search']);
+        $filtersApplied = request()->hasAny(['categories', 'category', 'contract_type', 'location_type', 'search']);
     @endphp
     <div class="filter-section p-4 mb-6" role="search" aria-label="Filtros de busca de vagas">
         <div class="flex items-center justify-between mb-6">
             <h2 class="trampix-h2 text-gray-900 flex items-center" id="filters-heading">
                 <i class="fas fa-filter mr-3 text-purple-600"></i>Filtros de Busca
             </h2>
-            <button id="toggleFilters" 
+            <button type="button"
+                    id="toggleFiltersBtn"
                     class="card-btn card-btn-outline text-sm"
                     aria-expanded="{{ $filtersApplied ? 'true' : 'false' }}"
-                    aria-controls="filtersContent"
-                    aria-describedby="filters-heading">
+                    aria-controls="filtersContent">
                 <i class="fas {{ $filtersApplied ? 'fa-chevron-up' : 'fa-chevron-down' }} mr-2" id="filterIcon"></i>
                 <span>{{ $filtersApplied ? 'Ocultar' : 'Mostrar' }}</span>
             </button>
         </div>
-        
         <div id="filtersContent" class="transition-all duration-300 ease-in-out {{ $filtersApplied ? '' : 'hidden' }}" aria-live="polite">
             @php
-                // Listas disponíveis já fornecidas pela view
                 $categoriesList = $availableCategories ?? [];
-                $locationsList = $locationTypes ?? ['Remoto','Híbrido','Presencial'];
+                $locationsList  = $locationTypes ?? ['Remoto','Híbrido','Presencial'];
             @endphp
             <x-filter-panel
                 class="p-0 w-full"
@@ -932,25 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         @endif
 
                         {{-- Ações --}}
-                        @php
-                            $isFreelancer = auth()->check() && auth()->user()->can('isFreelancer');
-                            $canUpdate = auth()->check() && auth()->user()->can('update', $vaga);
-                            $canDelete = auth()->check() && auth()->user()->can('delete', $vaga);
-                            
-                            $buttonCount = 2; // Ver Detalhes + Ver Empresa
-                            if ($isFreelancer && !$hasApplied) $buttonCount++;
-                            if ($canUpdate) $buttonCount++;
-                            if ($canDelete) $buttonCount++;
-                            
-                            $gridClass = 'card-actions';
-                            if ($buttonCount === 3) $gridClass .= ' has-three-buttons';
-                            if ($buttonCount >= 4) $gridClass .= ' has-four-buttons';
-                        @endphp
-                        
-                        <div class="{{ $gridClass }} mt-4 pt-4 border-t border-gray-200 gap-2 sm:gap-3" 
-                             role="group" 
-                             aria-label="Ações disponíveis para esta vaga">
-                            {{-- Ver Detalhes --}}
+                        <div class="flex flex-wrap gap-3 mt-4" role="group" aria-label="Ações disponíveis para esta vaga">
                             <a href="{{ route('vagas.show', $vaga->id) }}" 
                                class="card-btn card-btn-primary"
                                aria-label="Ver detalhes completos da vaga {{ $vaga->title }}">
@@ -971,6 +945,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             {{-- Candidatar-se --}}
                             @auth
                                 @can('isFreelancer')
+                                    @php
+                                        $hasApplied = $vaga->applications()
+                                            ->where('freelancer_id', auth()->user()->freelancer?->id)
+                                            ->exists();
+                                    @endphp
                                     @if (!$hasApplied)
                                         <a href="{{ route('vagas.show', $vaga->id) }}"
                                            class="card-btn card-btn-outline"
@@ -980,7 +959,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                     @else
                                         <button type="button" 
                                                 class="card-btn card-btn-outline opacity-60 cursor-not-allowed" 
-                                                disabled
                                                 aria-label="Você já se candidatou para esta vaga">
                                             <i class="fas fa-check mr-2" aria-hidden="true"></i>Candidatado
                                         </button>

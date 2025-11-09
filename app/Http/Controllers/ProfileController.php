@@ -23,7 +23,20 @@ class ProfileController extends Controller
         // Determinar perfil ativo baseado na sessão (para o próprio usuário) ou disponibilidade
         $activeRole = null;
         if (auth()->check() && auth()->id() === $user->id) {
-            $activeRole = session('active_role');
+            // Perfil próprio: permitir alternância via querystring e persistir na sessão
+            $requestedRole = request()->query('role');
+            if (in_array($requestedRole, ['freelancer', 'company'])) {
+                if ($requestedRole === 'company' && $company) {
+                    session(['active_role' => 'company']);
+                    $activeRole = 'company';
+                } elseif ($requestedRole === 'freelancer' && $freelancer) {
+                    session(['active_role' => 'freelancer']);
+                    $activeRole = 'freelancer';
+                }
+            }
+
+            // Caso não tenha sido solicitado troca, usar valor atual da sessão
+            $activeRole = $activeRole ?? session('active_role');
         } else {
             // Para visualização externa, priorizar empresa se disponível
             if ($company) {

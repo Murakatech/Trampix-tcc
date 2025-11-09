@@ -108,7 +108,8 @@ class SidebarUpdater {
                 },
                 {
                     id: 'my-applications',
-                    href: '/applications',
+                    // Correção: rota correta é /my-applications (name: applications.index)
+                    href: '/my-applications',
                     icon: 'fa-solid fa-file-lines',
                     text: 'Minhas Candidaturas',
                     permission: 'applications.view',

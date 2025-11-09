@@ -119,7 +119,7 @@
                     x-transition:leave="transition-opacity duration-200 ease-in-out"
                     x-transition:leave-start="opacity-100"
                     x-transition:leave-end="opacity-0"
-                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Minhas Aplicações</span>
+                    class="ml-3 font-medium whitespace-nowrap overflow-hidden">Minhas Candidaturas</span>
             </a>
 
             <a href="{{ route('profiles.show', auth()->user()) }}" 
@@ -157,7 +157,7 @@
             <a href="{{ route('applications.manage') }}" 
                data-menu-item="manage-applications"
                class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200 {{ request()->routeIs('applications.manage') ? ($activeRole === 'company' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600') : '' }}">
-                <x-icons.candidaturas class="w-5 h-5 flex-shrink-0" />
+                <i class="fa-solid fa-file-lines text-lg flex-shrink-0"></i>
                 <span 
                     x-show="expanded"
                     x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
@@ -232,7 +232,7 @@
             <a href="{{ route('admin.applications') }}" 
                data-menu-item="manage-applications"
                class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200 {{ request()->routeIs('admin.applications') ? ($activeRole === 'company' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600') : '' }}">
-                <x-icons.candidaturas class="w-5 h-5 flex-shrink-0" />
+                <i class="fa-solid fa-file-lines text-lg flex-shrink-0"></i>
                 <span 
                     x-show="expanded"
                     x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
