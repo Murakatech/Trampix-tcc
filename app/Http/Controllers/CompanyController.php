@@ -193,15 +193,5 @@ class CompanyController extends Controller
             ->with('success', 'Perfil de empresa desativado com sucesso!');
     }
 
-    public function vacancies(Company $company)
-    {
-        Gate::authorize('editCompanyProfile', $company);
-        
-        $vacancies = $company->vacancies()
-            ->with('applications.freelancer.user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-            
-        return view('companies.vacancies', compact('company', 'vacancies'));
-    }
+    // Método legada removido: vagas por empresa
 }

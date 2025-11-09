@@ -287,7 +287,7 @@
                                         <i class="fas fa-search me-2"></i> Buscar Vagas
                                     </a>
                                 @elseif($activeRole === 'company' && $activeProfile)
-                                    <a href="{{ route('companies.vacancies', $activeProfile) }}" class="btn btn-trampix-company">
+                                    <a href="{{ route('company.vagas.index') }}" class="btn btn-trampix-company">
                                         <i class="fas fa-briefcase me-2"></i> Minhas Vagas
                                     </a>
                                 @endif

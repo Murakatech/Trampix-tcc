@@ -34,7 +34,7 @@
                                             <a href="{{ route('companies.edit', $company) }}" class="btn btn-trampix-company btn-sm">
                                                 <i class="fas fa-edit"></i> Editar
                                             </a>
-                                            <a href="{{ route('companies.vacancies', $company) }}" class="btn btn-trampix-company btn-sm">
+                                            <a href="{{ route('company.vagas.index') }}" class="btn btn-trampix-company btn-sm">
                                                 <i class="fas fa-briefcase"></i> Minhas Vagas
                                             </a>
                                         </div>

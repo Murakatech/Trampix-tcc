@@ -162,8 +162,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/companies/{company}/edit', function () {
         return redirect()->route('profile.edit');
     })->name('companies.edit');
-    Route::get('/companies/{company}/vacancies', [CompanyController::class, 'vacancies'])
-        ->name('companies.vacancies');
+    // Removido: rota legada de vagas por empresa (/companies/{company}/vacancies)
 });
 
 Route::middleware(['auth'])->group(function () {
