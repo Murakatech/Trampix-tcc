@@ -74,7 +74,7 @@
 
     {{-- Filtros (copiados da tela pública de Vagas) --}}
     @php
-        $filtersApplied = request()->hasAny(['category', 'contract_type', 'location_type', 'search']);
+        $filtersApplied = request()->hasAny(['category', 'contract_type', 'location_type', 'search', 'rating_order']);
         $locationsList = ['Remoto','Híbrido','Presencial'];
         $categoriesList = $categories ?? [];
     @endphp

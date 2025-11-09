@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class JobVacancyController extends Controller
 {
@@ -140,6 +141,30 @@ class JobVacancyController extends Controller
                       $companyQuery->where('name', 'like', "%{$search}%");
                   });
             });
+        }
+
+        // Ordenação por avaliação da empresa (média das avaliações feitas pelos freelancers)
+        if ($request->filled('rating_order') && in_array($request->get('rating_order'), ['asc','desc'])) {
+            // Subquery: média de freelancer_rating_avg por company_id
+            $companyRatingsSub = \App\Models\Application::query()
+                ->selectRaw('job_vacancies.company_id as company_id, AVG(applications.freelancer_rating_avg) as company_public_rating_avg')
+                ->join('job_vacancies', 'applications.job_vacancy_id', '=', 'job_vacancies.id')
+                ->where('applications.status', 'ended')
+                ->whereNotNull('applications.freelancer_rating_avg')
+                ->groupBy('job_vacancies.company_id');
+
+            // Join da subquery para adicionar a coluna calculada e ordenar
+            $query->leftJoinSub($companyRatingsSub, 'company_ratings', function($join) {
+                    $join->on('job_vacancies.company_id', '=', 'company_ratings.company_id');
+                })
+                ->addSelect('company_ratings.company_public_rating_avg');
+
+            $orderDir = $request->get('rating_order');
+            if ($orderDir === 'desc') {
+                $query->orderByDesc('company_public_rating_avg')->orderBy('created_at', 'desc');
+            } else {
+                $query->orderBy('company_public_rating_avg', 'asc')->orderBy('created_at', 'desc');
+            }
         }
 
         // Paginação com cache de contagem

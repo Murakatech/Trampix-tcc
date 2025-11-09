@@ -771,7 +771,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
 
     {{-- Sistema de Filtros --}}
     @php
-        $filtersApplied = request()->hasAny(['categories', 'category', 'contract_type', 'location_type', 'search']);
+        $filtersApplied = request()->hasAny(['categories', 'category', 'contract_type', 'location_type', 'search', 'segment_id', 'rating_order']);
     @endphp
     <div class="filter-section p-4 mb-6" role="search" aria-label="Filtros de busca de vagas">
         <div class="flex items-center justify-between mb-6">

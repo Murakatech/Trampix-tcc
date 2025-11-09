@@ -14,7 +14,9 @@ class DatabaseSeeder extends Seeder
         // Básico para iniciar do zero: segmentos e categorias
         $this->call([
             CategoryPerSegmentSeeder::class,
-            AdminUserSeeder::class,
+            AccountsSeeder::class,
+            VacanciesSeeder::class,
+            FeedbackSeeder::class,
         ]);
     }
 }
