@@ -66,6 +66,11 @@ class JobVacancyController extends Controller
             ])
             ->select(['id', 'title', 'description', 'requirements', 'category', 'category_id', 'contract_type', 'location_type', 'salary_range', 'status', 'company_id', 'created_at'])
             ->where('status', 'active')
+            // Ocultar vagas que já não estão mais disponíveis ao público:
+            // - Vagas com qualquer candidatura aceita ou finalizada
+            ->whereDoesntHave('applications', function($q){
+                $q->whereIn('status', ['accepted', 'ended']);
+            })
             ->orderBy('created_at', 'desc');
 
         // Ocultar vagas já aplicadas para usuários freelancers

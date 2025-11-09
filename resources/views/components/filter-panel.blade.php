@@ -88,11 +88,11 @@
                 </div>
 
                 <div class="w-48">
-                    <label for="rating_order" class="block text-xs font-medium text-gray-600 mb-1">Avaliação</label>
+                    <label for="rating_order" class="block text-xs font-medium text-gray-600 mb-1">Avaliação (empresa)</label>
                     <select id="rating_order" name="rating_order" class="trampix-input w-full">
                         <option value="">Sem ordenação</option>
-                        <option value="desc" {{ $selectedRatingOrder === 'desc' ? 'selected' : '' }}>Melhor para pior</option>
-                        <option value="asc" {{ $selectedRatingOrder === 'asc' ? 'selected' : '' }}>Pior para melhor</option>
+                        <option value="desc" {{ $selectedRatingOrder === 'desc' ? 'selected' : '' }}>Melhor para pior empresa</option>
+                        <option value="asc" {{ $selectedRatingOrder === 'asc' ? 'selected' : '' }}>Pior para melhor empresa</option>
                     </select>
                 </div>
 
@@ -177,11 +177,11 @@
             </div>
 
             <div class="w-48">
-                <label for="rating_order" class="block text-xs font-medium text-gray-600 mb-1">Avaliação</label>
+                <label for="rating_order" class="block text-xs font-medium text-gray-600 mb-1">Avaliação (empresa)</label>
                 <select id="rating_order" name="rating_order" class="trampix-input w-full">
                     <option value="">Sem ordenação</option>
-                    <option value="desc" {{ $selectedRatingOrder === 'desc' ? 'selected' : '' }}>Melhor para pior</option>
-                    <option value="asc" {{ $selectedRatingOrder === 'asc' ? 'selected' : '' }}>Pior para melhor</option>
+                    <option value="desc" {{ $selectedRatingOrder === 'desc' ? 'selected' : '' }}>Melhor para pior empresa</option>
+                    <option value="asc" {{ $selectedRatingOrder === 'asc' ? 'selected' : '' }}>Pior para melhor empresa</option>
                 </select>
             </div>
 
