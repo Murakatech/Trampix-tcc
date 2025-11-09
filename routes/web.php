@@ -220,6 +220,24 @@ Route::middleware(['auth', 'can:isAdmin'])->group(function () {
         ->name('admin.categories.index');
     Route::post('/admin/categories', [\App\Http\Controllers\Admin\CategoryController::class, 'store'])
         ->name('admin.categories.store');
+    Route::patch('/admin/categories/{category}', [\App\Http\Controllers\Admin\CategoryController::class, 'update'])
+        ->name('admin.categories.update');
+    // Ativação/Desativação de categorias
+    Route::patch('/admin/categories/{category}/deactivate', [\App\Http\Controllers\Admin\CategoryController::class, 'deactivate'])
+        ->name('admin.categories.deactivate');
+    Route::patch('/admin/categories/{category}/reactivate', [\App\Http\Controllers\Admin\CategoryController::class, 'reactivate'])
+        ->name('admin.categories.reactivate');
+
+    // Administração de Segmentos (gerenciados na mesma tela de categorias)
+    Route::post('/admin/segments', [\App\Http\Controllers\Admin\SegmentController::class, 'store'])
+        ->name('admin.segments.store');
+    Route::patch('/admin/segments/{segment}', [\App\Http\Controllers\Admin\SegmentController::class, 'update'])
+        ->name('admin.segments.update');
+    // Ativação/Desativação de segmentos
+    Route::patch('/admin/segments/{segment}/deactivate', [\App\Http\Controllers\Admin\SegmentController::class, 'deactivate'])
+        ->name('admin.segments.deactivate');
+    Route::patch('/admin/segments/{segment}/reactivate', [\App\Http\Controllers\Admin\SegmentController::class, 'reactivate'])
+        ->name('admin.segments.reactivate');
 });
 
 require __DIR__.'/auth.php';

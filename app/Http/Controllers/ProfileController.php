@@ -194,7 +194,7 @@ class ProfileController extends Controller
         }
         
         // Carregar lista de segmentos para seleção (apenas uma vez)
-        $segments = Segment::orderBy('name')->get();
+        $segments = Segment::where('active', true)->orderBy('name')->get();
 
         return view('profile.edit', [
             'user' => $user,

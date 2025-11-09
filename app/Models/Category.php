@@ -14,6 +14,11 @@ class Category extends Model
         'slug',
         'description',
         'segment_id',
+        'active',
+    ];
+
+    protected $casts = [
+        'active' => 'boolean',
     ];
 
     public function segment()

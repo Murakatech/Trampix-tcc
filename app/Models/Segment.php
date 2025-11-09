@@ -11,6 +11,11 @@ class Segment extends Model
 
     protected $fillable = [
         'name',
+        'active',
+    ];
+
+    protected $casts = [
+        'active' => 'boolean',
     ];
 
     public function categories()

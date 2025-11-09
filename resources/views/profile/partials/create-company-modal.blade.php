@@ -64,6 +64,8 @@
                     @enderror
                 </div>
 
+                
+
                 {{-- E-mail (obrigatório) --}}
                 <div>
                     <label for="company_email" class="block text-sm font-medium text-gray-700 mb-2">
@@ -76,6 +78,37 @@
                            placeholder="contato@empresa.com"
                            required>
                     @error('email')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- CNPJ (obrigatório) - posicionado após o E-mail --}}
+                <div>
+                    <label for="company_cnpj" class="block text-sm font-medium text-gray-700 mb-2">
+                        CNPJ *
+                    </label>
+                    <input type="text"
+                           id="company_cnpj"
+                           name="cnpj"
+                           class="trampix-input w-full br-cnpj"
+                           placeholder="00.000.000/0000-00"
+                           required>
+                    @error('cnpj')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- LinkedIn (opcional) --}}
+                <div>
+                    <label for="company_linkedin" class="block text-sm font-medium text-gray-700 mb-2">
+                        LinkedIn
+                    </label>
+                    <input type="url"
+                           id="company_linkedin"
+                           name="linkedin_url"
+                           class="trampix-input w-full"
+                           placeholder="https://www.linkedin.com/company/seu-perfil">
+                    @error('linkedin_url')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

@@ -202,10 +202,10 @@
                             </div>
                         @endif
 
-                        @if($activeProfile->portfolio_url)
+                        @if($activeProfile->linkedin_url)
                             <div class="mb-3">
-                                <strong>Portfólio:</strong>
-                                <a href="{{ $activeProfile->portfolio_url }}" target="_blank" class="text-primary">Ver Portfólio</a>
+                                <strong>LinkedIn:</strong>
+                                <a href="{{ $activeProfile->linkedin_url }}" target="_blank" class="text-primary">Ver Perfil</a>
                             </div>
                         @endif
 
@@ -286,6 +286,14 @@
                                 <strong>Website:</strong> 
                                 <a href="{{ $activeProfile->website }}" target="_blank" class="text-primary">
                                     <i class="fas fa-external-link-alt me-2"></i>{{ $activeProfile->website }}
+                                </a>
+                            </div>
+                        @endif
+                        @if($activeProfile->linkedin_url)
+                            <div class="mb-3">
+                                <strong>LinkedIn:</strong>
+                                <a href="{{ $activeProfile->linkedin_url }}" target="_blank" class="text-primary">
+                                    <i class="fas fa-external-link-alt me-2"></i>{{ $activeProfile->linkedin_url }}
                                 </a>
                             </div>
                         @endif

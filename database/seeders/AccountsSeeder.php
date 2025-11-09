@@ -65,7 +65,7 @@ class AccountsSeeder extends Seeder
         $murakaFreelancer = $murakaUser->createProfile('freelancer', [
             'display_name' => 'Muraka',
             'bio' => 'Desenvolvedor full-stack com foco em Laravel, Vue.js e arquitetura limpa.',
-            'portfolio_url' => 'https://github.com/muraka',
+            'linkedin_url' => 'https://www.linkedin.com/in/muraka',
             'cv_url' => null,
             'whatsapp' => '11999999999',
             'location' => 'São Paulo/SP',
@@ -111,6 +111,7 @@ class AccountsSeeder extends Seeder
             'location' => 'São Paulo/SP',
             'description' => 'Empresa focada em soluções digitais, desenvolvimento de software e consultoria técnica.',
             'website' => 'https://murakatech.com.br',
+            'linkedin_url' => 'https://www.linkedin.com/company/murakatech',
             'email' => 'contato@murakatech.com.br',
             'phone' => '1133334444',
             'company_size' => 'Pequena',

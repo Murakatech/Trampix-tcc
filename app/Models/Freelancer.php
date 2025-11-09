@@ -13,7 +13,7 @@ class Freelancer extends Model
         'user_id',
         'display_name',
         'bio',
-        'portfolio_url',
+        'linkedin_url',
         'cv_url',
         'whatsapp',
         'location',

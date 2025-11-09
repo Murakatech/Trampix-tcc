@@ -18,6 +18,7 @@ class Company extends Model
         'location',
         'description',
         'website',
+        'linkedin_url',
         'email',
         'phone',
         'company_size',

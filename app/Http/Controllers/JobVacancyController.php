@@ -52,7 +52,7 @@ class JobVacancyController extends Controller
                 'contractTypes' => ['CLT', 'PJ', 'Freelance', 'Estágio', 'Temporário'],
                 'locationTypes' => ['Presencial', 'Remoto', 'Híbrido'],
                 // Lista de segmentos disponíveis para filtro
-                'segments' => Segment::orderBy('name')->select('id','name')->get(),
+                'segments' => Segment::where('active', true)->orderBy('name')->select('id','name')->get(),
             ];
         });
 
@@ -199,6 +199,7 @@ class JobVacancyController extends Controller
     public function categoriesBySegment(Segment $segment)
     {
         $categories = Category::where('segment_id', $segment->id)
+            ->where('active', true)
             ->orderBy('name')
             ->pluck('name');
 
@@ -216,8 +217,8 @@ class JobVacancyController extends Controller
     {
         if (! Gate::allows('isCompany') && ! Gate::allows('isAdmin')) abort(403);
 
-        $categories = Category::orderBy('name')->get();
-        $segments   = Segment::orderBy('name')->get();
+        $categories = Category::where('active', true)->orderBy('name')->get();
+        $segments   = Segment::where('active', true)->orderBy('name')->get();
         $companies  = Gate::allows('isAdmin') ? Company::orderBy('name')->select('id','name')->get() : null;
 
         return view('vagas.create', compact('categories','companies','segments'));
@@ -319,8 +320,8 @@ class JobVacancyController extends Controller
     public function edit(JobVacancy $vaga)
     {
         if (! Gate::allows('isCompany') || ($vaga->company?->user_id !== Auth::id())) abort(403);
-        $categories = Category::orderBy('name')->get();
-        $segments   = Segment::orderBy('name')->get();
+        $categories = Category::where('active', true)->orderBy('name')->get();
+        $segments   = Segment::where('active', true)->orderBy('name')->get();
         return view('vagas.edit', compact('vaga','categories','segments'));
     }
 

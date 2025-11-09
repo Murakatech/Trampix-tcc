@@ -72,7 +72,7 @@ class FreelancerController extends Controller
         $validated = $request->validate([
             'display_name' => 'required|string|min:2|max:255',
             'bio' => 'nullable|string|max:1000',
-            'portfolio_url' => 'nullable|url|max:255',
+            'linkedin_url' => 'nullable|url|max:255',
             'whatsapp' => 'required|string',
             'location' => 'nullable|string|max:100',
             'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',
@@ -151,7 +151,7 @@ class FreelancerController extends Controller
         
         $validated = $request->validate([
             'bio' => 'nullable|string|max:1000',
-            'portfolio_url' => 'nullable|url|max:255',
+            'linkedin_url' => 'nullable|url|max:255',
             'whatsapp' => 'nullable|string',
             'location' => 'nullable|string|max:100',
             'hourly_rate' => 'nullable|numeric|min:0|max:999999.99',

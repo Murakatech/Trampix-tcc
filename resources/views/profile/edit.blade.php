@@ -378,7 +378,7 @@
                             <p class="text-sm text-gray-600 mb-4">Selecione os segmentos econômicos em que você atua. Usamos isso para conectar você a vagas e empresas relevantes.</p>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                @foreach(($segments ?? \App\Models\Segment::orderBy('name')->get()) as $segment)
+                                @foreach(($segments ?? \App\Models\Segment::where('active', true)->orderBy('name')->get()) as $segment)
                                     <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                                         <input type="checkbox"
                                                name="segments[]"
@@ -398,12 +398,12 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="portfolio_url" class="block text-sm font-medium text-gray-700">URL do Portfólio</label>
-                                <input type="url" id="portfolio_url" name="portfolio_url" 
-                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('portfolio_url') border-red-500 @enderror" 
-                                       value="{{ old('portfolio_url', $freelancer->portfolio_url ?? '') }}"
-                                       placeholder="https://meuportfolio.com">
-                                @error('portfolio_url')
+                                <label for="linkedin_url" class="block text-sm font-medium text-gray-700">LinkedIn</label>
+                                <input type="url" id="linkedin_url" name="linkedin_url" 
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('linkedin_url') border-red-500 @enderror" 
+                                       value="{{ old('linkedin_url', $freelancer->linkedin_url ?? '') }}"
+                                       placeholder="https://www.linkedin.com/in/seu-perfil">
+                                @error('linkedin_url')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -515,6 +515,30 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
+                                <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ *</label>
+                                <input type="text" id="cnpj" name="cnpj"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('cnpj') border-red-500 @enderror"
+                                       value="{{ old('cnpj', $company->cnpj ?? '') }}"
+                                       placeholder="00.000.000/0000-00" data-mask="br-cnpj">
+                                @error('cnpj')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <div>
+                                <label for="company_linkedin_url" class="block text-sm font-medium text-gray-700">LinkedIn</label>
+                                <input type="url" id="company_linkedin_url" name="linkedin_url"
+                                       class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('linkedin_url') border-red-500 @enderror"
+                                       value="{{ old('linkedin_url', $company->linkedin_url ?? '') }}"
+                                       placeholder="https://www.linkedin.com/company/seu-perfil">
+                                @error('linkedin_url')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
                                 <label for="address" class="block text-sm font-medium text-gray-700">Endereço</label>
                                 <input type="text" id="address" name="address" 
                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('address') border-red-500 @enderror" 
@@ -561,7 +585,7 @@
                                 @php
                                     $selectedCompanySegments = old('segments', isset($company) ? ($company->segments->pluck('id')->toArray() ?? []) : []);
                                 @endphp
-                                @foreach(($segments ?? \App\Models\Segment::orderBy('name')->get()) as $segment)
+                                @foreach(($segments ?? \App\Models\Segment::where('active', true)->orderBy('name')->get()) as $segment)
                                     <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors duration-200">
                                         <input type="checkbox"
                                                name="segments[]"
@@ -1194,7 +1218,7 @@ function initializeFormValidation() {
 
 @push('scripts')
 <script>
-    window.APP_SEGMENTS = {!! json_encode(($segments ?? \App\Models\Segment::orderBy('name')->get(['id','name']))->map(function($s){ return ['id' => $s->id, 'name' => $s->name]; })) !!};
+    window.APP_SEGMENTS = {!! json_encode(($segments ?? \App\Models\Segment::where('active', true)->orderBy('name')->get(['id','name']))->map(function($s){ return ['id' => $s->id, 'name' => $s->name]; })) !!};
 
     function ensureSegmentModal() {
         if (document.getElementById('segmentSelectionModal')) return;

@@ -51,17 +51,17 @@
                     @enderror
                 </div>
 
-                {{-- URL do Portfólio --}}
+                {{-- LinkedIn (substitui Portfólio) --}}
                 <div>
-                    <label for="freelancer_portfolio" class="block text-sm font-medium text-gray-700 mb-2">
-                        URL do Portfólio
+                    <label for="freelancer_linkedin" class="block text-sm font-medium text-gray-700 mb-2">
+                        LinkedIn
                     </label>
                     <input type="url" 
-                           id="freelancer_portfolio"
-                           name="portfolio_url" 
+                           id="freelancer_linkedin"
+                           name="linkedin_url" 
                            class="trampix-input w-full" 
-                           placeholder="https://www.meuportfolio.com">
-                    @error('portfolio_url')
+                           placeholder="https://www.linkedin.com/in/seu-perfil">
+                    @error('linkedin_url')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

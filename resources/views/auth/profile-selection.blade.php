@@ -16,6 +16,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- Input masks and LinkedIn validation helpers -->
+        <script src="{{ asset('js/masks.js') }}"></script>
         <meta name="old-segments" content='@json(old("segments", []))'>
 
         <!-- Estilos locais: esconder scrollbar mantendo rolagem -->
@@ -173,9 +175,9 @@
                         </div>
 
                         <div>
-                            <label for="portfolio_url" class="block text-sm font-medium text-purple-100 mb-2">URL do Portfólio</label>
-                            <input type="url" id="portfolio_url" name="portfolio_url" value="{{ old('portfolio_url') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://meuportfolio.com">
-                            @error('portfolio_url')
+                            <label for="linkedin_url" class="block text-sm font-medium text-purple-100 mb-2">URL do LinkedIn</label>
+                            <input type="url" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-purple-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://www.linkedin.com/in/seu-perfil">
+                            @error('linkedin_url')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>
@@ -366,6 +368,24 @@
                             @enderror
                         </div>
 
+                        <!-- CNPJ (obrigatório) -->
+                        <div>
+                            <label for="company_cnpj" class="block text-sm font-medium text-green-100 mb-2">CNPJ *</label>
+                            <input type="text" id="company_cnpj" name="cnpj" value="{{ old('cnpj') }}" required class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50 br-cnpj" placeholder="00.000.000/0000-00">
+                            @error('cnpj')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- LinkedIn (opcional) - movido para imediatamente abaixo do CNPJ -->
+                        <div>
+                            <label for="company_linkedin" class="block text-sm font-medium text-green-100 mb-2">LinkedIn</label>
+                            <input type="url" id="company_linkedin" name="linkedin_url" value="{{ old('linkedin_url') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://www.linkedin.com/company/seu-perfil">
+                            @error('linkedin_url')
+                                <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div>
                             <label for="website" class="block text-sm font-medium text-green-100 mb-2">Website</label>
                             <input type="url" id="website" name="website" value="{{ old('website') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50" placeholder="https://minhaempresa.com">
@@ -424,6 +444,8 @@
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        
 
                         <!-- Categorias de Serviços (seleção via select múltiplo já acima) -->
                         

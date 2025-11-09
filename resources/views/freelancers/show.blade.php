@@ -103,10 +103,10 @@
                                     <strong>Disponibilidade:</strong> {{ $availabilityLabel }}
                                 </div>
                             @endif
-                            @if($freelancer->portfolio_url)
+                            @if($freelancer->linkedin_url)
                                 <div class="mb-3">
-                                    <strong>Portfólio:</strong>
-                                    <a href="{{ $freelancer->portfolio_url }}" target="_blank" class="text-primary">Ver Portfólio</a>
+                                    <strong>LinkedIn:</strong>
+                                    <a href="{{ $freelancer->linkedin_url }}" target="_blank" class="text-primary">Ver Perfil</a>
                                 </div>
                             @endif
                             @if($freelancer->whatsapp)
@@ -128,11 +128,11 @@
 
                             
 
-                            @if($freelancer->portfolio_url)
+                            @if($freelancer->linkedin_url)
                                 <div class="mb-3">
-                                    <strong>Portfólio:</strong> 
-                                    <a href="{{ $freelancer->portfolio_url }}" target="_blank" class="text-blue-600 hover:text-blue-800">
-                                        Ver Portfólio
+                                    <strong>LinkedIn:</strong> 
+                                    <a href="{{ $freelancer->linkedin_url }}" target="_blank" class="text-blue-600 hover:text-blue-800">
+                                        Ver Perfil
                                     </a>
                                 </div>
                             @endif
