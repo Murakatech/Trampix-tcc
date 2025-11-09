@@ -304,6 +304,24 @@ class ProfileController extends Controller
 
             $validated = $request->validate(\App\Http\Requests\FreelancerUpdateRequest::rulesFor($freelancer?->id));
 
+            // Atualizar dados de conta (email/nome) se enviados junto ao perfil freelancer
+            // Não exigir ambos: validar apenas os campos presentes
+            $accountRules = [];
+            if ($request->has('name')) {
+                $accountRules['name'] = ['string', 'max:255'];
+            }
+            if ($request->has('email')) {
+                $accountRules['email'] = ['string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)];
+            }
+            if (!empty($accountRules)) {
+                $accountValidated = $request->validate($accountRules);
+                $user->fill($accountValidated);
+                if ($user->isDirty('email')) {
+                    $user->email_verified_at = null;
+                }
+                $user->save();
+            }
+
             // Sanitizar WhatsApp se enviado: manter somente números e limitar tamanho
             if ($request->filled('whatsapp')) {
                 $rawWhatsapp = preg_replace('/\D+/', '', $request->input('whatsapp'));
@@ -349,6 +367,7 @@ class ProfileController extends Controller
             }
 
             // Atualizar área de atuação (ActivityArea) para freelancer
+            // Atenção: não limpar automaticamente se o campo não vier na requisição
             if ($request->filled('activity_area_id')) {
                 $areaId = (int) $request->input('activity_area_id');
                 $area = \App\Models\ActivityArea::where('id', $areaId)
@@ -356,12 +375,10 @@ class ProfileController extends Controller
                     ->first();
                 $freelancer->activity_area_id = $area?->id; // só define se for válida
                 $freelancer->save();
-            } else {
-                // permitir limpar o campo
-                if ($freelancer->activity_area_id) {
-                    $freelancer->activity_area_id = null;
-                    $freelancer->save();
-                }
+            } elseif ($request->boolean('clear_activity_area')) {
+                // Limpar explicitamente se solicitado
+                $freelancer->activity_area_id = null;
+                $freelancer->save();
             }
 
             // Removido: processamento de Categorias de Serviços do freelancer
@@ -373,8 +390,8 @@ class ProfileController extends Controller
                     ->pluck('id')
                     ->toArray();
                 $freelancer->segments()->sync($validSegmentIds);
-            } else {
-                // Se nenhum segmento foi selecionado, remover todos
+            } elseif ($request->boolean('clear_segments')) {
+                // Remover segmentos apenas se explicitamente solicitado
                 $freelancer->segments()->detach();
             }
 
