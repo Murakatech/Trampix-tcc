@@ -22,7 +22,7 @@ class GenerateRecommendationsForUser extends Command
         }
         $freelancer = Freelancer::where('user_id', $user->id)->first();
         if ($freelancer) {
-            $count = $service->generateDailyBatchFor('freelancer', $freelancer->id);
+            $count = $service->generateDailyBatchFor($user);
             $this->info("Recomendações geradas para freelancer #{$freelancer->id}: {$count} itens.");
             return self::SUCCESS;
         }
