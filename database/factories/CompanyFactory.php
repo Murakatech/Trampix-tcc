@@ -20,6 +20,7 @@ class CompanyFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
+            'display_name' => fake()->company(),
             'name' => fake()->company(),
             'cnpj' => fake()->numerify('##.###.###/####-##'),
             'sector' => fake()->randomElement(['Tecnologia', 'Saúde', 'Educação', 'Varejo', 'Serviços', 'Indústria']),

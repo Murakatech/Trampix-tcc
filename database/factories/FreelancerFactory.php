@@ -20,6 +20,7 @@ class FreelancerFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
+            'display_name' => fake()->name(),
             'bio' => fake()->paragraph(),
             'portfolio_url' => fake()->url(),
             'cv_url' => null,

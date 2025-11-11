@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             AccountsSeeder::class,
             VacanciesSeeder::class,
             FeedbackSeeder::class,
+            DevSeeder::class,
         ]);
     }
 }
