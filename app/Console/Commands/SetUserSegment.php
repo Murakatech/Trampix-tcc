@@ -67,13 +67,32 @@ class SetUserSegment extends Command
         // Atualiza preferências para usar IDs de segmento
         $pref = Preference::where('user_id', $user->id)->first();
         if (!$pref) {
-            $pref = new Preference();
-            $pref->user_id = $user->id;
+            $pref = new Preference([
+                'user_id' => $user->id,
+                'role' => 'freelancer',
+                'desired_roles' => [],
+                'segments' => [$segment->id],
+                'skills' => [],
+                'seniority_min' => 0,
+                'seniority_max' => 100,
+                'remote_ok' => true,
+                'salary_min' => null,
+                'salary_max' => null,
+                'location' => null,
+                'radius_km' => null,
+            ]);
+            $pref->save();
+        } else {
+            // Se vierem como strings, substitui por array de ids com o segmento escolhido
+            $pref->segments = [$segment->id];
+            $pref->role = $pref->role ?: 'freelancer';
+            if ($pref->desired_roles === null) $pref->desired_roles = [];
+            if ($pref->skills === null) $pref->skills = [];
+            if ($pref->seniority_min === null) $pref->seniority_min = 0;
+            if ($pref->seniority_max === null) $pref->seniority_max = 100;
+            if ($pref->remote_ok === null) $pref->remote_ok = true;
+            $pref->save();
         }
-        $segments = $pref->segments ?: [];
-        // Se vierem como strings, substitui por array de ids com o segmento escolhido
-        $pref->segments = [$segment->id];
-        $pref->save();
 
         $this->info("Segmento definido para {$email}: {$segment->name} (ID {$segment->id})");
         if ($changed) {
