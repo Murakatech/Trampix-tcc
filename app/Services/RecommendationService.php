@@ -16,21 +16,21 @@ use Illuminate\Support\Str;
 class RecommendationService
 {
     /**
-     * Função pura e explicável de score 0..1.
+     * Função pura e explicável de score 0..1 baseada em SEGMENTOS
+     * (depois ordena naturalmente: primeiro segmentos semelhantes, depois outros).
      */
-    public function computeScore(array $skillsUser, array $skillsTarget, ?int $seniorityU, ?int $seniorityT, ?array $faixaU, ?array $faixaT, ?array $modalU, ?array $modalT, float $confidence): float
+    public function computeScore(array $segmentsUser, array $segmentsTarget, ?array $faixaU, ?array $faixaT, ?array $modalU, ?array $modalT, float $confidence): float
     {
-        $jaccard = $this->jaccard($skillsUser, $skillsTarget);
-        $senFit = $this->seniorityFit($seniorityU, $seniorityT);
+        $segJaccard = $this->jaccard($segmentsUser, $segmentsTarget);
         $faixa = $this->faixaCompat($faixaU, $faixaT);
         $modal = $this->modalidadeFit($modalU, $modalT);
         $conf = max(0.0, min(1.0, $confidence));
 
-        $score = 0.50 * $jaccard
-               + 0.15 * $senFit
+        // Pesos priorizando segmentos
+        $score = 0.60 * $segJaccard
+               + 0.20 * $modal
                + 0.15 * $faixa
-               + 0.10 * $modal
-               + 0.10 * $conf;
+               + 0.05 * $conf;
 
         return round(max(0.0, min(1.0, $score)), 4);
     }
@@ -113,28 +113,35 @@ class RecommendationService
         $today = Carbon::today();
         $pref = Preference::where('user_id', $user->id)->first();
         if (!$pref) return 0;
-        $skillsUser = (array)($pref->skills ?? []);
+        // Base: segmentos do usuário
+        $segmentsUser = collect($pref->segments ?? [])
+            ->filter()->values()->all();
+        // fallback: usar segmento principal do perfil
+        if (empty($segmentsUser)) {
+            if ($user->isFreelancer() && $user->freelancer?->segment_id) {
+                $segmentsUser = [ (int)$user->freelancer->segment_id ];
+            } elseif ($user->isCompany() && $user->company?->segment_id) {
+                $segmentsUser = [ (int)$user->company->segment_id ];
+            }
+        }
         $faixaU = ['min' => $pref->salary_min, 'max' => $pref->salary_max];
         $modalU = ['remote_ok' => $pref->remote_ok, 'radius_km' => $pref->radius_km, 'location' => $pref->location];
-        $seniorityU = null;
 
         if ($user->isFreelancer() && $user->freelancer) {
             $subjectType = 'freelancer';
             $subjectId = $user->freelancer->id;
+            // Inclui TODAS as vagas ativas (não aplicadas), priorizando por score de segmento
             $query = JobVacancy::query()->active()->notAppliedBy($subjectId);
             $desired = collect($pref->desired_roles ?? [])->filter()->values()->all();
             if (!empty($desired)) { $query->filterCategories($desired); }
-            $segmentIds = collect($pref->segments ?? [])->filter()->values()->all();
-            if (!empty($segmentIds)) { foreach ($segmentIds as $segId) { $query->filterSegment((int)$segId); } }
             $candidates = $query->limit(500)->get();
             $scored = [];
             foreach ($candidates as $job) {
-                $skillsTarget = $this->extractSkillsFromVacancy($job, $skillsUser);
-                $seniorityT = $this->inferSeniorityFromText(($job->title ?? '').' '.($job->description ?? ''));
+                $segmentsTarget = $this->segmentsForJob($job);
                 $faixaT = $this->parseSalaryRange($job->salary_range);
                 $modalT = ['location_type' => $job->location_type, 'location' => $job->company?->location];
                 $confidence = $this->sinalConfiancaForTarget($job);
-                $score = $this->computeScore($skillsUser, $skillsTarget, $seniorityU, $seniorityT, $faixaU, $faixaT, $modalU, $modalT, $confidence);
+                $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
                 if ($score < 0.35) continue;
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
@@ -167,17 +174,15 @@ class RecommendationService
             $subjectType = 'company';
             $subjectId = $user->company->id;
             $query = Freelancer::query()->where('is_active', true);
-            $segmentIds = collect($pref->segments ?? [])->filter()->values()->all();
-            if (!empty($segmentIds)) { $query->whereIn('segment_id', $segmentIds); }
+            // Não filtra apenas pelos segmentos; considera todos e pontua por segmentos
             $candidates = $query->limit(500)->get();
             $scored = [];
             foreach ($candidates as $freelancer) {
-                $skillsTarget = $freelancer->skills()->pluck('name')->all();
-                $seniorityT = null;
+                $segmentsTarget = $this->segmentsForFreelancer($freelancer);
                 $faixaT = ['min' => null, 'max' => null];
                 $modalT = ['location' => $freelancer->location, 'location_type' => null];
                 $confidence = $this->sinalConfiancaForTarget($freelancer);
-                $score = $this->computeScore($skillsUser, $skillsTarget, $seniorityU, $seniorityT, $faixaU, $faixaT, $modalU, $modalT, $confidence);
+                $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
                 if ($score < 0.35) continue;
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
@@ -291,29 +296,38 @@ class RecommendationService
         return ['ok' => true, 'match' => $hasMatch];
     }
 
-    private function extractSkillsFromVacancy(JobVacancy $job, array $referenceSkills): array
+    /**
+     * Determina segmentos para uma vaga a partir da categoria ou da empresa.
+     */
+    private function segmentsForJob(JobVacancy $job): array
     {
-        $text = Str::lower(($job->requirements ?? '').' '.($job->description ?? '').' '.($job->title ?? ''));
-        $ref = collect($referenceSkills)->map(fn($s) => Str::lower(trim($s)))->filter()->unique()->all();
-        $found = [];
-        foreach ($ref as $skill) {
-            if ($skill === '') continue;
-            if (Str::contains($text, $skill)) { $found[] = $skill; }
+        $segments = [];
+        if ($job->category_id) {
+            $cat = \App\Models\Category::find($job->category_id);
+            if ($cat?->segment_id) $segments[] = (int)$cat->segment_id;
+        } elseif (!empty($job->category)) {
+            $cat = \App\Models\Category::where('name', $job->category)->first();
+            if ($cat?->segment_id) $segments[] = (int)$cat->segment_id;
         }
-        if (empty($found)) {
-            $names = Skill::pluck('name')->map(fn($n) => Str::lower($n))->all();
-            foreach ($names as $n) { if (Str::contains($text, $n)) $found[] = $n; if (count($found) >= 10) break; }
+        // fallback: usar segmento da empresa
+        if (empty($segments) && $job->company?->segment_id) {
+            $segments[] = (int)$job->company->segment_id;
         }
-        return $found;
+        return array_values(array_unique($segments));
     }
 
-    private function inferSeniorityFromText(string $text): ?int
+    /**
+     * Determina segmentos de um freelancer (id principal + múltiplos relacionamentos), se existentes.
+     */
+    private function segmentsForFreelancer(Freelancer $freelancer): array
     {
-        $t = Str::lower($text);
-        if (Str::contains($t, ['senior','sênior'])) return 3;
-        if (Str::contains($t, ['pleno','mid'])) return 2;
-        if (Str::contains($t, ['junior','júnior'])) return 1;
-        return null;
+        $segs = [];
+        if ($freelancer->segment_id) $segs[] = (int)$freelancer->segment_id;
+        try {
+            $many = $freelancer->segments()->pluck('segments.id')->all();
+            foreach ($many as $sid) { $segs[] = (int)$sid; }
+        } catch (\Throwable $e) {}
+        return array_values(array_unique($segs));
     }
 
     private function parseSalaryRange(?string $text): ?array
