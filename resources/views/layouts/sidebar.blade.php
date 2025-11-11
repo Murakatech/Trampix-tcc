@@ -46,7 +46,7 @@
         <!-- Dashboard - comum para todos os papéis -->
         <x-sidebar-item href="{{ route('dashboard') }}" :active="request()->is('dashboard')" icon="fa-solid fa-house">Dashboard</x-sidebar-item>
         <!-- Conectar - novo item abaixo de Dashboard -->
-        <x-sidebar-item href="#" :active="false" icon="fa-solid fa-share-nodes">Conectar</x-sidebar-item>
+        <x-sidebar-item href="{{ route('connect.index') }}" :active="request()->routeIs('connect.index')" icon="fa-solid fa-share-nodes">Conectar</x-sidebar-item>
         
         <hr class="my-3">
         

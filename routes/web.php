@@ -13,6 +13,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\FreelancerDashboardController;
 use App\Http\Controllers\CompanyDashboardController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ConnectController;
 use Illuminate\Support\Facades\Route;
 
 // garante que {vaga} só aceite números
@@ -40,6 +41,13 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['can:isCompany'])->group(function () {
         Route::get('/company/dashboard', [CompanyDashboardController::class, 'index'])->name('company.dashboard');
     });
+});
+
+// Módulo Conectar (UI base + endpoints stub)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/connect', [ConnectController::class, 'index'])->name('connect.index');
+    Route::get('/connect/next', [ConnectController::class, 'next'])->name('connect.next'); // stub
+    Route::post('/connect/decide', [ConnectController::class, 'decide'])->name('connect.decide'); // stub
 });
 
 // Protegido (auth + empresa) — registre ANTES
