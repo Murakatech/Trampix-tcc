@@ -31,6 +31,15 @@ class ConnectController extends Controller
 
         $user = $request->user();
         $rec = $service->nextCardFor($user);
+        // Fallback: se não houver batch gerado ainda, tenta gerar agora e buscar novamente
+        if (!$rec) {
+            try {
+                $service->generateDailyBatchFor($user, 50);
+            } catch (\Throwable $e) {
+                // ignora e segue
+            }
+            $rec = $service->nextCardFor($user);
+        }
         if (!$rec) {
             return response()->json(['empty' => true], 204);
         }
