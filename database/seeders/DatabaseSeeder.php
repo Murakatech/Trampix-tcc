@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             VacanciesSeeder::class,
             FeedbackSeeder::class,
             DevSeeder::class,
+            PreferenceSeeder::class,
         ]);
     }
 }

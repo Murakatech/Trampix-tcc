@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\ServiceProvider;
+use App\Services\RecommendationService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -12,7 +13,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // RecommendationService como singleton para DI
+        $this->app->singleton(RecommendationService::class, function ($app) {
+            return new RecommendationService();
+        });
     }
 
     /**
