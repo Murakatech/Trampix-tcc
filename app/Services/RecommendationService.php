@@ -142,7 +142,7 @@ class RecommendationService
                 $modalT = ['location_type' => $job->location_type, 'location' => $job->company?->location];
                 $confidence = $this->sinalConfiancaForTarget($job);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
-                if ($score < 0.35) continue;
+                $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
                     ->where('subject_id', $subjectId)
@@ -151,10 +151,17 @@ class RecommendationService
                     ->where('created_at', '>=', Carbon::now()->subDays(7))
                     ->exists();
                 if ($existsRecent) continue;
-                $scored[] = ['target' => $job, 'score' => $score];
+                $scored[] = ['target' => $job, 'score' => $score, 'seg' => $segMatch];
             }
-            usort($scored, fn($a,$b) => $b['score'] <=> $a['score']);
-            $top = array_slice($scored, 0, $topN);
+            // Primeiro, similares de segmento (seg>0), depois demais
+            $similar = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) > 0));
+            $others  = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) <= 0));
+            usort($similar, fn($a,$b) => $b['score'] <=> $a['score']);
+            usort($others, fn($a,$b) => $b['score'] <=> $a['score']);
+            // Aplica corte 0.35 apenas nos similares; para os outros, deixa preencher até topN
+            $similar = array_values(array_filter($similar, fn($x) => $x['score'] >= 0.35));
+            $merged = array_merge($similar, $others);
+            $top = array_slice($merged, 0, $topN);
             foreach ($top as $item) {
                 Recommendation::create([
                     'subject_type' => $subjectType,
@@ -183,7 +190,7 @@ class RecommendationService
                 $modalT = ['location' => $freelancer->location, 'location_type' => null];
                 $confidence = $this->sinalConfiancaForTarget($freelancer);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
-                if ($score < 0.35) continue;
+                $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
                     ->where('subject_id', $subjectId)
@@ -192,10 +199,15 @@ class RecommendationService
                     ->where('created_at', '>=', Carbon::now()->subDays(7))
                     ->exists();
                 if ($existsRecent) continue;
-                $scored[] = ['target' => $freelancer, 'score' => $score];
+                $scored[] = ['target' => $freelancer, 'score' => $score, 'seg' => $segMatch];
             }
-            usort($scored, fn($a,$b) => $b['score'] <=> $a['score']);
-            $top = array_slice($scored, 0, $topN);
+            $similar = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) > 0));
+            $others  = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) <= 0));
+            usort($similar, fn($a,$b) => $b['score'] <=> $a['score']);
+            usort($others, fn($a,$b) => $b['score'] <=> $a['score']);
+            $similar = array_values(array_filter($similar, fn($x) => $x['score'] >= 0.35));
+            $merged = array_merge($similar, $others);
+            $top = array_slice($merged, 0, $topN);
             foreach ($top as $item) {
                 Recommendation::create([
                     'subject_type' => $subjectType,
