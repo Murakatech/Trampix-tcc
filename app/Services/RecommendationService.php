@@ -146,7 +146,7 @@ class RecommendationService
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
                     ->where('subject_id', $subjectId)
-                    ->where('target_type', 'job_vacancy')
+                    ->where('target_type', 'job')
                     ->where('target_id', $job->id)
                     ->where('created_at', '>=', Carbon::now()->subDays(7))
                     ->exists();
@@ -166,7 +166,7 @@ class RecommendationService
                 Recommendation::create([
                     'subject_type' => $subjectType,
                     'subject_id' => $subjectId,
-                    'target_type' => 'job_vacancy',
+                    'target_type' => 'job',
                     'target_id' => $item['target']->id,
                     'score' => $item['score'],
                     'batch_date' => $today,
@@ -262,7 +262,7 @@ class RecommendationService
         $rec->save();
         $hasMatch = false;
         if ($action === 'liked') {
-            if ($rec->target_type === 'job_vacancy' && $rec->subject_type === 'freelancer') {
+            if ($rec->target_type === 'job' && $rec->subject_type === 'freelancer') {
                 $freelancerId = $rec->subject_id;
                 $jobId = $rec->target_id;
                 $job = JobVacancy::find($jobId);
@@ -291,7 +291,7 @@ class RecommendationService
                     $inverseLiked = Recommendation::query()
                         ->where('subject_type', 'freelancer')
                         ->where('subject_id', $freelancerId)
-                        ->where('target_type', 'job_vacancy')
+                        ->where('target_type', 'job')
                         ->where('target_id', $jobId)
                         ->where('status', 'liked')
                         ->exists();

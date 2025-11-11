@@ -68,7 +68,7 @@ class ConnectController extends Controller
 
     private function mapRecommendationToCard(Recommendation $rec): array
     {
-        if ($rec->target_type === 'job_vacancy') {
+        if ($rec->target_type === 'job') {
             $job = $rec->targetJob; // relation
             $companyName = $job?->company?->display_name ?: ($job?->company?->name ?: 'Empresa');
             return [
