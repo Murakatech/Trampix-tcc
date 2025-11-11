@@ -52,9 +52,9 @@
         </div>
         <div class="px-5 pb-5">
           <div class="flex items-center gap-3">
-            <button @click="decide('rejected')" class="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">Rejeitar (A)</button>
-            <button @click="decide('saved')" class="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50">Salvar (S)</button>
-            <button @click="decide('liked')" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Dar Match (D)</button>
+            <button :disabled="disabled" @click="decide('rejected')" class="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50">Rejeitar (A)</button>
+            <button :disabled="disabled" @click="decide('saved')" class="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50">Salvar (S)</button>
+            <button :disabled="disabled" @click="decide('liked')" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">Dar Match (D)</button>
             <div class="ml-auto text-sm text-gray-500">Score: <span x-text="card?.score || '-'">-</span></div>
           </div>
         </div>
@@ -75,6 +75,14 @@
   <div class="text-xs text-gray-500">
     Atalhos: A = Rejeitar, S = Salvar, D = Dar Match.
   </div>
+
+  <!-- Snackbar -->
+  <div x-show="snackbar.visible" x-transition class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-md shadow-lg flex items-center gap-3">
+    <span x-text="snackbar.message"></span>
+    <template x-if="snackbar.undo">
+      <button @click="performUndo()" class="px-2 py-1 rounded bg-white text-gray-900">Desfazer</button>
+    </template>
+  </div>
 </div>
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -83,6 +91,10 @@
   function connectModule() {
     return {
       card: null,
+      disabled: false,
+      cardsShown: 0,
+      lastRejectedId: null,
+      snackbar: { visible: false, message: '', undo: false, timer: null },
       endpoints: {
         next: "{{ route('connect.next') }}",
         decide: "{{ route('connect.decide') }}",
@@ -100,7 +112,15 @@
       async loadNext() {
         try {
           const res = await fetch(this.endpoints.next, { headers: { 'Accept': 'application/json' } });
+          if (res.status === 204) {
+            // vazio ou limite atingido
+            this.card = null;
+            this.disabled = true;
+            this.snackbarShow('Fim dos cards nesta sessão ou sem recomendações no momento.', false);
+            return;
+          }
           this.card = await res.json();
+          this.cardsShown++;
         } catch (err) {
           console.error('Erro ao carregar próximo card', err);
         }
@@ -118,7 +138,7 @@
         if (!this.card) return;
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         try {
-          await fetch(this.endpoints.decide, {
+          const res = await fetch(this.endpoints.decide, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -127,11 +147,46 @@
             },
             body: JSON.stringify({ recommendation_id: this.card.id, action }),
           });
+          const data = await res.json();
+          if (data && data.match) {
+            this.snackbarShow('Match!', false);
+          } else if (action === 'rejected') {
+            // habilita undo por 5s
+            this.lastRejectedId = this.card.id;
+            this.snackbarShow('Rejeitado. Desfazer?', true);
+          }
         } catch (err) {
           console.error('Erro ao enviar decisão', err);
         } finally {
           // Puxa próximo
           this.loadNext();
+        }
+      },
+      snackbarShow(message, undo) {
+        if (this.snackbar.timer) clearTimeout(this.snackbar.timer);
+        this.snackbar.message = message;
+        this.snackbar.undo = !!undo;
+        this.snackbar.visible = true;
+        this.snackbar.timer = setTimeout(() => { this.snackbar.visible = false; this.snackbar.undo = false; }, 5000);
+      },
+      async performUndo() {
+        if (!this.lastRejectedId) return;
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        try {
+          await fetch(this.endpoints.decide, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'X-CSRF-TOKEN': token,
+            },
+            body: JSON.stringify({ recommendation_id: this.lastRejectedId, action: 'undo' }),
+          });
+        } catch (e) { console.error('Falha ao desfazer', e); }
+        finally {
+          this.snackbar.visible = false;
+          this.snackbar.undo = false;
+          this.lastRejectedId = null;
         }
       }
     }

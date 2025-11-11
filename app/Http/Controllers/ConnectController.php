@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
+use App\Services\RecommendationService;
+use App\Models\Recommendation;
 
 class ConnectController extends Controller
 {
@@ -16,51 +19,88 @@ class ConnectController extends Controller
     }
 
     /**
-     * Retorna JSON de um card de exemplo (stub)
+     * Retorna JSON do próximo card real a partir de recommendations pendentes.
      */
-    public function next(Request $request)
+    public function next(Request $request, RecommendationService $service)
     {
-        $types = ['job', 'freelancer'];
-        $skillsPool = ['Laravel', 'PHP', 'Alpine.js', 'Tailwind', 'MySQL', 'REST', 'Docker', 'CI/CD', 'UX'];
-        $locations = ['Remoto', 'São Paulo, SP', 'Rio de Janeiro, RJ', 'Belo Horizonte, MG'];
-        $modes = ['Tempo Integral', 'Meio Período', 'Contrato'];
+        // Limite por sessão: 20 cards
+        $count = (int)session()->get('connect_cards_shown', 0);
+        if ($count >= 20) {
+            return response()->json(['done' => true], 204);
+        }
 
-        $pickSkills = fn($n) => collect($skillsPool)->shuffle()->take($n)->values()->all();
+        $user = $request->user();
+        $rec = $service->nextCardFor($user);
+        if (!$rec) {
+            return response()->json(['empty' => true], 204);
+        }
 
-        $type = $types[array_rand($types)];
-        $id = random_int(1000, 9999);
+        // Incrementa contador de sessão
+        session()->put('connect_cards_shown', $count + 1);
 
-        $data = [
-            'id' => $id,
-            'type' => $type,
-            'score' => random_int(50, 99),
-            'payload' => [
-                'title' => $type === 'job' ? 'Desenvolvedor Laravel' : 'Freelancer Full-Stack',
-                'location' => $locations[array_rand($locations)],
-                'mode' => $modes[array_rand($modes)],
-                'range' => $type === 'job' ? 'R$ 8k–12k' : 'R$ 80–120/h',
-                'skills' => $pickSkills(random_int(3, 6)),
-                'summary' => 'Card de exemplo gerado como stub para navegação do módulo Conectar. Sem lógica real de match ainda.'
-            ],
-        ];
-
-        return response()->json($data);
+        return response()->json($this->mapRecommendationToCard($rec));
     }
 
     /**
-     * Recebe uma decisão do usuário e retorna stub {match:false}
+     * Recebe uma decisão do usuário e aplica na recommendation; pode retornar {match:true}.
      */
-    public function decide(Request $request)
+    public function decide(Request $request, RecommendationService $service)
     {
         $validated = $request->validate([
             'recommendation_id' => ['required', 'integer'],
-            'action' => ['required', 'in:liked,rejected,saved'],
+            'action' => ['required', 'in:liked,rejected,saved,undo'],
         ]);
 
-        return response()->json([
-            'ok' => true,
-            'match' => false,
-            'received' => $validated,
-        ]);
+        $user = $request->user();
+        $result = $service->decide($user, (int)$validated['recommendation_id'], $validated['action']);
+
+        return response()->json($result);
+    }
+
+    private function mapRecommendationToCard(Recommendation $rec): array
+    {
+        if ($rec->target_type === 'job_vacancy') {
+            $job = $rec->targetJob; // relation
+            $companyName = $job?->company?->display_name ?: ($job?->company?->name ?: 'Empresa');
+            return [
+                'id' => $rec->id,
+                'type' => 'job',
+                'score' => round((float)$rec->score, 2),
+                'payload' => [
+                    'title' => $job?->title ?: 'Vaga',
+                    'company' => $companyName,
+                    'location' => $job?->company?->location ?: '-',
+                    'mode' => $job?->location_type ?: '-',
+                    'range' => $job?->salary_range ?: '-',
+                    'skills' => [], // opcionalmente re-extrair do texto
+                    'summary' => Str::limit($job?->description ?: '', 180),
+                ],
+            ];
+        }
+
+        if ($rec->target_type === 'freelancer') {
+            $f = $rec->targetFreelancer;
+            $skills = $f?->skills()->pluck('name')->all() ?? [];
+            return [
+                'id' => $rec->id,
+                'type' => 'freelancer',
+                'score' => round((float)$rec->score, 2),
+                'payload' => [
+                    'title' => $f?->display_name ?: 'Freelancer',
+                    'location' => $f?->location ?: '-',
+                    'mode' => '—',
+                    'range' => $f?->hourly_rate ? ('R$ '.number_format((float)$f->hourly_rate, 2, ',', '.').'/h') : '-',
+                    'skills' => $skills,
+                    'summary' => Str::limit($f?->bio ?: '', 180),
+                ],
+            ];
+        }
+
+        return [
+            'id' => $rec->id,
+            'type' => 'unknown',
+            'score' => round((float)$rec->score, 2),
+            'payload' => [ 'title' => '—' ]
+        ];
     }
 }
