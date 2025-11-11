@@ -85,6 +85,22 @@
                 x-transition:leave-end="opacity-0"
                 class="ml-3 font-medium whitespace-nowrap overflow-hidden">Dashboard</span>
         </a>
+
+        <!-- Conectar - novo item abaixo de Dashboard -->
+        <a href="#"
+           data-menu-item="connect"
+           class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200">
+            <i class="fa-solid fa-share-nodes text-lg flex-shrink-0"></i>
+            <span
+                x-show="expanded"
+                x-transition:enter="transition-opacity duration-300 ease-in-out delay-75"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition-opacity duration-200 ease-in-out"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="ml-3 font-medium whitespace-nowrap overflow-hidden">Conectar</span>
+        </a>
         @endif
 
         @if($activeRole === 'freelancer')
