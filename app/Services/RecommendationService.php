@@ -8,7 +8,7 @@ use App\Models\Freelancer;
 use App\Models\JobVacancy;
 use App\Models\Preference;
 use App\Models\Recommendation;
-use App\Models\Match;
+use App\Models\Match as JobMatch;
 use App\Models\Skill;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -276,7 +276,7 @@ class RecommendationService
                         ->where('status', 'liked')
                         ->exists();
                     if ($inverseLiked) {
-                        Match::firstOrCreate([
+                        JobMatch::firstOrCreate([
                             'freelancer_id' => $freelancerId,
                             'job_vacancy_id' => $jobId,
                         ], ['created_at' => Carbon::now()]);
@@ -296,7 +296,7 @@ class RecommendationService
                         ->where('status', 'liked')
                         ->exists();
                     if ($inverseLiked) {
-                        Match::firstOrCreate([
+                        JobMatch::firstOrCreate([
                             'freelancer_id' => $freelancerId,
                             'job_vacancy_id' => $jobId,
                         ], ['created_at' => Carbon::now()]);
