@@ -266,14 +266,6 @@ class RecommendationService
             $confidence = $this->sinalConfiancaForTarget($freelancer);
             $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
             $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
-            $existsRecent = Recommendation::query()
-                ->where('subject_type', $subjectType)
-                ->where('subject_id', $subjectId)
-                ->where('target_type', 'freelancer')
-                ->where('target_id', $freelancer->id)
-                ->where('created_at', '>=', Carbon::now()->subDays(7))
-                ->exists();
-            if ($existsRecent) continue;
             $scored[] = ['target' => $freelancer, 'score' => $score, 'seg' => $segMatch];
         }
 
@@ -285,16 +277,33 @@ class RecommendationService
         $merged = array_merge($similar, $others);
         $top = array_slice($merged, 0, $topN);
         foreach ($top as $item) {
-            Recommendation::create([
-                'subject_type' => $subjectType,
-                'subject_id' => $subjectId,
-                'target_type' => 'freelancer',
-                'target_id' => $item['target']->id,
-                'score' => $item['score'],
-                'batch_date' => $today,
-                'status' => 'pending',
-                'created_at' => Carbon::now(),
-            ]);
+            // Reativar recomendação existente (qualquer status) ou criar nova, para garantir cards no contexto da vaga
+            $existing = Recommendation::query()
+                ->where('subject_type', $subjectType)
+                ->where('subject_id', $subjectId)
+                ->where('target_type', 'freelancer')
+                ->where('target_id', $item['target']->id)
+                ->orderByDesc('created_at')
+                ->first();
+            if ($existing) {
+                $existing->score = $item['score'];
+                $existing->batch_date = $today;
+                $existing->status = 'pending';
+                $existing->decided_at = null;
+                $existing->created_at = Carbon::now();
+                $existing->save();
+            } else {
+                Recommendation::create([
+                    'subject_type' => $subjectType,
+                    'subject_id' => $subjectId,
+                    'target_type' => 'freelancer',
+                    'target_id' => $item['target']->id,
+                    'score' => $item['score'],
+                    'batch_date' => $today,
+                    'status' => 'pending',
+                    'created_at' => Carbon::now(),
+                ]);
+            }
         }
         return count($top);
     }
