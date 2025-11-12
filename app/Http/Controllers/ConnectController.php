@@ -32,18 +32,25 @@ class ConnectController extends Controller
                 if ($selectedJob) {
                     // Persistir contexto da vaga na sessão e preparar recomendações
                     session(['connect_job_id' => $selectedJob->id]);
+                    // Resetar contador de cards mostrados ao trocar de vaga
+                    session()->forget('connect_cards_shown');
                     try { $service->prepareCompanyConnectForJob($user, $selectedJob->id, 50); } catch (\Throwable $e) {}
                 } else {
                     session()->forget('connect_job_id');
+                    // Resetar também caso a vaga informada não pertença à empresa
+                    session()->forget('connect_cards_shown');
                 }
             } else {
                 // Sem seleção: carregar vagas ativas para escolher
                 $companyVacancies = $company->vacancies()->active()->latest()->get();
                 session()->forget('connect_job_id');
+                // Sem vaga no contexto, limpar contador da sessão
+                session()->forget('connect_cards_shown');
             }
         } else {
             // Fluxo padrão: limpar qualquer contexto de vaga
             session()->forget('connect_job_id');
+            session()->forget('connect_cards_shown');
         }
 
         return view('connect.index', [
