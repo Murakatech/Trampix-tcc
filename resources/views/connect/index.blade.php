@@ -10,7 +10,35 @@
 @endsection
 
 @section('content')
-<div class="space-y-6" x-data="connectModule()">
+<div class="space-y-6" x-data="connectModule({{ isset($selectedJob) && $selectedJob ? $selectedJob->id : 'null' }})">
+  <!-- Fluxo de empresa: selecionar uma vaga antes de ver cards -->
+  @if(isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob))
+  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-lg font-semibold text-gray-800">Selecione uma vaga para conectar com freelancers</h3>
+      <span class="text-xs text-gray-500">Empresa</span>
+    </div>
+    @if($companyVacancies->count() === 0)
+      <p class="text-sm text-gray-600">Nenhuma vaga ativa encontrada. Crie uma vaga para começar.</p>
+    @else
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @foreach($companyVacancies as $job)
+          <div class="border border-gray-200 rounded-md p-4">
+            <div class="font-medium text-gray-800">{{ $job->title }}</div>
+            <div class="text-sm text-gray-600">
+              <span class="mr-2">Local:</span>{{ $job->company?->location ?? '-' }}
+              <span class="mx-2">•</span>{{ $job->location_type ?? '-' }}
+            </div>
+            <div class="mt-3">
+              <a href="{{ route('connect.index', ['job_id' => $job->id]) }}" class="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Selecionar</a>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    @endif
+  </div>
+  @endif
+
   <!-- Filtros (placeholders) -->
   <div class="flex items-center gap-3">
     <div class="inline-flex items-center gap-2 text-sm text-gray-600">
@@ -27,6 +55,15 @@
     <div class="lg:col-span-2">
       <div class="bg-white shadow-sm rounded-lg border border-gray-200">
         <div class="p-5">
+          @if(isset($selectedJob) && $selectedJob)
+          <div class="mb-4 flex items-center justify-between">
+            <div class="text-sm text-gray-600">
+              <span class="font-medium">Vaga selecionada:</span> {{ $selectedJob->title }}
+              <span class="mx-2">•</span> {{ $selectedJob->company?->display_name ?? $selectedJob->company?->name ?? 'Empresa' }}
+            </div>
+            <a href="{{ route('connect.index') }}" class="text-sm text-indigo-600 hover:text-indigo-700">Trocar vaga</a>
+          </div>
+          @endif
           <div class="flex items-center justify-between mb-2">
             <h2 class="text-xl font-semibold text-gray-800" x-text="cardTitle()">Card</h2>
             <span class="text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-600" x-text="cardType()"></span>
@@ -88,18 +125,24 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <script>
-  function connectModule() {
+  function connectModule(selectedJobId = null) {
     return {
       card: null,
       disabled: false,
       cardsShown: 0,
       lastRejectedId: null,
+      selectedJobId: selectedJobId,
       snackbar: { visible: false, message: '', undo: false, timer: null },
       endpoints: {
         next: "{{ route('connect.next') }}",
         decide: "{{ route('connect.decide') }}",
       },
       init() {
+        // Se a empresa ainda não selecionou uma vaga, não carregar cards
+        if (!this.selectedJobId && {{ isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob) ? 'true' : 'false' }}) {
+          this.disabled = true;
+          return;
+        }
         this.loadNext();
         // Atalhos de teclado
         window.addEventListener('keydown', (e) => {
@@ -145,7 +188,7 @@
               'Accept': 'application/json',
               'X-CSRF-TOKEN': token,
             },
-            body: JSON.stringify({ recommendation_id: this.card.id, action }),
+            body: JSON.stringify({ recommendation_id: this.card.id, action, job_vacancy_id: this.selectedJobId }),
           });
           const data = await res.json();
           if (data && data.match) {

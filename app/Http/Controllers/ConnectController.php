@@ -7,15 +7,49 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 use App\Services\RecommendationService;
 use App\Models\Recommendation;
+use App\Models\JobVacancy;
 
 class ConnectController extends Controller
 {
     /**
      * Tela principal do módulo Conectar
      */
-    public function index()
+    public function index(Request $request, RecommendationService $service)
     {
-        return view('connect.index');
+        $user = $request->user();
+        $selectedJob = null;
+        $companyVacancies = collect();
+
+        // Fluxo para empresa: seleção de vaga antes de ver cards
+        if ($user && $user->isCompany() && $user->company) {
+            $company = $user->company;
+            $selectedJobId = (int)($request->query('job_id') ?? 0);
+            if ($selectedJobId > 0) {
+                $selectedJob = JobVacancy::query()
+                    ->where('company_id', $company->id)
+                    ->where('id', $selectedJobId)
+                    ->first();
+                if ($selectedJob) {
+                    // Persistir contexto da vaga na sessão e preparar recomendações
+                    session(['connect_job_id' => $selectedJob->id]);
+                    try { $service->prepareCompanyConnectForJob($user, $selectedJob->id, 50); } catch (\Throwable $e) {}
+                } else {
+                    session()->forget('connect_job_id');
+                }
+            } else {
+                // Sem seleção: carregar vagas ativas para escolher
+                $companyVacancies = $company->vacancies()->active()->latest()->get();
+                session()->forget('connect_job_id');
+            }
+        } else {
+            // Fluxo padrão: limpar qualquer contexto de vaga
+            session()->forget('connect_job_id');
+        }
+
+        return view('connect.index', [
+            'selectedJob' => $selectedJob,
+            'companyVacancies' => $companyVacancies,
+        ]);
     }
 
     /**
@@ -34,7 +68,14 @@ class ConnectController extends Controller
         // Fallback: se não houver batch gerado ainda, tenta gerar agora e buscar novamente
         if (!$rec) {
             try {
-                $service->generateDailyBatchFor($user, 50);
+                if ($user->isCompany() && session()->has('connect_job_id')) {
+                    $jobId = (int) session('connect_job_id');
+                    if ($jobId > 0) {
+                        $service->prepareCompanyConnectForJob($user, $jobId, 50);
+                    }
+                } else {
+                    $service->generateDailyBatchFor($user, 50);
+                }
             } catch (\Throwable $e) {
                 // ignora e segue
             }
@@ -58,10 +99,12 @@ class ConnectController extends Controller
         $validated = $request->validate([
             'recommendation_id' => ['required', 'integer'],
             'action' => ['required', 'in:liked,rejected,saved,undo'],
+            'job_vacancy_id' => ['nullable', 'integer'],
         ]);
 
         $user = $request->user();
-        $result = $service->decide($user, (int)$validated['recommendation_id'], $validated['action']);
+        $jobContext = isset($validated['job_vacancy_id']) ? (int)$validated['job_vacancy_id'] : (int) session('connect_job_id');
+        $result = $service->decide($user, (int)$validated['recommendation_id'], $validated['action'], $jobContext > 0 ? $jobContext : null);
 
         return response()->json($result);
     }

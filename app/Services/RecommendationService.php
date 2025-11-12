@@ -227,6 +227,79 @@ class RecommendationService
     }
 
     /**
+     * Prepara recomendações para a empresa com contexto de uma vaga específica:
+     * limpa pendentes e gera recomendações de freelancers alinhados ao segmento da vaga.
+     */
+    public function prepareCompanyConnectForJob(User $user, int $jobId, int $topN = 50): int
+    {
+        if (!($user->isCompany() && $user->company)) {
+            return 0;
+        }
+        $company = $user->company;
+        $job = JobVacancy::query()->where('id', $jobId)->where('company_id', $company->id)->first();
+        if (!$job) {
+            return 0;
+        }
+
+        $today = Carbon::today();
+        // Substituir segmentos do usuário pelos segmentos inferidos da VAGA selecionada
+        $segmentsUser = $this->segmentsForJob($job);
+        $faixaU = ['min' => null, 'max' => null];
+        $modalU = ['remote_ok' => false, 'radius_km' => null, 'location' => $company->location];
+
+        // Limpar recomendações pendentes para evitar mistura de contexto
+        Recommendation::query()
+            ->where('subject_type', 'company')
+            ->where('subject_id', $company->id)
+            ->where('status', 'pending')
+            ->delete();
+
+        $subjectType = 'company';
+        $subjectId = $company->id;
+
+        $candidates = Freelancer::query()->where('is_active', true)->limit(500)->get();
+        $scored = [];
+        foreach ($candidates as $freelancer) {
+            $segmentsTarget = $this->segmentsForFreelancer($freelancer);
+            $faixaT = ['min' => null, 'max' => null];
+            $modalT = ['location' => $freelancer->location, 'location_type' => null];
+            $confidence = $this->sinalConfiancaForTarget($freelancer);
+            $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
+            $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
+            $existsRecent = Recommendation::query()
+                ->where('subject_type', $subjectType)
+                ->where('subject_id', $subjectId)
+                ->where('target_type', 'freelancer')
+                ->where('target_id', $freelancer->id)
+                ->where('created_at', '>=', Carbon::now()->subDays(7))
+                ->exists();
+            if ($existsRecent) continue;
+            $scored[] = ['target' => $freelancer, 'score' => $score, 'seg' => $segMatch];
+        }
+
+        $similar = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) > 0));
+        $others  = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) <= 0));
+        usort($similar, fn($a,$b) => $b['score'] <=> $a['score']);
+        usort($others, fn($a,$b) => $b['score'] <=> $a['score']);
+        $similar = array_values(array_filter($similar, fn($x) => $x['score'] >= 0.35));
+        $merged = array_merge($similar, $others);
+        $top = array_slice($merged, 0, $topN);
+        foreach ($top as $item) {
+            Recommendation::create([
+                'subject_type' => $subjectType,
+                'subject_id' => $subjectId,
+                'target_type' => 'freelancer',
+                'target_id' => $item['target']->id,
+                'score' => $item['score'],
+                'batch_date' => $today,
+                'status' => 'pending',
+                'created_at' => Carbon::now(),
+            ]);
+        }
+        return count($top);
+    }
+
+    /**
      * Próximo card: recommendation pending ordenada por score.
      */
     public function nextCardFor(User $user): ?Recommendation
@@ -240,7 +313,7 @@ class RecommendationService
     /**
      * Processa decisão e cria Match quando ambos deram like. Suporta undo.
      */
-    public function decide(User $user, int $recommendationId, string $action): array
+    public function decide(User $user, int $recommendationId, string $action, ?int $jobId = null): array
     {
         $rec = Recommendation::forUser($user)->where('id', $recommendationId)->first();
         if (!$rec) return ['ok' => false, 'match' => false, 'error' => 'recommendation_not_found'];
@@ -286,19 +359,20 @@ class RecommendationService
             } elseif ($rec->target_type === 'freelancer' && $rec->subject_type === 'company') {
                 $companyId = $rec->subject_id;
                 $freelancerId = $rec->target_id;
-                $jobId = JobVacancy::query()->where('company_id', $companyId)->value('id');
-                if ($jobId) {
+                // Usar jobId do contexto (selecionado na UI); fallback: primeira vaga da empresa
+                $resolvedJobId = $jobId ?: JobVacancy::query()->where('company_id', $companyId)->value('id');
+                if ($resolvedJobId) {
                     $inverseLiked = Recommendation::query()
                         ->where('subject_type', 'freelancer')
                         ->where('subject_id', $freelancerId)
                         ->where('target_type', 'job')
-                        ->where('target_id', $jobId)
+                        ->where('target_id', $resolvedJobId)
                         ->where('status', 'liked')
                         ->exists();
                     if ($inverseLiked) {
                         JobMatch::firstOrCreate([
                             'freelancer_id' => $freelancerId,
-                            'job_vacancy_id' => $jobId,
+                            'job_vacancy_id' => $resolvedJobId,
                         ], ['created_at' => Carbon::now()]);
                         $hasMatch = true;
                     }
