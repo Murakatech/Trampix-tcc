@@ -519,11 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <i class="fas fa-tag mr-2"></i>{{ $categoryLabel }}
                                     </span>
                                 @endif
-                                @if($vaga->contract_type)
-                                    <span class="inline-flex items-center px-4 py-1.5 rounded-full text-base font-semibold bg-white/30 text-white backdrop-blur-sm shadow-sm">
-                                        <i class="fas fa-briefcase mr-2"></i>{{ $vaga->contract_type }}
-                                    </span>
-                                @endif
+                                {{-- Tipo de contrato removido: todos os contratos são freelance --}}
                                 @if($vaga->location_type)
                                     <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium bg-white/30 text-white backdrop-blur-sm shadow-sm">
                                         <i class="fas fa-map-marker-alt mr-2"></i>{{ $vaga->location_type }}

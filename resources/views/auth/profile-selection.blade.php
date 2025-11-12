@@ -368,10 +368,10 @@
                             @enderror
                         </div>
 
-                        <!-- CNPJ (obrigatório) -->
+                        <!-- CNPJ (opcional) -->
                         <div>
-                            <label for="company_cnpj" class="block text-sm font-medium text-green-100 mb-2">CNPJ *</label>
-                            <input type="text" id="company_cnpj" name="cnpj" value="{{ old('cnpj') }}" required class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50 br-cnpj" placeholder="00.000.000/0000-00">
+                            <label for="company_cnpj" class="block text-sm font-medium text-green-100 mb-2">CNPJ</label>
+                            <input type="text" id="company_cnpj" name="cnpj" value="{{ old('cnpj') }}" class="w-full px-3 py-2 bg-white/20 border border-white/30 rounded-lg text-white placeholder-green-200 focus:outline-none focus:ring-2 focus:ring-white/50 br-cnpj" placeholder="00.000.000/0000-00">
                             @error('cnpj')
                                 <p class="mt-1 text-xs text-red-300">{{ $message }}</p>
                             @enderror

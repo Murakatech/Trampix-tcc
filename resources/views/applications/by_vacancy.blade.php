@@ -54,10 +54,7 @@
                     <strong>Categoria:</strong><br>
                     <span class="badge bg-secondary">{{ $vacancy->category ?? '-' }}</span>
                 </div>
-                <div class="col-md-3">
-                    <strong>Tipo de contrato:</strong><br>
-                    <span class="badge bg-info">{{ $vacancy->contract_type ?? '-' }}</span>
-                </div>
+                <!-- Tipo de contrato removido: todos os contratos são freelance -->
                 <div class="col-md-3">
                     <strong>Modalidade:</strong><br>
                     <span class="badge bg-warning text-dark">{{ $vacancy->location_type ?? '-' }}</span>

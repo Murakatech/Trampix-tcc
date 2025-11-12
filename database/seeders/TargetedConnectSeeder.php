@@ -72,7 +72,6 @@ class TargetedConnectSeeder extends Seeder
             'category' => $categoryName,      // compat legado
             'category_id' => $category->id,   // relacionamento novo
             'service_category_id' => null,
-            'contract_type' => 'CLT',
             'location_type' => 'Presencial',
             'salary_range' => 'R$ 2.500 - R$ 4.000',
             'status' => 'active',

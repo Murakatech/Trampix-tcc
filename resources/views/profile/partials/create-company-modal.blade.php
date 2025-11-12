@@ -82,17 +82,17 @@
                     @enderror
                 </div>
 
-                {{-- CNPJ (obrigatório) - posicionado após o E-mail --}}
+                {{-- CNPJ (opcional) - posicionado após o E-mail --}}
                 <div>
                     <label for="company_cnpj" class="block text-sm font-medium text-gray-700 mb-2">
-                        CNPJ *
+                        CNPJ
                     </label>
                     <input type="text"
                            id="company_cnpj"
                            name="cnpj"
                            class="trampix-input w-full br-cnpj"
                            placeholder="00.000.000/0000-00"
-                           required>
+                           >
                     @error('cnpj')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror

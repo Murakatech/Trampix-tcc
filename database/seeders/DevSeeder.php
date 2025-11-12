@@ -40,7 +40,6 @@ class DevSeeder extends Seeder
             $categories = $fallback;
         }
 
-        $contractTypes = ['CLT', 'PJ', 'Freelance'];
         $locationTypes = ['Remoto', 'Híbrido', 'Presencial'];
 
         // 1) 10 novas empresas com 1-3 vagas cada
@@ -66,7 +65,6 @@ class DevSeeder extends Seeder
                     'category' => $catName,
                     'category_id' => $catId,
                     'service_category_id' => null,
-                    'contract_type' => $contractTypes[array_rand($contractTypes)],
                     'location_type' => $locationTypes[array_rand($locationTypes)],
                     'salary_range' => 'R$ ' . rand(3000, 9000) . ' - R$ ' . rand(9000, 15000),
                     'status' => 'active',

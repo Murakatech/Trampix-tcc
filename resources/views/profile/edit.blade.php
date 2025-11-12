@@ -546,7 +546,7 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ *</label>
+                                <label for="cnpj" class="block text-sm font-medium text-gray-700">CNPJ</label>
                                 <input type="text" id="cnpj" name="cnpj"
                                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('cnpj') border-red-500 @enderror"
                                        value="{{ old('cnpj', $company->cnpj ?? '') }}"

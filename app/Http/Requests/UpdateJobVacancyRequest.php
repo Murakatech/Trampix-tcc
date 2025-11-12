@@ -20,7 +20,6 @@ class UpdateJobVacancyRequest extends FormRequest
             'requirements'  => 'nullable|string',
             'segment_id'    => ['required','exists:segments,id'],
             'category_id'   => ['nullable','exists:categories,id'],
-            'contract_type' => 'nullable|in:PJ,CLT,Estágio,Freelance',
             'location_type' => 'nullable|in:Remoto,Híbrido,Presencial',
             'salary_range'  => 'nullable|string|max:100',
             'status'        => 'nullable|in:active,closed',

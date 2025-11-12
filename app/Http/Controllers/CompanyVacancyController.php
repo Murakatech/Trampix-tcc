@@ -58,9 +58,7 @@ class CompanyVacancyController extends Controller
                 $query->where('status', $request->status);
             }
 
-            if ($request->filled('contract_type')) {
-                $query->where('contract_type', $request->contract_type);
-            }
+            // Removido: filtro por tipo de contrato (todos são freelance)
 
             if ($request->filled('location_type')) {
                 $query->where('location_type', $request->location_type);

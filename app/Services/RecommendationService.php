@@ -112,28 +112,36 @@ class RecommendationService
     {
         $today = Carbon::today();
         $pref = Preference::where('user_id', $user->id)->first();
-        if (!$pref) return 0;
-        // Base: segmentos do usuário
-        $segmentsUser = collect($pref->segments ?? [])
+        // Base: segmentos do usuário (preferências), com fallback robusto para TODOS segmentos do perfil
+        $segmentsUser = collect($pref?->segments ?? [])
             ->filter()->values()->all();
-        // fallback: usar segmento principal do perfil
         if (empty($segmentsUser)) {
-            if ($user->isFreelancer() && $user->freelancer?->segment_id) {
-                $segmentsUser = [ (int)$user->freelancer->segment_id ];
-            } elseif ($user->isCompany() && $user->company?->segment_id) {
-                $segmentsUser = [ (int)$user->company->segment_id ];
+            if ($user->isFreelancer() && $user->freelancer) {
+                // Usar todos os segmentos do freelancer (primário + muitos)
+                $segmentsUser = $this->segmentsForFreelancer($user->freelancer);
+            } elseif ($user->isCompany() && $user->company) {
+                // Usar segmentos da empresa (primário + muitos)
+                $segmentsUser = $this->segmentsForCompany($user->company);
             }
         }
-        $faixaU = ['min' => $pref->salary_min, 'max' => $pref->salary_max];
-        $modalU = ['remote_ok' => $pref->remote_ok, 'radius_km' => $pref->radius_km, 'location' => $pref->location];
+        // Preferências de faixa e modalidade com defaults do perfil, quando disponíveis
+        $faixaU = ['min' => $pref?->salary_min, 'max' => $pref?->salary_max];
+        $modalU = [
+            'remote_ok' => (bool)($pref?->remote_ok ?? false),
+            'radius_km' => $pref?->radius_km,
+            'location'  => $pref?->location ?? ($user->isFreelancer() ? ($user->freelancer?->location) : ($user->company?->location)),
+        ];
 
         if ($user->isFreelancer() && $user->freelancer) {
             $subjectType = 'freelancer';
             $subjectId = $user->freelancer->id;
             // Inclui TODAS as vagas ativas (não aplicadas), priorizando por score de segmento
             $query = JobVacancy::query()->active()->notAppliedBy($subjectId);
-            $desired = collect($pref->desired_roles ?? [])->filter()->values()->all();
-            if (!empty($desired)) { $query->filterCategories($desired); }
+            // Não filtrar por desired_roles aqui para evitar excluir vagas de outros segmentos.
+            // Em vez disso, usamos desired_roles apenas como um sinal positivo dentro do score (boost leve).
+            $desired = collect($pref?->desired_roles ?? [])->filter()->map(function($v){
+                return Str::lower(trim((string)$v));
+            })->values()->all();
             $candidates = $query->limit(500)->get();
             $scored = [];
             foreach ($candidates as $job) {
@@ -142,6 +150,11 @@ class RecommendationService
                 $modalT = ['location_type' => $job->location_type, 'location' => $job->company?->location];
                 $confidence = $this->sinalConfiancaForTarget($job);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
+                // Boost leve se a categoria da vaga estiver nos desired_roles do usuário
+                $catName = Str::lower(trim((string)($job->category_id ? optional(\App\Models\Category::find($job->category_id))->name : $job->category)));
+                if ($catName && in_array($catName, $desired)) {
+                    $score = min(1.0, $score + 0.05);
+                }
                 $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
@@ -420,6 +433,20 @@ class RecommendationService
         if ($freelancer->segment_id) $segs[] = (int)$freelancer->segment_id;
         try {
             $many = $freelancer->segments()->pluck('segments.id')->all();
+            foreach ($many as $sid) { $segs[] = (int)$sid; }
+        } catch (\Throwable $e) {}
+        return array_values(array_unique($segs));
+    }
+
+    /**
+     * Determina segmentos de uma empresa (id principal + múltiplos relacionamentos), se existentes.
+     */
+    private function segmentsForCompany(Company $company): array
+    {
+        $segs = [];
+        if ($company->segment_id) $segs[] = (int)$company->segment_id;
+        try {
+            $many = $company->segments()->pluck('segments.id')->all();
             foreach ($many as $sid) { $segs[] = (int)$sid; }
         } catch (\Throwable $e) {}
         return array_values(array_unique($segs));

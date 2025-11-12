@@ -74,7 +74,7 @@
 
     {{-- Filtros (copiados da tela pública de Vagas) --}}
     @php
-        $filtersApplied = request()->hasAny(['category', 'contract_type', 'location_type', 'search', 'rating_order']);
+        $filtersApplied = request()->hasAny(['category', 'location_type', 'search', 'rating_order']);
         $locationsList = ['Remoto','Híbrido','Presencial'];
         $categoriesList = $categories ?? [];
     @endphp
@@ -133,7 +133,7 @@
             <div class="card-body">
                 <i class="fas fa-briefcase text-muted" style="font-size: 4rem;"></i>
                 <h3 class="trampix-h3 mt-3 mb-2">Nenhuma vaga encontrada</h3>
-                @if(request()->hasAny(['category', 'status', 'contract_type', 'location_type']))
+                @if(request()->hasAny(['category', 'status', 'location_type']))
                     <p class="text-muted mb-3">Tente ajustar os filtros ou</p>
                     <a href="{{ route('company.vagas.index') }}" class="btn-trampix-secondary me-2">
                         <i class="fas fa-times me-1"></i>Limpar Filtros
@@ -155,7 +155,6 @@
                             <tr>
                                 <th>Título</th>
                                 <th>Categoria</th>
-                                <th>Tipo</th>
                                 <th>Modalidade</th>
                                 <th>Status</th>
                                 <th>Candidaturas</th>
@@ -176,13 +175,6 @@
                                     </td>
                                     <td>
                                         <span class="badge bg-secondary">{{ $vaga->category?->name ?? $vaga->category ?? 'Sem categoria' }}</span>
-                                    </td>
-                                    <td>
-                                        @if($vaga->contract_type)
-                                            <span class="badge bg-info">{{ $vaga->contract_type }}</span>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
                                     </td>
                                     <td>
                                         @if($vaga->location_type)

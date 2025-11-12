@@ -51,7 +51,6 @@ class JobVacancyController extends Controller
 
             return [
                 'availableCategories' => $availableCategories,
-                'contractTypes' => ['CLT', 'PJ', 'Freelance', 'Estágio', 'Temporário'],
                 'locationTypes' => ['Presencial', 'Remoto', 'Híbrido'],
                 // Lista de segmentos disponíveis para filtro
                 'segments' => Segment::where('active', true)->orderBy('name')->select('id','name')->get(),
@@ -66,7 +65,7 @@ class JobVacancyController extends Controller
                 'category:id,name,segment_id',
                 'category.segment:id,name'
             ])
-            ->select(['id', 'title', 'description', 'requirements', 'category', 'category_id', 'contract_type', 'location_type', 'salary_range', 'status', 'company_id', 'created_at'])
+            ->select(['id', 'title', 'description', 'requirements', 'category', 'category_id', 'location_type', 'salary_range', 'status', 'company_id', 'created_at'])
             ->publicList()
             ->orderBy('created_at', 'desc');
 
@@ -98,8 +97,7 @@ class JobVacancyController extends Controller
             $query->filterSegment((int) $request->get('segment_id'));
         }
 
-        // Filtro por tipo de contrato
-        $query->contractType($request->filled('contract_type') ? $request->contract_type : null);
+        // Removido: filtro por tipo de contrato (todos são freelance)
 
         // Filtro por tipo de localização
         $query->locationType($request->filled('location_type') ? $request->location_type : null);
@@ -136,7 +134,7 @@ class JobVacancyController extends Controller
 
         // Cache da página por 10 minutos se não houver filtros específicos
         // Evitar cache compartilhado para freelancers autenticados (lista depende do usuário)
-        if (!$request->hasAny(['categories', 'contract_type', 'location_type', 'search'])
+        if (!$request->hasAny(['categories', 'location_type', 'search'])
             && (!Auth::check() || !Gate::allows('isFreelancer'))) {
             $vagas = Cache::remember($cacheKey, 600, function () use ($query) {
                 return $query->paginate(12);
@@ -146,7 +144,6 @@ class JobVacancyController extends Controller
         return view('vagas.index', array_merge([
             'vagas' => $vagas,
             'selectedCategories'   => (array) $request->get('categories', $request->filled('category') ? [$request->get('category')] : []),
-            'selectedContractType' => $request->get('contract_type'),
             'selectedLocationType' => $request->get('location_type'),
             'search'               => $request->get('search'),
         ], $filterData));

@@ -18,7 +18,6 @@ class JobVacancy extends Model
         'category',
         'category_id',
         'service_category_id',
-        'contract_type',
         'location_type',
         'salary_range',
         'status',
@@ -98,10 +97,7 @@ class JobVacancy extends Model
         });
     }
 
-    public function scopeContractType(Builder $query, ?string $type): Builder
-    {
-        return $type ? $query->where('contract_type', $type) : $query;
-    }
+    // contract_type removido do sistema: todos os contratos são freelance
 
     public function scopeLocationType(Builder $query, ?string $type): Builder
     {

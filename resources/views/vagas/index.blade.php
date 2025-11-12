@@ -771,7 +771,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
 
     {{-- Sistema de Filtros --}}
     @php
-        $filtersApplied = request()->hasAny(['categories', 'category', 'contract_type', 'location_type', 'search', 'segment_id', 'rating_order']);
+        $filtersApplied = request()->hasAny(['categories', 'category', 'location_type', 'search', 'segment_id', 'rating_order']);
     @endphp
     <div class="filter-section p-4 mb-6" role="search" aria-label="Filtros de busca de vagas">
         <div class="flex items-center justify-between mb-6">
@@ -919,13 +919,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
                                     <i class="fas fa-tag mr-2" aria-hidden="true"></i>{{ $categoryLabel }}
                                 </span>
                             @endif
-                            @if($vaga->contract_type)
-                                <span class="job-badge badge-contract text-sm font-semibold px-3 py-1.5 rounded-full border border-indigo-200 bg-indigo-50 text-indigo-700 shadow-sm"
-                                      role="listitem"
-                                      aria-label="Tipo de contrato: {{ $vaga->contract_type }}">
-                                    <i class="fas fa-briefcase mr-2" aria-hidden="true"></i>{{ $vaga->contract_type }}
-                                </span>
-                            @endif
+                            {{-- Tipo de contrato removido: todos os contratos são freelance --}}
                             @if($vaga->location_type)
                                 <span class="job-badge badge-location text-sm font-semibold px-3 py-1.5 rounded-full border border-blue-200 bg-blue-50 text-blue-700 shadow-sm"
                                       role="listitem"

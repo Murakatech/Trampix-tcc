@@ -90,24 +90,7 @@
                     </div>
                 </div>
                 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="contract_type" class="form-label">Tipo de contrato</label>
-                            <select id="contract_type" name="contract_type" 
-                                    class="form-select @error('contract_type') is-invalid @enderror">
-                                <option value="">Selecione...</option>
-                                <option value="PJ" {{ old('contract_type') == 'PJ' ? 'selected' : '' }}>PJ</option>
-                                <option value="CLT" {{ old('contract_type') == 'CLT' ? 'selected' : '' }}>CLT</option>
-                                <option value="Estágio" {{ old('contract_type') == 'Estágio' ? 'selected' : '' }}>Estágio</option>
-                                <option value="Freelance" {{ old('contract_type') == 'Freelance' ? 'selected' : '' }}>Freelance</option>
-                            </select>
-                            @error('contract_type')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
+                <!-- Campo de Tipo de contrato removido: todos os contratos são freelance -->
                 
                 <div class="row">
                     <div class="col-md-6">

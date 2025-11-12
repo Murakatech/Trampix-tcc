@@ -500,7 +500,7 @@ class ProfileController extends Controller
         
         $validated = $request->validate([
             'company_name' => 'required|string|min:3|max:255',
-            'cnpj' => 'required|string|size:18', // Com máscara: 00.000.000/0000-00
+            'cnpj' => 'nullable|string|size:18', // Com máscara: 00.000.000/0000-00
             'description' => 'required|string|min:30|max:1000',
             'sector' => 'required|string|max:255',
             'website' => 'nullable|url|max:255',
@@ -522,7 +522,7 @@ class ProfileController extends Controller
         // Criar perfil empresa
         $company = $user->createProfile('company', [
             'name' => $validated['company_name'],
-            'cnpj' => $validated['cnpj'],
+            'cnpj' => $validated['cnpj'] ?? null,
             'description' => $validated['description'],
             'sector' => $validated['sector'],
             'website' => $validated['website'] ?? null,

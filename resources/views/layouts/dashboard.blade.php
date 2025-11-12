@@ -44,9 +44,9 @@
             }
 
             /* Tipografia básica do styleguide */
-            .trampix-h1 { color: var(--trampix-purple); font-weight: 700; font-size: 2.5rem; }
+            .trampix-h1 { color: #000000; font-weight: 700; font-size: 2rem; text-align: center; }
             .trampix-h2 { color: var(--trampix-black); font-weight: 500; font-size: 2rem; }
-            .trampix-h3 { color: var(--trampix-green); font-weight: 600; font-size: 1.5rem; }
+            .trampix-h3 { color: #1ca751; font-weight: 600; font-size: 1.5rem; }
             .trampix-p { color: var(--trampix-dark-gray); font-weight: 400; }
 
             /* Cards Trampix */

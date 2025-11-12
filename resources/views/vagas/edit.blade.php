@@ -71,21 +71,7 @@
                         </div>
                     </div>
                     
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="contract_type" class="form-label">Tipo de contrato</label>
-                            <select id="contract_type" name="contract_type" 
-                                    class="form-select @error('contract_type') is-invalid @enderror">
-                                <option value="">Selecione...</option>
-                                @foreach(['PJ','CLT','Estágio','Freelance'] as $tipo)
-                                    <option value="{{ $tipo }}" {{ old('contract_type', $vaga->contract_type) == $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
-                                @endforeach
-                            </select>
-                            @error('contract_type')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
+                    <!-- Campo de Tipo de contrato removido: todos os contratos são freelance -->
                 </div>
                 
                 <div class="row">

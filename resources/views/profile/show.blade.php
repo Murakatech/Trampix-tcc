@@ -497,9 +497,7 @@
                                     <h5 class="card-title">{{ $vacancy->title }}</h5>
                                     <p class="card-text">{{ Str::limit($vacancy->description, 100) }}</p>
                                     <div class="mb-2">
-                                        @if($vacancy->contract_type)
-                                            <span class="badge bg-primary me-1">{{ $vacancy->contract_type }}</span>
-                                        @endif
+                                        {{-- Tipo de contrato removido: todos os contratos são freelance --}}
                                         @if($vacancy->location_type)
                                             <span class="badge bg-secondary me-1">{{ $vacancy->location_type }}</span>
                                         @endif

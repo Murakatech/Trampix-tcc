@@ -55,7 +55,7 @@ class CompanyController extends Controller
         
         $validated = $request->validate([
             'display_name' => 'required|string|min:2|max:255',
-            'cnpj' => 'required|string|max:18|unique:companies,cnpj',
+            'cnpj' => 'nullable|string|max:18|unique:companies,cnpj',
             'sector' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:100',
             'description' => 'nullable|string|max:1000',

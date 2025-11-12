@@ -41,7 +41,7 @@
         <div class="col-lg-8">
             <div class="trampix-card mb-4">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h3 class="trampix-h3 mb-0"><i class="fas fa-handshake me-2"></i>Parceria ativa</h3>
+                    <h3 class="trampix-h3 mb-0">Parceria ativa</h3>
                     <span class="badge bg-success">{{ $acceptedApplications->count() }} {{ $acceptedApplications->count() === 1 ? 'ativo' : 'ativos' }}</span>
                 </div>
                 <div class="card-body">
@@ -140,7 +140,7 @@
             @if($endedApplications->count() > 0)
             <div class="trampix-card mb-4">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h3 class="trampix-h3 mb-0"><i class="fas fa-flag-checkered me-2"></i>Contrato finalizado</h3>
+                    <h3 class="trampix-h3 mb-0">Contrato finalizado</h3>
                     <span class="badge bg-secondary">{{ $endedApplications->count() }}</span>
                 </div>
                 <div class="card-body">

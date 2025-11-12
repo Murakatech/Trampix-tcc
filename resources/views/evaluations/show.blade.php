@@ -46,7 +46,7 @@
 
     <div class="trampix-card">
         <div class="card-header d-flex align-items-center justify-content-between">
-            <h3 class="trampix-h3 mb-0"><i class="fas fa-star me-2"></i>Avaliação de {{ $targetType }}: {{ $targetName }}</h3>
+            <h3 class="trampix-h3 mb-0">Avaliação de {{ $targetType }}: {{ $targetName }}</h3>
             <div>
                 <span class="badge bg-primary">Média: {{ number_format((float)$avg, 1) }}</span>
             </div>

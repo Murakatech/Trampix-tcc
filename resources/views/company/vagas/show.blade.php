@@ -58,14 +58,7 @@
                                 <span class="text-muted ms-2">Não informado</span>
                             @endif
                         </div>
-                        <div class="col-md-6">
-                            <strong>Tipo de Contrato:</strong>
-                            @if($vaga->contract_type)
-                                <span class="badge bg-info ms-2">{{ $vaga->contract_type }}</span>
-                            @else
-                                <span class="text-muted ms-2">Não informado</span>
-                            @endif
-                        </div>
+                        <!-- Tipo de contrato removido: todos os contratos são freelance -->
                     </div>
                     
                     <div class="row mb-3">

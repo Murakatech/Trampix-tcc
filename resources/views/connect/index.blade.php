@@ -94,6 +94,10 @@
             <button :disabled="disabled" @click="decide('liked')" class="px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">Dar Match (D)</button>
             <div class="ml-auto text-sm text-gray-500">Score: <span x-text="card?.score || '-'">-</span></div>
           </div>
+          <!-- Empty-state: nenhuma opção disponível -->
+          <div x-show="disabled && !card" class="mt-4 p-3 rounded-md bg-indigo-50 text-indigo-700 text-sm">
+            Acabaram as opções para mostrar no momento. Tente novamente mais tarde ou ajuste seus filtros/segmentos.
+          </div>
         </div>
       </div>
     </div>
@@ -190,6 +194,10 @@
             },
             body: JSON.stringify({ recommendation_id: this.card.id, action, job_vacancy_id: this.selectedJobId }),
           });
+          if (!res.ok) {
+            this.snackbarShow(`Erro ao enviar decisão (status ${res.status}).`, false);
+            return;
+          }
           const data = await res.json();
           if (data && data.match) {
             this.snackbarShow('Match!', false);
@@ -197,9 +205,14 @@
             // habilita undo por 5s
             this.lastRejectedId = this.card.id;
             this.snackbarShow('Rejeitado. Desfazer?', true);
+          } else if (action === 'liked') {
+            this.snackbarShow('Curtido! Se o outro lado também curtir, vira Match.', false);
+          } else if (action === 'saved') {
+            this.snackbarShow('Salvo!', false);
           }
         } catch (err) {
           console.error('Erro ao enviar decisão', err);
+          this.snackbarShow('Falha na conexão ao enviar a decisão. Verifique sua rede e tente novamente.', false);
         } finally {
           // Puxa próximo
           this.loadNext();

@@ -33,7 +33,7 @@
 
     <div class="trampix-card">
         <div class="card-header d-flex align-items-center justify-content-between">
-            <h3 class="trampix-h3 mb-0"><i class="fas fa-star me-2"></i>Avaliar {{ $targetType }}: {{ $targetName }}</h3>
+            <h3 class="trampix-h3 mb-0">Avaliar {{ $targetType }}: {{ $targetName }}</h3>
         </div>
         <div class="card-body">
             <form action="{{ route('applications.evaluate.store', $application) }}" method="POST">

@@ -49,7 +49,6 @@ class VacanciesSeeder extends Seeder
             $categories = $fallback;
         }
 
-        $contractTypes = ['CLT', 'PJ', 'Freelance'];
         $locationTypes = ['Remoto', 'Híbrido', 'Presencial'];
 
         $vacancies = [];
@@ -66,7 +65,6 @@ class VacanciesSeeder extends Seeder
                 'category' => $catName,
                 'category_id' => $catId,
                 'service_category_id' => null,
-                'contract_type' => $contractTypes[$i % count($contractTypes)],
                 'location_type' => $locationTypes[$i % count($locationTypes)],
                 'salary_range' => 'R$ ' . (3000 + $i * 100) . ' - R$ ' . (5000 + $i * 150),
                 'status' => 'active',
