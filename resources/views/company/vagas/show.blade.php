@@ -53,7 +53,7 @@
                         <div class="col-md-6">
                             <strong>Categoria:</strong>
                             @if($vaga->category)
-                                <span class="badge bg-secondary ms-2">{{ $vaga->category }}</span>
+                                <span class="badge bg-secondary ms-2">{{ $vaga->category?->name }}</span>
                             @else
                                 <span class="text-muted ms-2">Não informado</span>
                             @endif

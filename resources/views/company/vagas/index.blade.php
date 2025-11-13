@@ -174,7 +174,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary">{{ $vaga->category?->name ?? $vaga->category ?? 'Sem categoria' }}</span>
+                                        <span class="badge bg-secondary">{{ $vaga->category?->name ?? 'Sem categoria' }}</span>
                                     </td>
                                     <td>
                                         @if($vaga->location_type)

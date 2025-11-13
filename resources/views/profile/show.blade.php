@@ -514,9 +514,11 @@
                                         @if($vacancy->location_type)
                                             <span class="badge bg-secondary me-1">{{ $vacancy->location_type }}</span>
                                         @endif
-                                        @if($vacancy->category)
-                                            <span class="badge bg-info">{{ $vacancy->category }}</span>
-                                        @endif
+                                            @if($vacancy->category)
+                                                <span class="badge bg-info">{{ $vacancy->category?->name }}</span>
+                                            @else
+                                                <span class="badge bg-secondary">Sem categoria</span>
+                                            @endif
                                     </div>
                                     @if($vacancy->salary_range)
                                         <p class="text-success mb-2"><strong>{{ $vacancy->salary_range }}</strong></p>

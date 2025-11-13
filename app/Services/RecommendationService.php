@@ -182,7 +182,7 @@ class RecommendationService
                 $confidence = $this->sinalConfiancaForTarget($job);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
                 // Boost leve se a categoria da vaga estiver nos desired_roles do usuário
-                $catName = Str::lower(trim((string) ($job->category_id ? optional(\App\Models\Category::find($job->category_id))->name : $job->category)));
+                $catName = Str::lower(trim((string) ($job->category_id ? optional(\App\Models\Category::find($job->category_id))->name : '')));
                 if ($catName && in_array($catName, $desired)) {
                     $score = min(1.0, $score + 0.05);
                 }
@@ -478,11 +478,6 @@ class RecommendationService
         $segments = [];
         if ($job->category_id) {
             $cat = \App\Models\Category::find($job->category_id);
-            if ($cat?->segment_id) {
-                $segments[] = (int) $cat->segment_id;
-            }
-        } elseif (! empty($job->category)) {
-            $cat = \App\Models\Category::where('name', $job->category)->first();
             if ($cat?->segment_id) {
                 $segments[] = (int) $cat->segment_id;
             }

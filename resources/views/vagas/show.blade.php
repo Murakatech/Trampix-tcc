@@ -514,7 +514,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             {{-- Badges de Informação (mais destacadas) --}}
                             <div class="flex flex-wrap gap-3">
                                 @php
-                                    $categoryLabel = $vaga->category?->name ?? $vaga->category ?? null;
+                                    $categoryLabel = $vaga->category?->name ?? null;
                                 @endphp
                                 @if($categoryLabel)
                                     <span class="inline-flex items-center px-4 py-1.5 rounded-full text-base font-semibold bg-white/30 text-white backdrop-blur-sm shadow-sm">

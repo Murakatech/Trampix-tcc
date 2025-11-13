@@ -82,7 +82,7 @@
                                 <tr>
                                     <td>
                                         <div class="fw-medium">{{ $application->jobVacancy->title }}</div>
-                                        <small class="text-muted">{{ $application->jobVacancy->category }}</small>
+                                        <small class="text-muted">{{ $application->jobVacancy->category?->name }}</small>
                                     </td>
                                     <td>
                                         <div>{{ $application->jobVacancy->company->name }}</div>

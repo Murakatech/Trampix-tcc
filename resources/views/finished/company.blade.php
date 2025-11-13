@@ -31,7 +31,7 @@
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div>
                                     <h5 class="card-title mb-1">{{ $application->jobVacancy->title }}</h5>
-                                    <small class="text-muted">{{ $application->jobVacancy->category }}</small>
+                                    <small class="text-muted">{{ $application->jobVacancy->category?->name }}</small>
                                 </div>
                                 <span class="badge bg-success">Finalizado</span>
                             </div>

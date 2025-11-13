@@ -919,7 +919,7 @@ function handleDeleteClick(btn) {
                             @php
                                 // Evita acessar propriedade em string: prioriza relação carregada, senão usa string legada
                                 $categoryRel = $vaga->category_id ? $vaga->getRelationValue('category') : null;
-                                $categoryLabel = $categoryRel?->name ?? ($vaga->category ?? null);
+                                $categoryLabel = $categoryRel?->name ?? null;
                             @endphp
                             @if($categoryLabel)
                                 <span class="job-badge badge-category text-sm font-semibold px-3 py-1.5 rounded-full border border-purple-200 bg-purple-50 text-purple-700 shadow-sm"

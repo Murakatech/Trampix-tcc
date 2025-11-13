@@ -52,7 +52,7 @@
             <div class="row">
                 <div class="col-md-3">
                     <strong>Categoria:</strong><br>
-                    <span class="badge bg-secondary">{{ $vacancy->category ?? '-' }}</span>
+                    <span class="badge bg-secondary">{{ $vacancy->category?->name ?? '-' }}</span>
                 </div>
                 <!-- Tipo de contrato removido: todos os contratos são freelance -->
                 <div class="col-md-3">

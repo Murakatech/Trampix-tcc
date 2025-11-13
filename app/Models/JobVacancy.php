@@ -15,7 +15,6 @@ class JobVacancy extends Model
         'title',
         'description',
         'requirements',
-        'category',
         'category_id',
         'service_category_id',
         'location_type',
@@ -77,12 +76,10 @@ class JobVacancy extends Model
         }
         $categoryIds = \App\Models\Category::whereIn('name', $categories)->pluck('id');
 
-        return $query->where(function ($q) use ($categories, $categoryIds) {
-            if ($categoryIds->count() > 0) {
-                $q->whereIn('category_id', $categoryIds);
-            }
-            $q->orWhereIn('category', $categories);
-        });
+        if ($categoryIds->count() === 0) {
+            return $query;
+        }
+        return $query->whereIn('category_id', $categoryIds);
     }
 
     public function scopeFilterSegment(Builder $query, int $segmentId): Builder
@@ -94,14 +91,10 @@ class JobVacancy extends Model
         $segmentCategoryIds = $segmentCategoryQuery->pluck('id');
         $segmentCategoryNames = $segmentCategoryQuery->pluck('name');
 
-        return $query->where(function ($q) use ($segmentCategoryIds, $segmentCategoryNames) {
-            if ($segmentCategoryIds->count() > 0) {
-                $q->whereIn('category_id', $segmentCategoryIds);
-            }
-            if ($segmentCategoryNames->count() > 0) {
-                $q->orWhereIn('category', $segmentCategoryNames);
-            }
-        });
+        if ($segmentCategoryIds->count() === 0) {
+            return $query;
+        }
+        return $query->whereIn('category_id', $segmentCategoryIds);
     }
 
     // contract_type removido do sistema: todos os contratos são freelance

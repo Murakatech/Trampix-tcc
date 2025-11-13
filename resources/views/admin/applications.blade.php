@@ -110,7 +110,7 @@
                                             {{ $application->jobVacancy->title }}
                                         </div>
                                         <div class="text-sm text-gray-500">
-                                            {{ $application->jobVacancy->category }}
+                                            {{ $application->jobVacancy->category?->name ?? 'Sem categoria' }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">

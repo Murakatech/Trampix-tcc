@@ -46,12 +46,9 @@ class CompanyVacancyController extends Controller
             if ($request->filled('category')) {
                 $catName = $request->category;
                 $catId = Category::where('name', $catName)->value('id');
-                $query->where(function ($q) use ($catName, $catId) {
-                    if ($catId) {
-                        $q->where('category_id', $catId);
-                    }
-                    $q->orWhere('category', $catName);
-                });
+                if ($catId) {
+                    $query->where('category_id', $catId);
+                }
             }
 
             if ($request->filled('status')) {

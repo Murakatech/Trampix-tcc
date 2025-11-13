@@ -122,7 +122,9 @@
                                                     <span class="badge bg-secondary me-1">{{ $vacancy->location_type }}</span>
                                                 @endif
                                                 @if($vacancy->category)
-                                                    <span class="badge bg-info">{{ $vacancy->category }}</span>
+                                                    <span class="badge bg-info">{{ $vacancy->category?->name }}</span>
+                                                @else
+                                                    <span class="badge bg-secondary">Sem categoria</span>
                                                 @endif
                                             </div>
                                             
