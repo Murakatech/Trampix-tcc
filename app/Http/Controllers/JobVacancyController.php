@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class JobVacancyController extends Controller
 {
@@ -341,7 +342,7 @@ class JobVacancyController extends Controller
 
             return response()->json(['suggestions' => $suggestions], 200, [], JSON_UNESCAPED_UNICODE);
         } catch (\Throwable $e) {
-            \Log::error('Erro no suggest de vagas: '.$e->getMessage());
+            Log::error('Erro no suggest de vagas: '.$e->getMessage());
             return response()->json(['suggestions' => []], 200, [], JSON_UNESCAPED_UNICODE);
         }
     }

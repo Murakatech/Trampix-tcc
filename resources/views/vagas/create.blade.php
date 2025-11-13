@@ -144,6 +144,7 @@
 @endpush
 
 @push('scripts')
+<script id="SEGMENTS_DATA" type="application/json">@json(($segments ?? []))</script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Busca/filtro de empresas (apenas admin)
@@ -193,8 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const categorySelect = document.getElementById('category_id');
     const openSegmentModalBtn = document.getElementById('openSegmentModal');
 
-    // Dados de segmentos para obter nomes no front
-    const segmentsData = @json(($segments ?? []));
+    const segmentsData = JSON.parse(document.getElementById('SEGMENTS_DATA')?.textContent || '[]');
     function getSegmentNameById(id){
         const s = segmentsData.find(x => String(x.id) === String(id));
         return s ? s.name : '';

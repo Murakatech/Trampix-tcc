@@ -13,7 +13,7 @@
 <div class="container mt-4">
     <!-- Ação: Nova Vaga fora da navbar -->
     <div class="mb-3">
-        <a href="{{ route('vagas.create') }}" class="btn-trampix-company btn-glow d-block w-100 text-center py-3">
+        <a href="{{ route('vagas.create') }}" class="btn-trampix-company btn-glow d-block w-100 text-center py-3" style="background-color:#b8fc64;color:#000;">
             <i class="fas fa-plus me-2"></i>Nova Vaga
         </a>
     </div>
@@ -233,7 +233,10 @@
                                                 @method('DELETE')
                                                 <button type="button" 
                                                         class="btn-trampix-danger btn-glow px-3 py-2 text-sm" 
-                                                        onclick="showDeleteConfirmation({{ $vaga->id }}, '{{ $vaga->title }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')"
+                                                        data-job-title="{{ $vaga->title }}"
+                                                        data-company-name="{{ $vaga->empresa->nome ?? 'Empresa' }}"
+                                                        data-vaga-id="{{ $vaga->id }}"
+                                                        onclick="handleDeleteClick(this)"
                                                         title="Excluir vaga">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -384,6 +387,13 @@
                 showNotification('Exclusão cancelada.', 'info');
             }
         });
+    }
+
+    function handleDeleteClick(btn) {
+        const vagaId = btn.getAttribute('data-vaga-id');
+        const jobTitle = btn.getAttribute('data-job-title');
+        const companyName = btn.getAttribute('data-company-name');
+        showDeleteConfirmation(vagaId, jobTitle, companyName);
     }
 </script>
 @endpush

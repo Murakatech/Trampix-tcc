@@ -25,6 +25,7 @@ class FreelancerUpdateRequest extends FormRequest
                 Rule::unique('freelancers', 'display_name')->ignore($freelancerId)
             ],
             'bio' => 'nullable|string|max:1000',
+            'linkedin_url' => 'nullable|url|max:255',
             'portfolio_url' => 'nullable|url|max:255',
             'whatsapp' => 'nullable|string',
             'location' => 'nullable|string|max:100',

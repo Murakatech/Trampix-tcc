@@ -210,7 +210,10 @@
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="accepted">
                                                     <button type="button" class="btn btn-company-primary btn-compact btn-glow" 
-                                                            onclick="showAcceptConfirmation({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
+                                                            data-freelancer-name="{{ $application->freelancer->user->name }}"
+                                                            data-job-title="{{ $application->jobVacancy->title }}"
+                                                            data-application-id="{{ $application->id }}"
+                                                            onclick="handleAcceptClick(this)">
                                                         <i class="fas fa-check me-1"></i>Aceitar
                                                     </button>
                                                 </form>
@@ -219,7 +222,10 @@
                                                     @csrf @method('PATCH')
                                                     <input type="hidden" name="status" value="rejected">
                                                     <button type="button" class="btn btn-company-danger btn-compact" 
-                                                            onclick="showRejectConfirmation({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
+                                                            data-freelancer-name="{{ $application->freelancer->user->name }}"
+                                                            data-job-title="{{ $application->jobVacancy->title }}"
+                                                            data-application-id="{{ $application->id }}"
+                                                            onclick="handleRejectClick(this)">
                                                         <i class="fas fa-times me-1"></i>Rejeitar
                                                     </button>
                                                 </form>
@@ -240,7 +246,10 @@
                                                         @csrf @method('PATCH')
                                                         <input type="hidden" name="status" value="accepted">
                                                         <button type="button" class="btn btn-company-outline-primary btn-compact btn-glow" 
-                                                                onclick="showAcceptConfirmation2({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
+                                                                data-freelancer-name="{{ $application->freelancer->user->name }}"
+                                                                data-job-title="{{ $application->jobVacancy->title }}"
+                                                                data-application-id="{{ $application->id }}"
+                                                                onclick="handleAccept2Click(this)">
                                                             <i class="fas fa-check me-1"></i>Aceitar
                                                         </button>
                                                     </form>
@@ -252,7 +261,10 @@
                                                         @csrf @method('PATCH')
                                                         <input type="hidden" name="status" value="accepted">
                                                         <button type="button" class="btn btn-company-outline-primary btn-compact btn-glow" 
-                                                                onclick="showAcceptConfirmation2({{ $application->id }}, '{{ $application->freelancer->user->name }}', '{{ $application->jobVacancy->title }}')">
+                                                                data-freelancer-name="{{ $application->freelancer->user->name }}"
+                                                                data-job-title="{{ $application->jobVacancy->title }}"
+                                                                data-application-id="{{ $application->id }}"
+                                                                onclick="handleAccept2Click(this)">
                                                             <i class="fas fa-redo me-1"></i>Reabrir parceria
                                                         </button>
                                                     </form>
@@ -318,6 +330,26 @@
                 showNotification('Ação cancelada.', 'info');
             }
         });
+    }
+
+    // Wrappers que leem dados do dataset
+    function handleAcceptClick(btn) {
+        const applicationId = btn.getAttribute('data-application-id');
+        const freelancerName = btn.getAttribute('data-freelancer-name');
+        const jobTitle = btn.getAttribute('data-job-title');
+        showAcceptConfirmation(applicationId, freelancerName, jobTitle);
+    }
+    function handleAccept2Click(btn) {
+        const applicationId = btn.getAttribute('data-application-id');
+        const freelancerName = btn.getAttribute('data-freelancer-name');
+        const jobTitle = btn.getAttribute('data-job-title');
+        showAcceptConfirmation2(applicationId, freelancerName, jobTitle);
+    }
+    function handleRejectClick(btn) {
+        const applicationId = btn.getAttribute('data-application-id');
+        const freelancerName = btn.getAttribute('data-freelancer-name');
+        const jobTitle = btn.getAttribute('data-job-title');
+        showRejectConfirmation(applicationId, freelancerName, jobTitle);
     }
 
     // Função para aceitar candidatura (segunda vez - quando rejeitado)

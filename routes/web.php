@@ -14,6 +14,7 @@ use App\Http\Controllers\FreelancerDashboardController;
 use App\Http\Controllers\CompanyDashboardController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ConnectController;
+use App\Http\Controllers\MatchmakingController;
 use Illuminate\Support\Facades\Route;
 
 // garante que {vaga} só aceite números
@@ -49,6 +50,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/connect/next', [ConnectController::class, 'next'])->name('connect.next'); // stub
     Route::post('/connect/decide', [ConnectController::class, 'decide'])->name('connect.decide'); // stub
 });
+
+// Matchmaking dedicado removido em favor de /connect
 
 // Protegido (auth + empresa) — registre ANTES
 Route::middleware(['auth','can:isCompany'])->group(function () {

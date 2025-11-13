@@ -148,7 +148,13 @@
                             @method('DELETE')
                             <button type="button" 
                                     class="btn-trampix-danger w-100" 
-                                    onclick="showDeleteConfirmation('{{ $vaga->title }}', '{{ $vaga->empresa->nome ?? 'Empresa' }}')">
+                                    data-job-title="{{ $vaga->title }}"
+                                    data-company-name="{{ $vaga->empresa->nome ?? 'Empresa' }}"
+                                    onclick='(function(btn){
+                                        const jobTitle = btn.getAttribute("data-job-title");
+                                        const companyName = btn.getAttribute("data-company-name");
+                                        showDeleteConfirmation(jobTitle, companyName);
+                                    })(this)'>
                                 <i class="fas fa-trash me-2"></i>Excluir Vaga
                             </button>
                         </form>

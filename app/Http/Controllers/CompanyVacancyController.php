@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 
 class CompanyVacancyController extends Controller
 {
@@ -83,7 +84,7 @@ class CompanyVacancyController extends Controller
             return view('company.vagas.index', compact('vagas', 'categories', 'stats', 'company'));
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao carregar vagas da empresa: ' . $e->getMessage());
+            Log::error('Erro ao carregar vagas da empresa: ' . $e->getMessage());
             return redirect()->route('dashboard')->with('error', 'Erro ao carregar vagas. Tente novamente.');
         }
     }
@@ -119,7 +120,7 @@ class CompanyVacancyController extends Controller
             return view('company.vagas.show', compact('vaga', 'vagaStats'));
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao carregar detalhes da vaga: ' . $e->getMessage());
+            Log::error('Erro ao carregar detalhes da vaga: ' . $e->getMessage());
             return redirect()->route('company.vagas.index')->with('error', 'Erro ao carregar vaga.');
         }
     }
@@ -149,7 +150,7 @@ class CompanyVacancyController extends Controller
             return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
-            \Log::error('Erro ao alterar status da vaga: ' . $e->getMessage());
+            Log::error('Erro ao alterar status da vaga: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Erro ao alterar status da vaga.');
         }
     }

@@ -121,8 +121,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            const jobTitle = @json($vaga->title);
-            const companyName = @json($vaga->company->name ?? 'Empresa');
+            const jobTitle = (applicationForm?.dataset?.jobTitle) || '';
+            const companyName = (applicationForm?.dataset?.companyName) || 'Empresa';
 
             showActionModal('applicationConfirmationModal', {
                 actionType: 'candidatura',
@@ -156,9 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             showActionModal('deleteConfirmationModal', {
                 actionType: 'exclusao',
-                jobTitle: '{{ $vaga->title }}',
-    companyName: '{{ $vaga->company->name ?? "Empresa" }}',
-                message: `⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir a vaga "${'{{ $vaga->title }}'}"?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.`,
+                jobTitle: deleteForm.dataset.jobTitle,
+                companyName: deleteForm.dataset.companyName,
+                message: `⚠️ ATENÇÃO!\n\nTem certeza que deseja excluir a vaga "${deleteForm.dataset.jobTitle}"?\n\nEsta ação não pode ser desfeita e todos os dados relacionados serão perdidos permanentemente.`,
                 onConfirm: () => {
                     showNotification('Excluindo vaga...', 'warning');
                     deleteForm.submit();
@@ -409,11 +409,13 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault(); // Sempre prevenir o envio inicial
             
             // Usar novo componente ActionConfirmation
+             const jobTitle = candidateForm.dataset.jobTitle || '';
+             const companyName = candidateForm.dataset.companyName || 'Empresa';
              showActionModal('applicationConfirmationModal', {
                  actionType: 'candidatura',
-                 jobTitle: '{{ $vaga->title }}',
-    companyName: '{{ $vaga->company->name ?? "Empresa" }}',
-    message: `Você está prestes a se candidatar à vaga <strong>{{ $vaga->title }}</strong> na empresa <strong>{{ $vaga->company->name ?? "Empresa" }}</strong>. Deseja continuar?`,
+                 jobTitle: jobTitle,
+                 companyName: companyName,
+                 message: `Você está prestes a se candidatar à vaga <strong>${jobTitle}</strong> na empresa <strong>${companyName}</strong>. Deseja continuar?`,
                  onConfirm: () => {
                      // Submeter formulário após confirmação
                      candidateForm.submit();
@@ -629,7 +631,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     </div>
                                     
                                     {{-- Formulário de candidatura --}}
-                                    <form method="POST" action="{{ route('applications.store', $vaga->id) }}" class="application-form space-y-6" id="applicationForm">
+                                    <form method="POST" action="{{ route('applications.store', $vaga->id) }}" class="application-form space-y-6" id="applicationForm" data-job-title="{{ $vaga->title }}" data-company-name="{{ $vaga->company->name ?? 'Empresa' }}">
                                         @csrf
                                         
                                         {{-- Campo de mensagem --}}
@@ -723,7 +725,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                     Editar Vaga
                                 </a>
                                 
-                                <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" id="deleteForm">
+                                <form action="{{ route('vagas.destroy', $vaga) }}" method="POST" id="deleteForm" data-job-title="{{ $vaga->title }}" data-company-name="{{ $vaga->company->name ?? 'Empresa' }}">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="w-full py-3 px-6 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl text-lg font-semibold flex items-center justify-center group">

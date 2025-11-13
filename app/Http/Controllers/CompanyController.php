@@ -8,6 +8,7 @@ use App\Models\ActivityArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class CompanyController extends Controller
 {
@@ -86,7 +87,7 @@ class CompanyController extends Controller
         }
 
         // Criar perfil empresa
-        $company = auth()->user()->createProfile('company', $validated);
+        $company = Auth::user()->createProfile('company', $validated);
 
         // Sincronizar categorias de serviço se fornecidas
         if (isset($validated['service_categories'])) {
@@ -111,7 +112,7 @@ class CompanyController extends Controller
         session(['active_role' => 'company']);
 
         // Redirecionar para o perfil público do próprio usuário, já com a visualização da nova empresa
-        return redirect()->route('profiles.show', ['user' => auth()->id(), 'role' => 'company'])
+        return redirect()->route('profiles.show', ['user' => Auth::id(), 'role' => 'company'])
             ->with('success', 'Perfil de empresa criado com sucesso!');
     }
 

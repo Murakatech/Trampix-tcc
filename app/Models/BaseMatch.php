@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Match extends Model
+class BaseMatch extends Model
 {
     use HasFactory;
 
+    protected $table = 'matches';
     public $timestamps = false; // apenas created_at
 
     protected $fillable = [

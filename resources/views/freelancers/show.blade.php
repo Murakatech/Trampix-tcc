@@ -191,10 +191,10 @@
                             @else
                                 {{-- Botões para empresas visualizando o perfil --}}
                                 <div class="d-grid gap-2">
-                                    @if($freelancer->cv_path)
-                                    <a href="{{ route('freelancers.download-cv', $freelancer) }}" class="btn btn-trampix-company">
-                                        <i class="fas fa-download me-2"></i> Baixar CV
-                                    </a>
+                                    @if($freelancer->cv_url)
+                                        <a href="{{ route('freelancers.download-cv', $freelancer) }}" class="btn btn-trampix-company">
+                                            <i class="fas fa-download me-2"></i> Baixar CV
+                                        </a>
                                     @endif
                                     
                                     <a href="mailto:{{ $freelancer->user->email }}" class="btn btn-outline-primary">

@@ -6,6 +6,10 @@
 
 @section('content')
 <div class="container py-4">
+    <style>
+        .company-gradient { background: linear-gradient(to right, #1ca751, var(--trampix-green)); }
+        .freelancer-gradient { background-image: linear-gradient(to right, #7c3aed, #4f46e5); }
+    </style>
     @php
         // Determinar o perfil ativo baseado na sessão ou no que está disponível
         $activeRole = null;
@@ -49,7 +53,7 @@
     {{-- Cabeçalho com visual Trampix --}}
     <div class="row mb-4">
         <div class="col-12">
-            <div class="rounded-3 p-4 d-flex align-items-center justify-content-between text-white {{ $activeRole === 'company' ? '' : 'bg-gradient-to-r from-purple-600 to-indigo-600' }}" style="{{ $activeRole === 'company' ? 'background: linear-gradient(to right, #1ca751, var(--trampix-green));' : '' }}">
+            <div class="rounded-3 p-4 d-flex align-items-center justify-content-between text-white {{ $activeRole === 'company' ? 'company-gradient' : 'freelancer-gradient' }}">
                 <div class="d-flex align-items-center gap-3">
                     <div class="d-flex align-items-center justify-content-center bg-white bg-opacity-10 border border-white border-opacity-25 rounded-3" style="width:64px;height:64px;">
                         @if($activeRole === 'company')
@@ -389,6 +393,21 @@
         <span class="image-modal-close" onclick="closeImageModal()" style="position:absolute; top:20px; right:24px; color:#fff; font-size:28px; cursor:pointer;">&times;</span>
         <img src="" alt="Imagem" style="max-width:90vw; max-height:90vh; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.3);" onclick="event.stopPropagation()">
     </div>
+    @php
+        $companyFields = ['display_name','cnpj','email','website','linkedin_url','description','phone','company_size','founded_year','service_categories','segments','activity_area_id'];
+        $freelancerFields = ['display_name','bio','linkedin_url','whatsapp','location','hourly_rate','availability','service_categories','segments','cv','activity_area_id'];
+        $errorKeys = array_keys($errors->getMessages());
+        $hasCompanyErrors = count(array_intersect($errorKeys, $companyFields)) > 0;
+        $hasFreelancerErrors = count(array_intersect($errorKeys, $freelancerFields)) > 0;
+    @endphp
+    <script id="PROFILE_FLAGS" type="application/json">
+        {{ json_encode([
+            'hasCompany' => (bool)($company ?? ($user->company ?? null)),
+            'hasFreelancer' => (bool)($freelancer ?? ($user->freelancer ?? null)),
+            'hasCompanyErrors' => (bool)($hasCompanyErrors ?? false),
+            'hasFreelancerErrors' => (bool)($hasFreelancerErrors ?? false)
+        ]) }}
+    </script>
     <script>
         function openImageModal(src) {
             var modal = document.getElementById('imageModal');
@@ -454,29 +473,23 @@
             var params = new URLSearchParams(window.location.search);
             var openCompany = params.get('openCompanyCreate');
             var openFreelancer = params.get('openFreelancerCreate');
+            var flagsEl = document.getElementById('PROFILE_FLAGS');
+            var flags = flagsEl ? JSON.parse(flagsEl.textContent || '{}') : {};
             if (openCompany && openCompany !== '0') {
-                var hasCompany = !!(@json((bool) ($company ?? ($user->company ?? null))));
+                var hasCompany = !!flags.hasCompany;
                 if (!hasCompany) {
                     openModal('createCompanyModal');
                 }
             }
             if (openFreelancer && openFreelancer !== '0') {
-                var hasFreelancer = !!(@json((bool) ($freelancer ?? ($user->freelancer ?? null))));
+                var hasFreelancer = !!flags.hasFreelancer;
                 if (!hasFreelancer) {
                     openModal('createFreelancerModal');
                 }
             }
             // Autoabrir com base em erros de validação do Laravel
-            // Pré-calcula em PHP e injeta booleanos simples para JS (evita erros de parsing do Blade)
-            @php
-                $companyFields = ['display_name','cnpj','email','website','linkedin_url','description','phone','company_size','founded_year','service_categories','segments','activity_area_id'];
-                $freelancerFields = ['display_name','bio','linkedin_url','whatsapp','location','hourly_rate','availability','service_categories','segments','cv','activity_area_id'];
-                $errorKeys = array_keys($errors->getMessages());
-                $hasCompanyErrors = count(array_intersect($errorKeys, $companyFields)) > 0;
-                $hasFreelancerErrors = count(array_intersect($errorKeys, $freelancerFields)) > 0;
-            @endphp
-            var hasCompanyErrors = @json($hasCompanyErrors);
-            var hasFreelancerErrors = @json($hasFreelancerErrors);
+            var hasCompanyErrors = !!flags.hasCompanyErrors;
+            var hasFreelancerErrors = !!flags.hasFreelancerErrors;
             if (hasCompanyErrors) {
                 openModal('createCompanyModal');
             } else if (hasFreelancerErrors) {

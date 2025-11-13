@@ -8,9 +8,10 @@ use App\Models\Freelancer;
 use App\Models\JobVacancy;
 use App\Models\Preference;
 use App\Models\Recommendation;
-use App\Models\Match as JobMatch;
+use App\Models\JobMatch;
 use App\Models\Skill;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class RecommendationService
@@ -108,7 +109,7 @@ class RecommendationService
     /**
      * Gera recomendações diárias para o usuário informado. Retorna quantidade gerada.
      */
-    public function generateDailyBatchFor(User $user, int $topN = 50): int
+    public function generateDailyBatchFor(User $user, int $topN = 50, bool $segmentOnly = false): int
     {
         $today = Carbon::today();
         $pref = Preference::where('user_id', $user->id)->first();
@@ -156,6 +157,7 @@ class RecommendationService
                     $score = min(1.0, $score + 0.05);
                 }
                 $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
+                if ($segmentOnly && $segMatch <= 0) continue;
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
                     ->where('subject_id', $subjectId)
@@ -204,6 +206,7 @@ class RecommendationService
                 $confidence = $this->sinalConfiancaForTarget($freelancer);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
                 $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
+                if ($segmentOnly && $segMatch <= 0) continue;
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
                     ->where('subject_id', $subjectId)
@@ -243,7 +246,7 @@ class RecommendationService
      * Prepara recomendações para a empresa com contexto de uma vaga específica:
      * limpa pendentes e gera recomendações de freelancers alinhados ao segmento da vaga.
      */
-    public function prepareCompanyConnectForJob(User $user, int $jobId, int $topN = 50): int
+    public function prepareCompanyConnectForJob(User $user, int $jobId, int $topN = 50, bool $segmentOnly = false): int
     {
         if (!($user->isCompany() && $user->company)) {
             return 0;
@@ -279,6 +282,7 @@ class RecommendationService
             $confidence = $this->sinalConfiancaForTarget($freelancer);
             $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
             $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
+            if ($segmentOnly && $segMatch <= 0) continue;
             $scored[] = ['target' => $freelancer, 'score' => $score, 'seg' => $segMatch];
         }
 
@@ -371,10 +375,17 @@ class RecommendationService
                         ->where('status', 'liked')
                         ->exists();
                     if ($inverseLiked) {
-                        JobMatch::firstOrCreate([
-                            'freelancer_id' => $freelancerId,
-                            'job_vacancy_id' => $jobId,
-                        ], ['created_at' => Carbon::now()]);
+                        $exists = DB::table('matches')
+                            ->where('freelancer_id', $freelancerId)
+                            ->where('job_vacancy_id', $jobId)
+                            ->exists();
+                        if (!$exists) {
+                            DB::table('matches')->insert([
+                                'freelancer_id' => $freelancerId,
+                                'job_vacancy_id' => $jobId,
+                                'created_at' => Carbon::now(),
+                            ]);
+                        }
                         $hasMatch = true;
                     }
                 }
@@ -392,10 +403,17 @@ class RecommendationService
                         ->where('status', 'liked')
                         ->exists();
                     if ($inverseLiked) {
-                        JobMatch::firstOrCreate([
-                            'freelancer_id' => $freelancerId,
-                            'job_vacancy_id' => $resolvedJobId,
-                        ], ['created_at' => Carbon::now()]);
+                        $exists = DB::table('matches')
+                            ->where('freelancer_id', $freelancerId)
+                            ->where('job_vacancy_id', $resolvedJobId)
+                            ->exists();
+                        if (!$exists) {
+                            DB::table('matches')->insert([
+                                'freelancer_id' => $freelancerId,
+                                'job_vacancy_id' => $resolvedJobId,
+                                'created_at' => Carbon::now(),
+                            ]);
+                        }
                         $hasMatch = true;
                     }
                 }

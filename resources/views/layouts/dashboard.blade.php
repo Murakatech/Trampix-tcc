@@ -19,6 +19,8 @@
 
         <title>{{ config('app.name', 'Trampix') }} - Dashboard</title>
 
+        <link rel="icon" type="image/png" href="{{ asset('storage/img/logo_trampix.png') }}">
+
         <!-- Bootstrap 5 CSS -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
         
@@ -208,6 +210,10 @@
                 transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
             }
             
+            /* Avatar gradient backgrounds */
+            .bg-company-gradient { background: linear-gradient(to bottom right, #1ca751, var(--trampix-green)); }
+            .bg-freelancer-gradient { background: linear-gradient(to bottom right, #3b82f6, #8F3FF7); }
+
             /* Main content offset to account for fixed sidebar */
             .main-content-offset {
                 margin-left: 5rem; /* 80px - collapsed sidebar width */
@@ -299,10 +305,7 @@
                                         class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-white shadow-sm"
                                     >
                                 @else
-                                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-medium text-xs sm:text-sm"
-                                         style="{{ ($activeRole === 'company') 
-                                            ? 'background: linear-gradient(to bottom right, #1ca751, var(--trampix-green));' 
-                                            : 'background: linear-gradient(to bottom right, #3b82f6, #8F3FF7);' }}">
+                                    <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-medium text-xs sm:text-sm {{ $activeRole === 'company' ? 'bg-company-gradient' : 'bg-freelancer-gradient' }}">
                                         {{ strtoupper(substr($displayName, 0, 1)) }}
                                     </div>
                                 @endif

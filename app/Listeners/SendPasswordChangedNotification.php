@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use Illuminate\Auth\Events\PasswordReset;
 use App\Notifications\PasswordChangedNotification;
+use Illuminate\Support\Facades\Notification;
 
 class SendPasswordChangedNotification
 {
@@ -12,8 +13,8 @@ class SendPasswordChangedNotification
      */
     public function handle(PasswordReset $event): void
     {
-        if (method_exists($event->user, 'notify')) {
-            $event->user->notify(new PasswordChangedNotification());
+        if ($event->user) {
+            Notification::send($event->user, new PasswordChangedNotification());
         }
     }
 }

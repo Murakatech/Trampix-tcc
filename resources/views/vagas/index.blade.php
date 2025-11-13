@@ -1,14 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
 
 @section('content')
 
-    <!-- Sidebar (apenas para usuários autenticados) -->
-    @auth
-        <x-sidebar />
-    @endauth
-
-    <!-- Layout principal com sidebar -->
-    <div class="sidebar-layout {{ auth()->check() ? 'ml-20' : '' }}">
+    <div>
         
         <!-- Header -->
         <div class="bg-white shadow-sm border-b">
@@ -43,7 +37,13 @@
     modalId="deleteConfirmationModal" />
 
 @push('scripts')
+<script id="AUTH_FLAGS" type="application/json">@json(['isAuth' => Auth::check()])</script>
 <script>
+    (function(){
+        var authEl = document.getElementById('AUTH_FLAGS');
+        var flags = authEl ? JSON.parse(authEl.textContent || '{}') : {};
+        window.IS_AUTH = !!flags.isAuth;
+    })();
 function showApplicationConfirmation(vagaId, jobTitle, companyName, redirectUrl) {
     showActionModal('applicationConfirmationModal', {
         actionType: 'candidatura',
@@ -76,15 +76,24 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
         }
     });
 }
+
+function handleDeleteClick(btn) {
+    const vagaId = btn.getAttribute('data-vaga-id');
+    const jobTitle = btn.getAttribute('data-job-title');
+    const companyName = btn.getAttribute('data-company-name');
+    showDeleteConfirmation(vagaId, jobTitle, companyName);
+}
 </script>
 @endpush
 
 @push('styles')
 <style>
     /* Animações para os cards */
+    .job-card {
         opacity: 0;
         transform: translateY(20px);
         animation: fadeInUp 0.6s ease-out forwards;
+        animation-delay: var(--delay, 0s);
     }
 
     @keyframes fadeInUp {
@@ -99,6 +108,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
+        line-clamp: 3;
         overflow: hidden;
     }
 
@@ -269,9 +279,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
 
     .card-btn:focus {
         outline: none;
-        ring: 2px;
-        ring-color: #7c3aed;
-        ring-offset: 2px;
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.35);
     }
 
     .card-btn:disabled {
@@ -454,6 +462,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
 @endpush
 
 @push('scripts')
+<script id="FILTER_INITIALS" type="application/json">@json(['category' => request('category')])</script>
 <script>
     // Sistema de notificações
     function showNotification(message, type = 'info') {
@@ -743,7 +752,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
     }
 
     // Inicializar integração da sidebar quando autenticado
-    @auth
+    if (window.IS_AUTH) {
         // Lazy loading para melhor performance
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initSidebarIntegration);
@@ -757,7 +766,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
             clearTimeout(resizeTimeout);
             resizeTimeout = setTimeout(handleResize, 150);
         });
-    @endauth
+    }
 </script>
 @endpush
  
@@ -841,7 +850,7 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
                  aria-label="Lista de vagas disponíveis">
                 @foreach ($vagas as $index => $vaga)
                     <article class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-transform duration-200 hover:-translate-y-0.5 job-card focus-within:ring-2 focus-within:ring-purple-500 focus-within:ring-offset-2" 
-                             style="animation-delay: {{ $index * 0.1 }}s"
+                             style="--delay: {{ $index * 0.1 }}s"
                              role="listitem"
                              aria-labelledby="job-title-{{ $vaga->id }}"
                              tabindex="0">
@@ -1004,7 +1013,10 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
                                     <button type="button" 
                                             class="card-btn card-btn-danger" 
                                             aria-label="Excluir vaga {{ $vaga->title }}"
-                                            onclick="showDeleteConfirmation({{ $vaga->id }}, '{{ $vaga->title }}', '{{ $vaga->company->name ?? 'Empresa' }}')">
+                                            data-job-title="{{ $vaga->title }}"
+                                            data-company-name="{{ $vaga->company->name ?? 'Empresa' }}"
+                                            data-vaga-id="{{ $vaga->id }}"
+                                            onclick="handleDeleteClick(this)">
                                         <i class="fas fa-trash mr-2" aria-hidden="true"></i>Excluir
                                     </button>
                                 </form>
@@ -1147,7 +1159,9 @@ function showDeleteConfirmation(vagaId, jobTitle, companyName) {
         if (segmentSelect && categorySelect){
             // Carregar na inicialização se já houver segmento selecionado
             const initialSeg = segmentSelect.value;
-            const initialCat = categorySelect.getAttribute('data-initial') || '{{ addslashes(request('category')) }}';
+            var fiEl = document.getElementById('FILTER_INITIALS');
+            var fi = fiEl ? JSON.parse(fiEl.textContent || '{}') : {};
+            const initialCat = categorySelect.getAttribute('data-initial') || (fi.category || '');
             if (initialSeg){
                 loadCategoriesBySegment(initialSeg, initialCat);
             }

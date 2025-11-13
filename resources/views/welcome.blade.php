@@ -6,6 +6,8 @@
     <title>{{ config('app.name', 'Trampix') }} - Conectando Talentos e Oportunidades</title>
     <meta name="description" content="A plataforma que conecta freelancers talentosos com empresas inovadoras. Encontre projetos incríveis ou contrate os melhores profissionais.">
 
+    <link rel="icon" type="image/png" href="{{ asset('storage/img/logo_trampix.png') }}">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600,700" rel="stylesheet" />

@@ -322,7 +322,8 @@
                         <!-- Controles de Imagem -->
                         <div class="space-y-4">
                             <button type="button" 
-                                    onclick="openPhotoEditor('{{ (session('active_role') === 'freelancer' && isset($freelancer) && $freelancer->profile_photo) ? asset('storage/' . $freelancer->profile_photo) : ((session('active_role') === 'company' && isset($company) && $company->profile_photo) ? asset('storage/' . $company->profile_photo) : '') }}')"
+                                    data-img-url='{{ (session('active_role') === "freelancer" && isset($freelancer) && $freelancer->profile_photo) ? asset("storage/" . $freelancer->profile_photo) : ((session('active_role') === "company" && isset($company) && $company->profile_photo) ? asset("storage/" . $company->profile_photo) : "") }}'
+                                    onclick='(function(btn){ openPhotoEditor(btn.getAttribute("data-img-url")); })(this)'
                                     class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }}">
                                 <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -344,7 +345,8 @@
                                     <input type="hidden" name="profile_type" value="{{ session('active_role') }}">
                                     <button type="button" 
                                             class="mt-2 text-sm text-red-600 hover:text-red-700 hover:underline transition"
-                                            onclick="showRemovePhotoConfirmation('{{ session('active_role') === 'freelancer' ? 'foto' : 'logo' }}')">
+                                            data-photo-type='{{ session('active_role') === 'freelancer' ? 'foto' : 'logo' }}'
+                                            onclick='(function(btn){ showRemovePhotoConfirmation(btn.getAttribute("data-photo-type")); })(this)'>
                                         Remover {{ session('active_role') === 'freelancer' ? 'Foto' : 'Logo' }}
                                     </button>
                                 </form>
@@ -491,7 +493,7 @@
 
                         <!-- Upload de Currículo -->
                         <div class="col-span-2">
-                            <x-cv-uploader :currentCv="isset($freelancer) && $freelancer->cv_path ? $freelancer->cv_path : null" />
+                            <x-cv-uploader :currentCv="isset($freelancer) && $freelancer->cv_url ? $freelancer->cv_url : null" />
                         </div>
                     </div>
 
@@ -1256,15 +1258,7 @@ function initializeFormValidation() {
 </script>
 <script src="{{ asset('js/cv-uploader.js') }}"></script>
 
-<style>
-.tab-button {
-    @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
-}
 
-.tab-button.active {
-    @apply border-blue-500 text-blue-600;
-}
-</style>
 
 {{-- Componente de Confirmação --}}
 <x-action-confirmation 
@@ -1272,8 +1266,15 @@ function initializeFormValidation() {
     modalId="removePhotoConfirmationModal" />
 
 @push('scripts')
+@php
+    $segmentsData = ($segments ?? \App\Models\Segment::where('active', true)->orderBy('name')->get(['id','name']))
+        ->map(function($s){ return ['id' => $s->id, 'name' => $s->name]; });
+@endphp
+<script id="APP_SEGMENTS_DATA" type="application/json">
+    @json($segmentsData)
+</script>
 <script>
-    window.APP_SEGMENTS = {!! json_encode(($segments ?? \App\Models\Segment::where('active', true)->orderBy('name')->get(['id','name']))->map(function($s){ return ['id' => $s->id, 'name' => $s->name]; })) !!};
+    window.APP_SEGMENTS = JSON.parse(document.getElementById('APP_SEGMENTS_DATA')?.textContent || '[]');
 
     function ensureSegmentModal() {
         if (document.getElementById('segmentSelectionModal')) return;

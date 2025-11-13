@@ -25,7 +25,7 @@ class ProfileController extends Controller
 
         // Determinar perfil ativo baseado na sessão (para o próprio usuário) ou disponibilidade
         $activeRole = null;
-        if (auth()->check() && auth()->id() === $user->id) {
+        if (Auth::check() && Auth::id() === $user->id) {
             // Perfil próprio: permitir alternância via querystring e persistir na sessão
             $requestedRole = request()->query('role');
             if (in_array($requestedRole, ['freelancer', 'company'])) {
@@ -763,7 +763,7 @@ class ProfileController extends Controller
      */
     public function uploadCv(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         
         // Verificar se o usuário tem perfil de freelancer
         if (!$user->freelancer) {
@@ -795,7 +795,7 @@ class ProfileController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Currículo enviado com sucesso!',
-                'cv_path' => $cvPath
+                'cv_url' => $cvPath
             ]);
 
         } catch (\Exception $e) {
@@ -811,7 +811,7 @@ class ProfileController extends Controller
      */
     public function deleteCv(Request $request)
     {
-        $user = auth()->user();
+        $user = Auth::user();
         
         // Verificar se o usuário tem perfil de freelancer
         if (!$user->freelancer) {
@@ -860,7 +860,7 @@ class ProfileController extends Controller
             'role' => 'required|in:freelancer,company'
         ]);
 
-        $user = auth()->user();
+        $user = Auth::user();
         $targetRole = $request->input('role');
 
         // Verificar se o usuário tem o perfil solicitado
@@ -902,8 +902,8 @@ class ProfileController extends Controller
         }
 
         // Remover CV do storage se existir
-        if ($freelancer->cv_path) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_path);
+        if ($freelancer->cv_url) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_url);
         }
 
         // Remover foto de perfil se existir
@@ -1021,7 +1021,7 @@ class ProfileController extends Controller
                     'hourly_rate' => $freelancer->hourly_rate,
                     'availability' => $freelancer->availability,
                     'profile_photo' => $freelancer->profile_photo ? asset('storage/' . $freelancer->profile_photo) : null,
-                    'cv_path' => $freelancer->cv_path ? asset('storage/' . $freelancer->cv_path) : null,
+                    'cv_url' => $freelancer->cv_url ? asset('storage/' . $freelancer->cv_url) : null,
                     'portfolio_url' => $freelancer->portfolio_url,
                     'linkedin_url' => $freelancer->linkedin_url,
                     'github_url' => $freelancer->github_url,

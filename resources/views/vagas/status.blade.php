@@ -220,6 +220,5 @@
     @media (max-width: 992px) {
         .avatar-circle { width: 32px; height: 32px; }
     }
-}
 </style>
 @endpush
