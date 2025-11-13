@@ -30,7 +30,7 @@
               <span class="mx-2">•</span>{{ $job->location_type ?? '-' }}
             </div>
             <div class="mt-3">
-              <a href="{{ route('connect.index', ['job_id' => $job->id]) }}" class="inline-flex items-center px-3 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700">Selecionar</a>
+              <a href="{{ route('connect.index', ['job_id' => $job->id]) }}" class="inline-flex items-center px-3 py-2 rounded-md shadow text-black hover:opacity-90" style="background-color:#b8fc64;">Selecionar</a>
             </div>
           </div>
         @endforeach
