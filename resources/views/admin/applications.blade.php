@@ -19,19 +19,19 @@
                 <div class="text-sm text-gray-500">Total de Candidaturas</div>
             </div>
             <div class="bg-white p-4 rounded-lg shadow">
-                <div class="text-2xl font-bold text-yellow-600">
+                <div class="text-2xl font-bold text-gray-900">
                     {{ $stats['pending'] }}
                 </div>
                 <div class="text-sm text-gray-500">Pendentes</div>
             </div>
             <div class="bg-white p-4 rounded-lg shadow">
-                <div class="text-2xl font-bold text-green-600">
+                <div class="text-2xl font-bold text-gray-900">
                     {{ $stats['accepted'] }}
                 </div>
                 <div class="text-sm text-gray-500">Aceitas</div>
             </div>
             <div class="bg-white p-4 rounded-lg shadow">
-                <div class="text-2xl font-bold text-red-600">
+                <div class="text-2xl font-bold text-gray-900">
                     {{ $stats['rejected'] }}
                 </div>
                 <div class="text-sm text-gray-500">Rejeitadas</div>
@@ -120,16 +120,16 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($application->status === 'pending')
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                <i class="fas fa-clock mr-1"></i> Pendente
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-800">
+                                                <i class="fas fa-clock mr-1 text-gray-700"></i> Pendente
                                             </span>
                                         @elseif($application->status === 'accepted')
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                                <i class="fas fa-check mr-1"></i> Aceita
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-800">
+                                                <i class="fas fa-check mr-1 text-gray-700"></i> Aceita
                                             </span>
                                         @elseif($application->status === 'rejected')
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                <i class="fas fa-times mr-1"></i> Rejeitada
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-200 text-gray-800">
+                                                <i class="fas fa-times mr-1 text-gray-700"></i> Rejeitada
                                             </span>
                                         @endif
                                     </td>
@@ -139,11 +139,11 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-2">
                                             <a href="{{ route('vagas.show', $application->jobVacancy) }}" 
-                                               class="text-blue-600 hover:text-blue-900">
+                                               class="text-gray-700 hover:text-black">
                                                 <i class="fas fa-eye"></i> Ver Vaga
                                             </a>
                                             <a href="{{ route('freelancers.show', $application->freelancer) }}" 
-                                               class="text-green-600 hover:text-green-900">
+                                               class="text-gray-700 hover:text-black">
                                                 <i class="fas fa-user"></i> Ver Perfil
                                             </a>
                                         </div>

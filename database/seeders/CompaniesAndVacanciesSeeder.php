@@ -131,5 +131,16 @@ class CompaniesAndVacanciesSeeder extends Seeder
                 );
             }
         }
+
+        User::updateOrCreate(
+            ['email' => 'admin@seed.trampix'],
+            [
+                'name' => 'Admin Trampix',
+                'display_name' => 'Admin Trampix',
+                'password' => Hash::make('Trampix@123'),
+                'email_verified_at' => now(),
+                'role' => 'admin',
+            ]
+        );
     }
 }

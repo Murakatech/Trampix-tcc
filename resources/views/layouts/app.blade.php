@@ -101,9 +101,20 @@
             }
             .btn-glow { box-shadow: 0 0 0 rgba(0,0,0,0); transition: box-shadow .25s, transform .15s; }
             .btn-glow:hover { box-shadow: 0 10px 25px rgba(143, 63, 247, .25); transform: translateY(-1px); }
+
+            .admin-theme .btn-trampix-primary {
+                background-color: #e5e7eb;
+                border-color: #e5e7eb;
+                color: #000;
+            }
+            .admin-theme .btn-trampix-primary:hover {
+                background-color: #d1d5db;
+                border-color: #d1d5db;
+                color: #000;
+            }
         </style>
     </head>
-    <body>
+    <body class="{{ session('active_role') === 'admin' ? 'admin-theme' : '' }}">
         <div id="app">
             @if (!request()->routeIs('vagas.index'))
                 @include('layouts.navigation')

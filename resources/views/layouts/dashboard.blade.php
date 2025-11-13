@@ -69,6 +69,12 @@
                 color: inherit;
             }
 
+            .admin-theme .trampix-card:hover {
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            }
+
+            .admin-theme .trampix-sidebar i { color: #000; }
+
             /* Cabeçalho de tabela com identidade Trampix (override Bootstrap) */
             table.table thead.trampix-table-header { background-color: var(--trampix-light-gray) !important; }
             table.table thead.trampix-table-header th { color: var(--trampix-black) !important; font-weight: 600; letter-spacing: .02em; padding-top: .75rem; padding-bottom: .75rem; }
@@ -117,6 +123,27 @@
             }
             .btn-glow { box-shadow: 0 0 0 rgba(0,0,0,0); transition: box-shadow .25s, transform .15s; }
             .btn-glow:hover { box-shadow: 0 10px 25px rgba(143, 63, 247, .25); transform: translateY(-1px); }
+
+            .admin-theme .btn-trampix-primary {
+                background-color: #e5e7eb;
+                border-color: #e5e7eb;
+                color: #000;
+            }
+            .admin-theme .btn-trampix-primary:hover {
+                background-color: #d1d5db;
+                border-color: #d1d5db;
+                color: #000;
+            }
+            .admin-theme .btn-trampix-secondary {
+                background-color: #f3f4f6;
+                border-color: #9ca3af;
+                color: #000;
+            }
+            .admin-theme .btn-trampix-secondary:hover {
+                background-color: #e5e7eb;
+                border-color: #6b7280;
+                color: #000;
+            }
 
             /* Header navigation styles */
             .header-nav {
@@ -225,7 +252,7 @@
             }
         </style>
     </head>
-    <body class="bg-gray-50 font-sans antialiased">
+    <body class="bg-gray-50 font-sans antialiased {{ (session('active_role') === 'admin' || request()->routeIs('admin.*')) ? 'admin-theme' : '' }}">
         
         <div class="min-h-screen" x-data="{ sidebarExpanded: false }">
             <!-- Sidebar Component -->

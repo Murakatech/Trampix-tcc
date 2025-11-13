@@ -121,15 +121,35 @@
       @if(auth()->user()?->isFreelancer())
         <div class="text-xs text-gray-600 mb-2 text-center">Selecione o filtro de mostragem</div>
         <div class="grid grid-cols-2 gap-2">
-          <a href="{{ route('connect.index', ['mode' => 'segment']) }}" class="block w-full px-3 py-2 rounded-md shadow" style="background-color:#8F3FF7;color:#fff;">Meu segmento</a>
-          <a href="{{ route('connect.index', ['mode' => 'all']) }}" class="block w-full px-3 py-2 rounded-md shadow" style="background-color:#8F3FF7;color:#fff;">Geral</a>
+          <a href="{{ route('connect.index', ['mode' => 'segment']) }}"
+             aria-current="{{ $currentMode === 'segment' ? 'true' : 'false' }}"
+             class="block w-full px-3 py-2 rounded-md shadow {{ $currentMode === 'segment' ? 'ring-2 ring-black shadow-lg' : 'opacity-80 hover:opacity-100' }}"
+             style="background-color:#8F3FF7;color:#fff;">
+             @if($currentMode === 'segment')<i class="fas fa-check-circle mr-2"></i>@endif Meu segmento
+          </a>
+          <a href="{{ route('connect.index', ['mode' => 'all']) }}"
+             aria-current="{{ $currentMode === 'all' ? 'true' : 'false' }}"
+             class="block w-full px-3 py-2 rounded-md shadow {{ $currentMode === 'all' ? 'ring-2 ring-black shadow-lg' : 'opacity-80 hover:opacity-100' }}"
+             style="background-color:#8F3FF7;color:#fff;">
+             @if($currentMode === 'all')<i class="fas fa-check-circle mr-2"></i>@endif Geral
+          </a>
         </div>
       @elseif(auth()->user()?->isCompany())
         @if(isset($selectedJob) && $selectedJob)
           <div class="text-xs text-gray-600 mb-2 text-center">Selecione o filtro de mostragem</div>
           <div class="grid grid-cols-2 gap-2">
-            <a href="{{ route('connect.index', ['job_id' => $selectedJob->id, 'mode' => 'segment']) }}" class="block w-full px-3 py-2 rounded-md shadow" style="background-color:#b8fc64;color:#000;">Segmento da vaga</a>
-            <a href="{{ route('connect.index', ['job_id' => $selectedJob->id, 'mode' => 'all']) }}" class="block w-full px-3 py-2 rounded-md shadow" style="background-color:#b8fc64;color:#000;">Geral</a>
+            <a href="{{ route('connect.index', ['job_id' => $selectedJob->id, 'mode' => 'segment']) }}"
+               aria-current="{{ $currentMode === 'segment' ? 'true' : 'false' }}"
+               class="block w-full px-3 py-2 rounded-md shadow {{ $currentMode === 'segment' ? 'ring-2 ring-black shadow-lg' : 'opacity-80 hover:opacity-100' }}"
+               style="background-color:#b8fc64;color:#000;">
+               @if($currentMode === 'segment')<i class="fas fa-check-circle mr-2"></i>@endif Segmento da vaga
+            </a>
+            <a href="{{ route('connect.index', ['job_id' => $selectedJob->id, 'mode' => 'all']) }}"
+               aria-current="{{ $currentMode === 'all' ? 'true' : 'false' }}"
+               class="block w-full px-3 py-2 rounded-md shadow {{ $currentMode === 'all' ? 'ring-2 ring-black shadow-lg' : 'opacity-80 hover:opacity-100' }}"
+               style="background-color:#b8fc64;color:#000;">
+               @if($currentMode === 'all')<i class="fas fa-check-circle mr-2"></i>@endif Geral
+            </a>
           </div>
         @else
           <span class="block w-full px-3 py-2 rounded-md border-2 border-gray-300 bg-white text-black">Selecione uma vaga</span>
@@ -138,24 +158,36 @@
     </aside>
 
     <!-- Matches Overlay acionado pelo botão Ver Matches -->
-    <div x-show="matchesOverlay.visible" x-transition class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div class="rounded-xl shadow-2xl w-full max-w-md p-6 mx-6 {{ $isFreelancer ? 'text-white' : 'text-black' }}" style="background-color: {{ $isFreelancer ? '#8F3FF7' : '#b8fc64' }};">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="text-2xl font-semibold">Seus Matches</h3>
-          <button @click="matchesOverlay.visible = false" class="px-3 py-2 rounded-md bg-white text-black hover:bg-white/90">Fechar</button>
+    <div x-show="matchesOverlay.visible" x-transition class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+      <div class="rounded-2xl shadow-2xl w-full max-w-xl p-8 mx-6 {{ $isFreelancer ? 'text-white' : 'text-black' }} max-h-[80vh] overflow-y-auto" style="background-color: {{ $isFreelancer ? '#8F3FF7' : '#b8fc64' }};">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-3xl font-semibold">Seus Matches</h3>
+          <button @click="matchesOverlay.visible = false" class="px-3 py-2 rounded-md bg-white text-black hover:bg-white/90 shadow">Fechar</button>
         </div>
         <template x-if="(userMatches || []).length === 0">
           <div class="text-sm {{ $isFreelancer ? 'text-white/90' : 'text-black/70' }}">Nenhum match encontrado ainda.</div>
         </template>
-        <ul class="space-y-3" x-show="(userMatches || []).length > 0">
+        <ul class="space-y-4" x-show="(userMatches || []).length > 0">
           <template x-for="m in userMatches" :key="m.id">
-            <li class="flex items-center justify-between">
-              <div>
-                <div class="font-medium" x-text="m.job_title || m.freelancer_name"></div>
-                <div class="text-sm text-gray-600" x-text="m.job_title ? 'Vaga' : 'Freelancer'"></div>
+            <li class="flex items-center justify-between gap-4 p-4 rounded-lg transition {{ $isFreelancer ? 'bg-white/15 hover:bg-white/20' : 'bg-black/5 hover:bg-black/10' }} overflow-hidden min-h-[84px] relative">
+              <div class="flex items-start gap-3 min-w-0 flex-1">
+                <template x-if="m.job_title">
+                  <div class="w-9 h-9 rounded-md bg-white/25 flex items-center justify-center shrink-0">
+                    <i class="fas fa-briefcase"></i>
+                  </div>
+                </template>
+                <template x-if="!m.job_title">
+                  <div class="w-9 h-9 rounded-md bg-white/25 flex items-center justify-center shrink-0">
+                    <i class="fas fa-user"></i>
+                  </div>
+                </template>
+                <div class="min-w-0">
+                  <div class="font-semibold text-lg leading-snug truncate" x-text="m.job_title || m.freelancer_name"></div>
+                  <div class="text-sm {{ $isFreelancer ? 'text-white' : 'text-black/80' }} mt-1" x-text="m.job_title ? 'Vaga' : 'Freelancer'"></div>
+                </div>
               </div>
-              <div class="flex items-center gap-2">
-                <a :href="m.job_title ? ('/vagas/' + m.job_id) : ('/profiles/' + (m.user_id || ''))" class="px-3 py-2 rounded-md bg-white text-black hover:bg-white/90 shadow" x-text="m.job_title ? 'Ir para vaga completa' : ('Ir para perfil de ' + (m.freelancer_name || 'Freelancer'))"></a>
+              <div class="shrink-0 self-center">
+                <a :href="m.job_title ? ('/vagas/' + m.job_id) : ('/profiles/' + (m.user_id || ''))" class="px-4 py-2 rounded-md bg-white text-black hover:bg-white/90 shadow text-sm whitespace-nowrap" x-text="m.job_title ? 'Ir para vaga completa' : ('Ir para perfil de ' + (m.freelancer_name || 'Freelancer'))"></a>
               </div>
             </li>
           </template>

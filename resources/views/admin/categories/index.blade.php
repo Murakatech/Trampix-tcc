@@ -2,7 +2,7 @@
 
 @section('header')
 <h1 class="text-2xl font-bold text-gray-900">
-    <i class="fas fa-tags text-purple-600 mr-2"></i>
+    <i class="fas fa-tags text-gray-800 mr-2"></i>
     Administração - Categorias
 </h1>
 @endsection
@@ -15,8 +15,8 @@
             <p class="text-sm text-gray-600">Administre todas as categorias existentes e crie novas.</p>
         </div>
         <div class="hidden sm:flex items-center gap-3">
-            <span class="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm">Total: {{ $stats['total'] }}</span>
-            <span class="ml-2 px-3 py-1 bg-green-50 text-green-700 rounded-full text-sm">Ativas: {{ $stats['active_total'] ?? 0 }}</span>
+            <span class="px-3 py-1 bg-gray-100 text-black rounded-full text-sm">Total: {{ $stats['total'] }}</span>
+            <span class="ml-2 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">Ativas: {{ $stats['active_total'] ?? 0 }}</span>
             <span class="ml-2 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm">Inativas: {{ $stats['inactive_total'] ?? 0 }}</span>
         </div>
     </div>
@@ -26,11 +26,11 @@
         <div class="lg:col-span-1">
             <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-plus text-purple-600"></i>
+                    <i class="fas fa-plus text-gray-800"></i>
                     Criar nova categoria
                 </h2>
                 @if(session('ok'))
-                    <div class="mb-4 text-green-700 bg-green-50 border border-green-200 rounded-md p-3">
+                    <div class="mb-4 text-black bg-gray-100 border border-gray-200 rounded-md p-3">
                         <i class="fas fa-check mr-2"></i>{{ session('ok') }}
                     </div>
                 @endif
@@ -75,7 +75,7 @@
         <div class="lg:col-span-2">
             <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-list text-purple-600"></i>
+                    <i class="fas fa-list text-gray-800"></i>
                     Categorias ativas
                 </h2>
                 <div class="overflow-x-auto">
@@ -95,12 +95,12 @@
                                     <td class="px-4 py-2 text-sm text-gray-600">{{ $cat->description }}</td>
                                     <td class="px-4 py-2 text-sm text-gray-600">{{ $cat->segment->name ?? '-' }}</td>
                                     <td class="px-4 py-2 text-right">
-                                        <button type="button" class="text-purple-600 hover:text-purple-800 text-sm" onclick="document.getElementById('edit-cat-{{ $cat->id }}').classList.toggle('hidden')">
+                                        <button type="button" class="text-black hover:text-gray-700 text-sm" onclick="document.getElementById('edit-cat-{{ $cat->id }}').classList.toggle('hidden')">
                                             <i class="fas fa-pen mr-1"></i>Editar
                                         </button>
                                     </td>
                                 </tr>
-                                <tr id="edit-cat-{{ $cat->id }}" class="bg-purple-50 hidden">
+                                <tr id="edit-cat-{{ $cat->id }}" class="bg-gray-100 hidden">
                                     <td colspan="4" class="px-4 py-3">
                                         <form id="edit-cat-form-{{ $cat->id }}" method="POST" action="{{ route('admin.categories.update', $cat) }}" class="space-y-3">
                                             @csrf
@@ -202,7 +202,7 @@
         <div class="lg:col-span-1">
             <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-layer-group text-purple-600"></i>
+                    <i class="fas fa-layer-group text-gray-800"></i>
                     Criar novo segmento
                 </h2>
                 <form method="POST" action="{{ route('admin.segments.store') }}" class="space-y-4">
@@ -227,9 +227,9 @@
         <div class="lg:col-span-2">
             <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                    <i class="fas fa-list text-purple-600"></i>
+                    <i class="fas fa-list text-gray-800"></i>
                     Segmentos ativos
-                    <span class="ml-auto px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm">Total: {{ $stats['segments_total'] }}</span>
+                    <span class="ml-auto px-3 py-1 bg-gray-100 text-black rounded-full text-sm">Total: {{ $stats['segments_total'] }}</span>
                 </h2>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -244,12 +244,12 @@
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-4 py-2 text-sm text-gray-900">{{ $seg->name }}</td>
                                     <td class="px-4 py-2 text-right">
-                                        <button type="button" class="text-purple-600 hover:text-purple-800 text-sm" onclick="document.getElementById('edit-seg-{{ $seg->id }}').classList.toggle('hidden')">
+                                        <button type="button" class="text-black hover:text-gray-700 text-sm" onclick="document.getElementById('edit-seg-{{ $seg->id }}').classList.toggle('hidden')">
                                             <i class="fas fa-pen mr-1"></i>Editar
                                         </button>
                                     </td>
                                 </tr>
-                                <tr id="edit-seg-{{ $seg->id }}" class="bg-purple-50 hidden">
+                                <tr id="edit-seg-{{ $seg->id }}" class="bg-gray-100 hidden">
                                     <td colspan="2" class="px-4 py-3">
                                         <form id="edit-seg-form-{{ $seg->id }}" method="POST" action="{{ route('admin.segments.update', $seg) }}" class="space-y-3">
                                             @csrf

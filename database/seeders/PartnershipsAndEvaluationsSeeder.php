@@ -6,6 +6,7 @@ use App\Models\Application;
 use App\Models\Company;
 use App\Models\Freelancer;
 use App\Models\JobVacancy;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class PartnershipsAndEvaluationsSeeder extends Seeder
@@ -95,6 +96,13 @@ class PartnershipsAndEvaluationsSeeder extends Seeder
         $lines[] = 'Resumo dos Seeders: Empresas, Vagas, Freelancers, Aplicações e Avaliações';
         $lines[] = 'Credenciais de teste';
         $lines[] = 'Senha padrão: Trampix@123';
+        $admins = User::where('role', 'admin')->get();
+        if ($admins->count() > 0) {
+            $lines[] = 'Logins de Admin:';
+            foreach ($admins as $admin) {
+                $lines[] = '- '.$admin->name.': '.$admin->email.' / Trampix@123';
+            }
+        }
         $lines[] = 'Logins de Empresas:';
         foreach ($companies as $company) {
             if ($company->user) {

@@ -1,6 +1,8 @@
 Resumo dos Seeders: Empresas, Vagas, Freelancers, Aplicações e Avaliações
 Credenciais de teste
 Senha padrão: Trampix@123
+Logins de Admin:
+- Admin Trampix: admin@seed.trampix / Trampix@123
 Logins de Empresas:
 - Tech Corp: techcorp@seed.trampix / Trampix@123
 - Biz Solutions: bizsolutions@seed.trampix / Trampix@123
@@ -16,16 +18,16 @@ Logins de Freelancers:
 - Henrique Santos: henrique-santos@seed.trampix / Trampix@123
 - Isabela Nogueira: isabela-nogueira@seed.trampix / Trampix@123
 - João Pedro Costa: joao-pedro-costa@seed.trampix / Trampix@123
-- Freela Ana Souza do segmento {Negócios e Administração} aplicou para: Tech Corp, Creative Labs; finalizados: 1
+- Freela Ana Souza do segmento {Negócios e Administração} aplicou para: Tech Corp, Creative Labs, Biz Solutions; finalizados: 1
 - Freela Bruno Lima do segmento {Tecnologia e Informação} aplicou para: Creative Labs, Biz Solutions, Tech Corp; finalizados: 1
-- Freela Carla Mendes do segmento {Engenharia e Indústria} aplicou para: Tech Corp, Creative Labs; finalizados: 1
-- Freela Diego Almeida do segmento {Comunicação e Criatividade} aplicou para: Creative Labs, Biz Solutions; finalizados: 1
-- Freela Eduarda Pires do segmento {Saúde e Bem-Estar} aplicou para: Biz Solutions, Creative Labs; finalizados: 1
+- Freela Carla Mendes do segmento {Engenharia e Indústria} aplicou para: Tech Corp, Creative Labs, Biz Solutions; finalizados: 1
+- Freela Diego Almeida do segmento {Comunicação e Criatividade} aplicou para: Creative Labs, Biz Solutions, Tech Corp; finalizados: 1
+- Freela Eduarda Pires do segmento {Saúde e Bem-Estar} aplicou para: Biz Solutions, Creative Labs, Tech Corp; finalizados: 1
 - Freela Felipe Martins do segmento {Educação e Pesquisa} aplicou para: Biz Solutions, Creative Labs, Tech Corp; finalizados: 1
 - Freela Gabriela Rocha do segmento {Jurídico e Público} aplicou para: Creative Labs, Biz Solutions, Tech Corp; finalizados: 1
-- Freela Henrique Santos do segmento {Meio Ambiente e Sustentabilidade} aplicou para: Tech Corp, Biz Solutions; finalizados: 1
-- Freela Isabela Nogueira do segmento {Serviços e Operações} aplicou para: Creative Labs, Biz Solutions; finalizados: 1
-- Freela João Pedro Costa do segmento {Comércio e Atendimento} aplicou para: Biz Solutions, Tech Corp; finalizados: 1
+- Freela Henrique Santos do segmento {Meio Ambiente e Sustentabilidade} aplicou para: Tech Corp, Biz Solutions, Creative Labs; finalizados: 1
+- Freela Isabela Nogueira do segmento {Serviços e Operações} aplicou para: Creative Labs, Biz Solutions, Tech Corp; finalizados: 1
+- Freela João Pedro Costa do segmento {Comércio e Atendimento} aplicou para: Biz Solutions, Tech Corp, Creative Labs; finalizados: 1
 - Empresa Tech Corp do segmento {Tecnologia e Informação} tem 3 trabalhos finalizados; vagas: Desenvolvimento de Software 1, Análise de Sistemas 2, Suporte Técnico / Help Desk 3, Banco de Dados 4, Cibersegurança 5, UX/UI Design 6, Inteligência Artificial 7, Ciência de Dados 8, Infraestrutura e Redes 9, Game Design 10
 - Empresa Biz Solutions do segmento {Negócios e Administração} tem 3 trabalhos finalizados; vagas: Administração 1, Contabilidade 2, Finanças 3, Recursos Humanos 4, Marketing 5, Vendas e Comercial 6, Empreendedorismo 7, Comércio Exterior 8, Logística 9, Consultoria Empresarial 10
 - Empresa Creative Labs do segmento {Comunicação e Criatividade} tem 4 trabalhos finalizados; vagas: Design Gráfico 1, Publicidade e Propaganda 2, Jornalismo 3, Fotografia 4, Produção Audiovisual 5, Moda 6, Redação e Copywriting 7, Social Media 8, Edição de Vídeo 9, Design Gráfico 10
