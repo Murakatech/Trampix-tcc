@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -56,7 +55,7 @@ class ResetPasswordNotification extends Notification
         $url = $this->resetUrl($notifiable);
 
         return (new MailMessage)
-            ->subject('Redefinição de Senha - ' . config('app.name'))
+            ->subject('Redefinição de Senha - '.config('app.name'))
             ->view('emails.reset-password', [
                 'actionUrl' => $url,
                 'user' => $notifiable,

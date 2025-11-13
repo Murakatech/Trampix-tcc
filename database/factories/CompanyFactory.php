@@ -24,7 +24,7 @@ class CompanyFactory extends Factory
             'name' => fake()->company(),
             'cnpj' => fake()->numerify('##.###.###/####-##'),
             'sector' => fake()->randomElement(['Tecnologia', 'Saúde', 'Educação', 'Varejo', 'Serviços', 'Indústria']),
-            'location' => fake()->city() . '/' . fake()->stateAbbr(),
+            'location' => fake()->city().'/'.fake()->stateAbbr(),
             'description' => fake()->paragraph(),
             'website' => fake()->url(),
             'phone' => fake()->phoneNumber(),

@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -24,7 +23,7 @@ class ProfilePhotoControllerTest extends TestCase
     {
         // Arrange
         $user = User::factory()->create([
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
         // Act
@@ -36,7 +35,7 @@ class ProfilePhotoControllerTest extends TestCase
             ->assertJsonStructure([
                 'has_updates',
                 'last_modified',
-                'profile_photo_url'
+                'profile_photo_url',
             ]);
     }
 
@@ -45,7 +44,7 @@ class ProfilePhotoControllerTest extends TestCase
     {
         // Arrange
         $user = User::factory()->create([
-            'updated_at' => now()->subHour()
+            'updated_at' => now()->subHour(),
         ]);
 
         $lastModified = $user->updated_at->format('D, d M Y H:i:s \G\M\T');
@@ -64,7 +63,7 @@ class ProfilePhotoControllerTest extends TestCase
     {
         // Arrange
         $user = User::factory()->create([
-            'updated_at' => now()
+            'updated_at' => now(),
         ]);
 
         $oldDate = now()->subHour()->format('D, d M Y H:i:s \G\M\T');
@@ -85,7 +84,7 @@ class ProfilePhotoControllerTest extends TestCase
         // Arrange
         $user = User::factory()->create([
             'name' => 'John Doe',
-            'email' => 'john@example.com'
+            'email' => 'john@example.com',
         ]);
 
         // Act
@@ -101,15 +100,15 @@ class ProfilePhotoControllerTest extends TestCase
                     'email',
                     'role',
                     'profile_photo_url',
-                    'initials'
-                ]
+                    'initials',
+                ],
             ])
             ->assertJson([
                 'user' => [
                     'name' => 'John Doe',
                     'email' => 'john@example.com',
-                    'initials' => 'JD'
-                ]
+                    'initials' => 'JD',
+                ],
             ]);
     }
 
@@ -138,7 +137,7 @@ class ProfilePhotoControllerTest extends TestCase
     {
         // Arrange
         $user = User::factory()->create([
-            'name' => 'Jane Smith'
+            'name' => 'Jane Smith',
         ]);
 
         // Act
@@ -150,8 +149,8 @@ class ProfilePhotoControllerTest extends TestCase
             ->assertJson([
                 'user' => [
                     'profile_photo_url' => null,
-                    'initials' => 'JS'
-                ]
+                    'initials' => 'JS',
+                ],
             ]);
     }
 
@@ -160,26 +159,26 @@ class ProfilePhotoControllerTest extends TestCase
     {
         // Test Freelancer
         $freelancer = User::factory()->create(['role' => 'freelancer']);
-        
+
         $response = $this->actingAs($freelancer)
             ->getJson('/api/profile/data');
-        
+
         $response->assertJson(['user' => ['role' => 'freelancer']]);
 
         // Test Company
         $company = User::factory()->create(['role' => 'company']);
-        
+
         $response = $this->actingAs($company)
             ->getJson('/api/profile/data');
-        
+
         $response->assertJson(['user' => ['role' => 'company']]);
 
         // Test Admin
         $admin = User::factory()->create(['role' => 'admin']);
-        
+
         $response = $this->actingAs($admin)
             ->getJson('/api/profile/data');
-        
+
         $response->assertJson(['user' => ['role' => 'admin']]);
     }
 

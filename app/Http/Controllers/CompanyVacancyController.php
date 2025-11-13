@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JobVacancy;
-use App\Models\Company;
-use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\JobVacancy;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -18,20 +17,20 @@ class CompanyVacancyController extends Controller
     public function index(Request $request)
     {
         // Verificar se é empresa
-        if (!Gate::allows('isCompany')) {
+        if (! Gate::allows('isCompany')) {
             abort(403, 'Acesso negado. Apenas empresas podem acessar esta página.');
         }
 
         // Verificar se usuário está autenticado
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login')->with('error', 'Sessão expirada. Faça login novamente.');
         }
 
         try {
             // Buscar empresa do usuário logado
             $company = Auth::user()->company;
-            
-            if (!$company) {
+
+            if (! $company) {
                 return redirect()->route('dashboard')->with('error', 'Perfil de empresa não encontrado.');
             }
 
@@ -39,7 +38,7 @@ class CompanyVacancyController extends Controller
             $query = JobVacancy::where('company_id', $company->id)
                 ->with('applications')
                 // Oculta vagas cujo trabalho principal já foi finalizado e avaliado pela empresa
-                ->whereDoesntHave('applications', function($q) {
+                ->whereDoesntHave('applications', function ($q) {
                     $q->where('status', 'ended')->whereNotNull('evaluated_by_company_at');
                 });
 
@@ -47,7 +46,7 @@ class CompanyVacancyController extends Controller
             if ($request->filled('category')) {
                 $catName = $request->category;
                 $catId = Category::where('name', $catName)->value('id');
-                $query->where(function($q) use ($catName, $catId) {
+                $query->where(function ($q) use ($catName, $catId) {
                     if ($catId) {
                         $q->where('category_id', $catId);
                     }
@@ -76,7 +75,7 @@ class CompanyVacancyController extends Controller
                 'total' => JobVacancy::where('company_id', $company->id)->count(),
                 'active' => JobVacancy::where('company_id', $company->id)->where('status', 'active')->count(),
                 'closed' => JobVacancy::where('company_id', $company->id)->where('status', 'closed')->count(),
-                'total_applications' => \App\Models\Application::whereIn('job_vacancy_id', 
+                'total_applications' => \App\Models\Application::whereIn('job_vacancy_id',
                     JobVacancy::where('company_id', $company->id)->pluck('id')
                 )->count(),
             ];
@@ -84,7 +83,8 @@ class CompanyVacancyController extends Controller
             return view('company.vagas.index', compact('vagas', 'categories', 'stats', 'company'));
 
         } catch (\Exception $e) {
-            Log::error('Erro ao carregar vagas da empresa: ' . $e->getMessage());
+            Log::error('Erro ao carregar vagas da empresa: '.$e->getMessage());
+
             return redirect()->route('dashboard')->with('error', 'Erro ao carregar vagas. Tente novamente.');
         }
     }
@@ -95,13 +95,13 @@ class CompanyVacancyController extends Controller
     public function show(JobVacancy $vaga)
     {
         // Verificar se é empresa
-        if (!Gate::allows('isCompany')) {
+        if (! Gate::allows('isCompany')) {
             abort(403, 'Acesso negado.');
         }
 
         // Verificar se a vaga pertence à empresa logada
         $company = Auth::user()->company;
-        if (!$company || $vaga->company_id !== $company->id) {
+        if (! $company || $vaga->company_id !== $company->id) {
             abort(403, 'Esta vaga não pertence à sua empresa.');
         }
 
@@ -120,7 +120,8 @@ class CompanyVacancyController extends Controller
             return view('company.vagas.show', compact('vaga', 'vagaStats'));
 
         } catch (\Exception $e) {
-            Log::error('Erro ao carregar detalhes da vaga: ' . $e->getMessage());
+            Log::error('Erro ao carregar detalhes da vaga: '.$e->getMessage());
+
             return redirect()->route('company.vagas.index')->with('error', 'Erro ao carregar vaga.');
         }
     }
@@ -131,13 +132,13 @@ class CompanyVacancyController extends Controller
     public function toggleStatus(JobVacancy $vaga)
     {
         // Verificar se é empresa
-        if (!Gate::allows('isCompany')) {
+        if (! Gate::allows('isCompany')) {
             abort(403, 'Acesso negado.');
         }
 
         // Verificar se a vaga pertence à empresa logada
         $company = Auth::user()->company;
-        if (!$company || $vaga->company_id !== $company->id) {
+        if (! $company || $vaga->company_id !== $company->id) {
             abort(403, 'Esta vaga não pertence à sua empresa.');
         }
 
@@ -146,11 +147,12 @@ class CompanyVacancyController extends Controller
             $vaga->update(['status' => $newStatus]);
 
             $message = $newStatus === 'active' ? 'Vaga reativada com sucesso!' : 'Vaga fechada com sucesso!';
-            
+
             return redirect()->back()->with('success', $message);
 
         } catch (\Exception $e) {
-            Log::error('Erro ao alterar status da vaga: ' . $e->getMessage());
+            Log::error('Erro ao alterar status da vaga: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Erro ao alterar status da vaga.');
         }
     }

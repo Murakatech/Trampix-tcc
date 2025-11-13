@@ -20,7 +20,7 @@ class EvaluationController extends Controller
         $isCompanyOwner = $user?->company && $application->jobVacancy && $application->jobVacancy->company_id === $user->company->id;
         $isFreelancerOwner = $user?->freelancer && $application->freelancer_id === $user->freelancer->id;
 
-        if (!$isCompanyOwner && !$isFreelancerOwner) {
+        if (! $isCompanyOwner && ! $isFreelancerOwner) {
             abort(403, 'Acesso negado.');
         }
 
@@ -61,7 +61,7 @@ class EvaluationController extends Controller
         $isCompanyOwner = $user?->company && $application->jobVacancy && $application->jobVacancy->company_id === $user->company->id;
         $isFreelancerOwner = $user?->freelancer && $application->freelancer_id === $user->freelancer->id;
 
-        if (!$isCompanyOwner && !$isFreelancerOwner) {
+        if (! $isCompanyOwner && ! $isFreelancerOwner) {
             abort(403, 'Acesso negado.');
         }
 
@@ -72,9 +72,9 @@ class EvaluationController extends Controller
 
         // Validação de 5 a 10 perguntas com nota 1-5, consolidando em uma média
         $validated = $request->validate([
-            'ratings' => ['required','array','min:3','max:10'],
-            'ratings.*' => ['required','integer','between:1,5'],
-            'comments' => ['nullable','string','max:1000'],
+            'ratings' => ['required', 'array', 'min:3', 'max:10'],
+            'ratings.*' => ['required', 'integer', 'between:1,5'],
+            'comments' => ['nullable', 'string', 'max:1000'],
         ]);
 
         // Calcula média com uma casa decimal (1-5)
@@ -114,7 +114,7 @@ class EvaluationController extends Controller
         $isCompanyOwner = $user?->company && $application->jobVacancy && $application->jobVacancy->company_id === $user->company->id;
         $isFreelancerOwner = $user?->freelancer && $application->freelancer_id === $user->freelancer->id;
 
-        if (!$isCompanyOwner && !$isFreelancerOwner) {
+        if (! $isCompanyOwner && ! $isFreelancerOwner) {
             abort(403, 'Acesso negado.');
         }
 

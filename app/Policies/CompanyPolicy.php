@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class CompanyPolicy
@@ -29,6 +29,7 @@ class CompanyPolicy
         if ($company->is_active) {
             return true;
         }
+
         return $user && $company->user_id === $user->id;
     }
 

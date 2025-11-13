@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
+use App\Models\Segment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-use App\Models\Segment;
-use App\Models\Category;
 
 class CategoryPerSegmentSeeder extends Seeder
 {

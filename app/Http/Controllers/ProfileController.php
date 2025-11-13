@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\Application;
 use App\Models\Segment;
-use Illuminate\Validation\Rule;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -85,7 +84,7 @@ class ProfileController extends Controller
 
         // Carregar vagas recentes apenas se o perfil ativo for empresa
         if ($activeRole === 'company' && $company) {
-            $company->load(['vacancies' => function($query) {
+            $company->load(['vacancies' => function ($query) {
                 $query->where('status', 'active')->latest()->take(5);
             }]);
         }
@@ -108,11 +107,12 @@ class ProfileController extends Controller
     public function showCreateFreelancer(Request $request): View|RedirectResponse
     {
         $user = $request->user();
-        
+
         // Verificar se já tem perfil freelancer
         if ($user->freelancer) {
             return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de freelancer.');
         }
+
         // Direcionar para a tela unificada de seleção/criação de perfil
         return redirect()->route('profile.selection');
     }
@@ -123,11 +123,12 @@ class ProfileController extends Controller
     public function showCreateCompany(Request $request): View|RedirectResponse
     {
         $user = $request->user();
-        
+
         // Verificar se já tem perfil empresa
         if ($user->company) {
             return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de empresa.');
         }
+
         // Direcionar para a tela unificada de seleção/criação de perfil
         return redirect()->route('profile.selection');
     }
@@ -153,17 +154,17 @@ class ProfileController extends Controller
         $hasCompany = (bool) $user->company;
 
         // Se não há active_role definido, decidir comportamento conforme perfis existentes
-        if (!$activeRole) {
+        if (! $activeRole) {
             // Sem perfis: encaminhar para seleção/criação de perfil
-            if (!$hasFreelancer && !$hasCompany) {
+            if (! $hasFreelancer && ! $hasCompany) {
                 return redirect()->route('profile.selection');
             }
 
             // Apenas um perfil: definir automaticamente e seguir
-            if ($hasFreelancer && !$hasCompany) {
+            if ($hasFreelancer && ! $hasCompany) {
                 session(['active_role' => 'freelancer']);
                 $activeRole = 'freelancer';
-            } elseif ($hasCompany && !$hasFreelancer) {
+            } elseif ($hasCompany && ! $hasFreelancer) {
                 session(['active_role' => 'company']);
                 $activeRole = 'company';
             } else {
@@ -171,21 +172,21 @@ class ProfileController extends Controller
                 return redirect()->route('select-role.show');
             }
         }
-        
+
         // Carregar ambos os perfis para exibição correta na view
         $freelancer = $user->freelancer;
         $company = $user->company;
-        
+
         // Carregar categorias e segmentos se o freelancer existir
         if ($freelancer) {
             $freelancer->load(['serviceCategories', 'segments']);
         }
-        
+
         // Carregar categorias se a empresa existir
         if ($company) {
             $company->load('serviceCategories');
         }
-        
+
         // Determinar o perfil ativo
         $profile = null;
         if ($activeRole === 'freelancer') {
@@ -193,7 +194,7 @@ class ProfileController extends Controller
         } elseif ($activeRole === 'company') {
             $profile = $company;
         }
-        
+
         // Carregar lista de segmentos para seleção (apenas uma vez)
         $segments = Segment::where('active', true)->orderBy('name')->get();
 
@@ -234,6 +235,7 @@ class ProfileController extends Controller
                 throw $e;
             }
             Log::error('Erro ao atualizar conta do usuário', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+
             return Redirect::route('profile.edit')->with('error', 'Não foi possível atualizar a conta no momento. Tente novamente mais tarde.');
         }
 
@@ -248,19 +250,19 @@ class ProfileController extends Controller
         $user = $request->user();
         $section = $request->input('section');
         $activeRole = session('active_role');
-        
+
         // Verificar se é criação de novo perfil via modal
         if ($request->has('create_company_profile')) {
             return $this->createCompanyProfile($request);
         }
-        
+
         if ($request->has('create_freelancer_profile')) {
             return $this->createFreelancerProfile($request);
         }
-        
+
         // Se é uma atualização de informações básicas da conta
         // Caso section seja 'account' OU (section ausente e vierem campos de conta)
-        if ($section === 'account' || (!$section && $request->hasAny(['name', 'email']))) {
+        if ($section === 'account' || (! $section && $request->hasAny(['name', 'email']))) {
             // Bloquear edição da conta para administradores
             if ($user->isAdmin()) {
                 return Redirect::route('admin.dashboard')->with('error', 'A conta do administrador não pode ser editada.');
@@ -275,20 +277,20 @@ class ProfileController extends Controller
 
             return Redirect::route('profile.edit')->with('status', 'profile-updated');
         }
-        
+
         // Se a section é especificada, usar ela ao invés do activeRole
         $targetRole = $section ?: $activeRole;
-        
+
         // Fallback robusto: deduzir pelo que o usuário possui caso a sessão/section esteja ausente
-        if (!$targetRole) {
+        if (! $targetRole) {
             if ($user->freelancer) {
                 $targetRole = 'freelancer';
             } elseif ($user->company) {
                 $targetRole = 'company';
             }
         }
-        
-        if (!$targetRole) {
+
+        if (! $targetRole) {
             return redirect()->route('dashboard');
         }
 
@@ -345,6 +347,7 @@ class ProfileController extends Controller
                     throw $e;
                 }
                 Log::error('Erro ao atualizar perfil freelancer', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+
                 return Redirect::route('profile.edit')->with('error', 'Não foi possível atualizar o perfil de freelancer. Tente novamente mais tarde.');
             }
 
@@ -396,19 +399,19 @@ class ProfileController extends Controller
 
             // Preparar dados para validação, tratando URLs inválidas
             $requestData = $request->all();
-            
+
             // Mapear name para display_name se name foi enviado
-            if (isset($requestData['name']) && !isset($requestData['display_name'])) {
+            if (isset($requestData['name']) && ! isset($requestData['display_name'])) {
                 $requestData['display_name'] = $requestData['name'];
             }
-            
+
             // Não remover website inválido - deixar a validação capturar o erro
             // if (isset($requestData['website']) && !empty($requestData['website'])) {
             //     if (!filter_var($requestData['website'], FILTER_VALIDATE_URL)) {
             //         $requestData['website'] = null;
             //     }
             // }
-            
+
             // Criar um novo request com os dados tratados
             $request->merge($requestData);
 
@@ -421,7 +424,7 @@ class ProfileController extends Controller
                     $errors['name'] = $errors['display_name'];
                     unset($errors['display_name']);
                 }
-                
+
                 throw \Illuminate\Validation\ValidationException::withMessages($errors);
             }
 
@@ -441,6 +444,7 @@ class ProfileController extends Controller
                     throw $e;
                 }
                 Log::error('Erro ao atualizar perfil empresa', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+
                 return Redirect::route('profile.edit')->with('error', 'Não foi possível atualizar o perfil de empresa. Tente novamente mais tarde.');
             }
 
@@ -492,12 +496,12 @@ class ProfileController extends Controller
     public function createCompany(Request $request): RedirectResponse
     {
         $user = $request->user();
-        
+
         // Verificar se já tem perfil empresa
         if ($user->company) {
             return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de empresa.');
         }
-        
+
         $validated = $request->validate([
             'company_name' => 'required|string|min:3|max:255',
             'cnpj' => 'nullable|string|size:18', // Com máscara: 00.000.000/0000-00
@@ -506,19 +510,19 @@ class ProfileController extends Controller
             'website' => 'nullable|url|max:255',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:5120', // 5MB
         ]);
-        
+
         // Processar upload do logo
         if ($request->hasFile('logo')) {
             $logoPath = $request->file('logo')->store('company_logos', 'public');
             $validated['logo'] = $logoPath;
         }
-        
+
         // Atualizar nome do usuário
         $user->update([
             'name' => $validated['company_name'],
-            'role' => 'company'
+            'role' => 'company',
         ]);
-        
+
         // Criar perfil empresa
         $company = $user->createProfile('company', [
             'name' => $validated['company_name'],
@@ -528,10 +532,10 @@ class ProfileController extends Controller
             'website' => $validated['website'] ?? null,
             'logo' => $validated['logo'] ?? null,
         ]);
-        
+
         // Definir empresa como perfil ativo
         session(['active_role' => 'company']);
-        
+
         return redirect()->route('dashboard')->with('success', 'Perfil de empresa criado com sucesso!');
     }
 
@@ -541,12 +545,12 @@ class ProfileController extends Controller
     public function createFreelancer(Request $request): RedirectResponse
     {
         $user = $request->user();
-        
+
         // Verificar se já tem perfil freelancer
         if ($user->freelancer) {
             return redirect()->route('dashboard')->with('error', 'Você já possui um perfil de freelancer.');
         }
-        
+
         $validated = $request->validate([
             'name' => 'required|string|min:3|max:255',
             'title' => 'required|string|max:255',
@@ -556,7 +560,7 @@ class ProfileController extends Controller
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:5120', // 5MB
             'cv' => 'nullable|file|mimes:pdf|max:10240', // 10MB
         ]);
-        
+
         // Processar uploads
         $profileData = [
             'bio' => $validated['bio'],
@@ -569,29 +573,29 @@ class ProfileController extends Controller
             $rawWhatsapp = preg_replace('/\D+/', '', $request->input('whatsapp'));
             $profileData['whatsapp'] = substr($rawWhatsapp, 0, 14);
         }
-        
+
         if ($request->hasFile('photo')) {
             $photoPath = $request->file('photo')->store('profile_photos', 'public');
             $profileData['profile_photo'] = $photoPath;
         }
-        
+
         if ($request->hasFile('cv')) {
             $cvPath = $request->file('cv')->store('cvs', 'public');
             $profileData['cv_url'] = $cvPath;
         }
-        
+
         // Atualizar nome do usuário
         $user->update([
             'name' => $validated['name'],
-            'role' => 'freelancer'
+            'role' => 'freelancer',
         ]);
-        
+
         // Criar perfil freelancer
         $freelancer = $user->createProfile('freelancer', $profileData);
-        
+
         // Definir freelancer como perfil ativo
         session(['active_role' => 'freelancer']);
-        
+
         return redirect()->route('dashboard')->with('success', 'Perfil de freelancer criado com sucesso!');
     }
 
@@ -601,12 +605,12 @@ class ProfileController extends Controller
     private function createCompanyProfile(Request $request): RedirectResponse
     {
         $user = $request->user();
-        
+
         // Verificar se já tem perfil empresa
         if ($user->company) {
             return redirect()->route('profile.edit')->with('error', 'Você já possui um perfil de empresa.');
         }
-        
+
         $validated = $request->validate([
             'company_name' => 'required|string|max:255',
             'description' => 'nullable|string|max:1000',
@@ -614,13 +618,13 @@ class ProfileController extends Controller
         ]);
         // Mapear company_name para o campo name exigido pelo modelo/tabela
         $validated['name'] = $validated['company_name'];
-        
+
         // Criar perfil empresa
         $company = $user->createProfile('company', $validated);
-        
+
         // Definir empresa como perfil ativo
         session(['active_role' => 'company']);
-        
+
         return redirect()->route('profile.edit')->with('success', 'Perfil de empresa criado com sucesso!');
     }
 
@@ -630,12 +634,12 @@ class ProfileController extends Controller
     private function createFreelancerProfile(Request $request): RedirectResponse
     {
         $user = $request->user();
-        
+
         // Verificar se já tem perfil freelancer
         if ($user->freelancer) {
             return redirect()->route('profile.edit')->with('error', 'Você já possui um perfil de freelancer.');
         }
-        
+
         $validated = $request->validate([
             'bio' => 'nullable|string|max:1000',
             'portfolio_url' => 'nullable|url|max:255',
@@ -644,7 +648,7 @@ class ProfileController extends Controller
             'segments' => 'nullable|array|max:10',
             'segments.*' => 'exists:segments,id',
         ]);
-        
+
         // Criar perfil freelancer
         $freelancer = $user->createProfile('freelancer', $validated);
 
@@ -654,10 +658,10 @@ class ProfileController extends Controller
             $validSegmentIds = Segment::whereIn('id', $segmentIds)->pluck('id')->toArray();
             $freelancer->segments()->sync($validSegmentIds);
         }
-        
+
         // Definir freelancer como perfil ativo
         session(['active_role' => 'freelancer']);
-        
+
         return redirect()->route('profile.edit')->with('success', 'Perfil de freelancer criado com sucesso!');
     }
 
@@ -668,48 +672,48 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $profileType = $request->input('profile_type');
-        
+
         $request->validate([
             'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'profile_type' => 'required|in:freelancer,company'
+            'profile_type' => 'required|in:freelancer,company',
         ]);
-        
+
         if ($profileType === 'freelancer') {
             $freelancer = $user->freelancer;
-            if (!$freelancer) {
+            if (! $freelancer) {
                 return redirect()->route('profile.edit')->with('error', 'Perfil de freelancer não encontrado.');
             }
-            
+
             // Remove imagem anterior se existir
             if ($freelancer->profile_photo) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->profile_photo);
             }
-            
+
             // Upload nova imagem
             $imagePath = $request->file('profile_image')->store('profile_photos', 'public');
             $freelancer->update(['profile_photo' => $imagePath]);
-            
+
             return redirect()->route('profile.edit')->with('success', 'Foto de perfil atualizada com sucesso!');
         }
-        
+
         if ($profileType === 'company') {
             $company = $user->company;
-            if (!$company) {
+            if (! $company) {
                 return redirect()->route('profile.edit')->with('error', 'Perfil de empresa não encontrado.');
             }
-            
+
             // Remove logo anterior se existir
             if ($company->profile_photo) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($company->profile_photo);
             }
-            
+
             // Upload novo logo
             $logoPath = $request->file('profile_image')->store('profile_photos', 'public');
             $company->update(['profile_photo' => $logoPath]);
-            
+
             return redirect()->route('profile.edit')->with('success', 'Logo da empresa atualizado com sucesso!');
         }
-        
+
         return redirect()->route('profile.edit')->with('error', 'Tipo de perfil inválido.');
     }
 
@@ -720,41 +724,41 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $profileType = $request->input('profile_type');
-        
+
         $request->validate([
-            'profile_type' => 'required|in:freelancer,company'
+            'profile_type' => 'required|in:freelancer,company',
         ]);
-        
+
         if ($profileType === 'freelancer') {
             $freelancer = $user->freelancer;
-            if (!$freelancer || !$freelancer->profile_photo) {
+            if (! $freelancer || ! $freelancer->profile_photo) {
                 return redirect()->route('profile.edit')->with('error', 'Nenhuma foto de perfil encontrada.');
             }
-            
+
             // Remove arquivo do storage
             \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->profile_photo);
-            
+
             // Remove referência do banco
             $freelancer->update(['profile_photo' => null]);
-            
+
             return redirect()->route('profile.edit')->with('success', 'Foto de perfil removida com sucesso!');
         }
-        
+
         if ($profileType === 'company') {
             $company = $user->company;
-            if (!$company || !$company->profile_photo) {
+            if (! $company || ! $company->profile_photo) {
                 return redirect()->route('profile.edit')->with('error', 'Nenhum logo encontrado.');
             }
-            
+
             // Remove arquivo do storage
             \Illuminate\Support\Facades\Storage::disk('public')->delete($company->profile_photo);
-            
+
             // Remove referência do banco
             $company->update(['profile_photo' => null]);
-            
+
             return redirect()->route('profile.edit')->with('success', 'Logo da empresa removido com sucesso!');
         }
-        
+
         return redirect()->route('profile.edit')->with('error', 'Tipo de perfil inválido.');
     }
 
@@ -764,12 +768,12 @@ class ProfileController extends Controller
     public function uploadCv(Request $request)
     {
         $user = Auth::user();
-        
+
         // Verificar se o usuário tem perfil de freelancer
-        if (!$user->freelancer) {
+        if (! $user->freelancer) {
             return response()->json([
                 'success' => false,
-                'message' => 'Apenas freelancers podem fazer upload de currículo.'
+                'message' => 'Apenas freelancers podem fazer upload de currículo.',
             ], 403);
         }
 
@@ -788,20 +792,20 @@ class ProfileController extends Controller
 
             // Salvar novo currículo
             $cvPath = $request->file('cv')->store('cvs', 'public');
-            
+
             // Atualizar no banco de dados (usar coluna cv_url)
             $freelancer->update(['cv_url' => $cvPath]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Currículo enviado com sucesso!',
-                'cv_url' => $cvPath
+                'cv_url' => $cvPath,
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao fazer upload do currículo: ' . $e->getMessage()
+                'message' => 'Erro ao fazer upload do currículo: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -812,12 +816,12 @@ class ProfileController extends Controller
     public function deleteCv(Request $request)
     {
         $user = Auth::user();
-        
+
         // Verificar se o usuário tem perfil de freelancer
-        if (!$user->freelancer) {
+        if (! $user->freelancer) {
             return response()->json([
                 'success' => false,
-                'message' => 'Apenas freelancers podem remover currículo.'
+                'message' => 'Apenas freelancers podem remover currículo.',
             ], 403);
         }
 
@@ -825,28 +829,28 @@ class ProfileController extends Controller
 
         try {
             // Verificar se existe currículo
-            if (!$freelancer->cv_url) {
+            if (! $freelancer->cv_url) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Nenhum currículo encontrado.'
+                    'message' => 'Nenhum currículo encontrado.',
                 ], 404);
             }
 
             // Remover arquivo do storage
             \Illuminate\Support\Facades\Storage::disk('public')->delete($freelancer->cv_url);
-            
+
             // Remover referência do banco
             $freelancer->update(['cv_url' => null]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Currículo removido com sucesso!'
+                'message' => 'Currículo removido com sucesso!',
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao remover currículo: ' . $e->getMessage()
+                'message' => 'Erro ao remover currículo: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -857,18 +861,18 @@ class ProfileController extends Controller
     public function switchRole(Request $request): RedirectResponse
     {
         $request->validate([
-            'role' => 'required|in:freelancer,company'
+            'role' => 'required|in:freelancer,company',
         ]);
 
         $user = Auth::user();
         $targetRole = $request->input('role');
 
         // Verificar se o usuário tem o perfil solicitado
-        if ($targetRole === 'freelancer' && !$user->freelancer) {
+        if ($targetRole === 'freelancer' && ! $user->freelancer) {
             return redirect()->back()->with('error', 'Você não possui um perfil de freelancer.');
         }
 
-        if ($targetRole === 'company' && !$user->company) {
+        if ($targetRole === 'company' && ! $user->company) {
             return redirect()->back()->with('error', 'Você não possui um perfil de empresa.');
         }
 
@@ -888,9 +892,9 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
-        
+
         // Verificar se o usuário tem perfil de freelancer
-        if (!$user->freelancer) {
+        if (! $user->freelancer) {
             return redirect()->back()->with('error', 'Você não possui um perfil de freelancer.');
         }
 
@@ -932,9 +936,9 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
-        
+
         // Verificar se o usuário tem perfil de empresa
-        if (!$user->company) {
+        if (! $user->company) {
             return redirect()->back()->with('error', 'Você não possui um perfil de empresa.');
         }
 
@@ -946,7 +950,7 @@ class ProfileController extends Controller
         }
 
         // Verificar se há candidaturas pendentes em vagas da empresa
-        $pendingApplications = \App\Models\Application::whereHas('vacancy', function($query) use ($company) {
+        $pendingApplications = \App\Models\Application::whereHas('vacancy', function ($query) use ($company) {
             $query->where('company_id', $company->id);
         })->whereIn('status', ['pending', 'reviewing'])->exists();
 
@@ -976,20 +980,20 @@ class ProfileController extends Controller
     public function showFreelancerProfile(Request $request)
     {
         $user = auth()->user();
-        
+
         // Verificar se o usuário está autenticado
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'message' => 'Usuário não autenticado.'
+                'message' => 'Usuário não autenticado.',
             ], 401);
         }
 
         // Verificar se o usuário tem perfil de freelancer
-        if (!$user->freelancer) {
+        if (! $user->freelancer) {
             return response()->json([
                 'success' => false,
-                'message' => 'Perfil de freelancer não encontrado.'
+                'message' => 'Perfil de freelancer não encontrado.',
             ], 404);
         }
 
@@ -1020,8 +1024,8 @@ class ProfileController extends Controller
                     'experience' => $freelancer->experience,
                     'hourly_rate' => $freelancer->hourly_rate,
                     'availability' => $freelancer->availability,
-                    'profile_photo' => $freelancer->profile_photo ? asset('storage/' . $freelancer->profile_photo) : null,
-                    'cv_url' => $freelancer->cv_url ? asset('storage/' . $freelancer->cv_url) : null,
+                    'profile_photo' => $freelancer->profile_photo ? asset('storage/'.$freelancer->profile_photo) : null,
+                    'cv_url' => $freelancer->cv_url ? asset('storage/'.$freelancer->cv_url) : null,
                     'portfolio_url' => $freelancer->portfolio_url,
                     'linkedin_url' => $freelancer->linkedin_url,
                     'github_url' => $freelancer->github_url,
@@ -1029,7 +1033,7 @@ class ProfileController extends Controller
                 'statistics' => $applicationsStats,
                 'created_at' => $freelancer->created_at,
                 'updated_at' => $freelancer->updated_at,
-            ]
+            ],
         ];
 
         return response()->json($profileData, 200);

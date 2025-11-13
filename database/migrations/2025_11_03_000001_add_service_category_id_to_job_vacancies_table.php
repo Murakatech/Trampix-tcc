@@ -2,14 +2,15 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::table('job_vacancies', function (Blueprint $table) {
-            if (!Schema::hasColumn('job_vacancies', 'service_category_id')) {
+            if (! Schema::hasColumn('job_vacancies', 'service_category_id')) {
                 $table->foreignId('service_category_id')
                     ->nullable()
                     ->constrained('service_categories')
@@ -27,7 +28,7 @@ return new class extends Migration {
             }
         } catch (\Throwable $e) {
             // Log and continue; backfill is best-effort
-            \Log::warning('Backfill service_category_id in job_vacancies failed: ' . $e->getMessage());
+            \Log::warning('Backfill service_category_id in job_vacancies failed: '.$e->getMessage());
         }
     }
 

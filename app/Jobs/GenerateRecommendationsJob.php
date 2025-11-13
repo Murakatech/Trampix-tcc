@@ -13,9 +13,13 @@ class GenerateRecommendationsJob
     public function handle(RecommendationService $service): void
     {
         // Percorre usuários que têm perfil ativo freelancer ou company
-        User::query()->whereHas('freelancers', function($q){ $q->where('is_active', true); })
-            ->orWhereHas('companies', function($q){ $q->where('is_active', true); })
-            ->chunk(200, function($users) use ($service) {
+        User::query()->whereHas('freelancers', function ($q) {
+            $q->where('is_active', true);
+        })
+            ->orWhereHas('companies', function ($q) {
+                $q->where('is_active', true);
+            })
+            ->chunk(200, function ($users) use ($service) {
                 foreach ($users as $user) {
                     try {
                         $service->generateDailyBatchFor($user);

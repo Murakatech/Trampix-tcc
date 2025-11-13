@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\Company;
+use App\Models\Freelancer;
+use App\Policies\CompanyPolicy;
+use App\Policies\FreelancerPolicy;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
-use App\Models\Freelancer;
-use App\Models\Company;
-use App\Policies\FreelancerPolicy;
-use App\Policies\CompanyPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -38,24 +38,34 @@ class AuthServiceProvider extends ServiceProvider
         // Gates para verificar se pode criar perfis - Permite múltiplos perfis
         Gate::define('canCreateFreelancerProfile', function ($user) {
             // Admins podem sempre criar, usuários podem criar se não tiverem perfil freelancer ativo
-            return $user->isAdmin() || !$user->hasActiveProfile('freelancer');
+            return $user->isAdmin() || ! $user->hasActiveProfile('freelancer');
         });
 
         Gate::define('canCreateCompanyProfile', function ($user) {
             // Admins podem sempre criar, usuários podem criar se não tiverem perfil empresa ativo
-            return $user->isAdmin() || !$user->hasActiveProfile('company');
+            return $user->isAdmin() || ! $user->hasActiveProfile('company');
         });
 
         // Gates para editar perfis específicos
         Gate::define('editFreelancerProfile', function ($user, $freelancer = null) {
-            if ($user->isAdmin()) return true;
-            if (!$freelancer) return $user->isFreelancer();
+            if ($user->isAdmin()) {
+                return true;
+            }
+            if (! $freelancer) {
+                return $user->isFreelancer();
+            }
+
             return $user->id === $freelancer->user_id;
         });
 
         Gate::define('editCompanyProfile', function ($user, $company = null) {
-            if ($user->isAdmin()) return true;
-            if (!$company) return $user->isCompany();
+            if ($user->isAdmin()) {
+                return true;
+            }
+            if (! $company) {
+                return $user->isCompany();
+            }
+
             return $user->id === $company->user_id;
         });
 
@@ -69,9 +79,14 @@ class AuthServiceProvider extends ServiceProvider
         });
 
         Gate::define('manageApplications', function ($user, $jobVacancy = null) {
-            if ($user->isAdmin()) return true;
-            if (!$jobVacancy) return $user->isCompany();
-            return $user->isCompany() && $user->companies()->where('is_active', true)->whereHas('vacancies', function($q) use ($jobVacancy) {
+            if ($user->isAdmin()) {
+                return true;
+            }
+            if (! $jobVacancy) {
+                return $user->isCompany();
+            }
+
+            return $user->isCompany() && $user->companies()->where('is_active', true)->whereHas('vacancies', function ($q) use ($jobVacancy) {
                 $q->where('id', $jobVacancy->id);
             })->exists();
         });

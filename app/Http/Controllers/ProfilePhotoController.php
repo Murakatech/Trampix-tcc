@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Company;
-use App\Models\Freelancer;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ProfilePhotoController extends Controller
 {
@@ -16,26 +14,26 @@ class ProfilePhotoController extends Controller
     {
         $request->validate([
             'profile_photo' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-            'profile_type' => 'required|in:company,freelancer'
+            'profile_type' => 'required|in:company,freelancer',
         ]);
 
         $user = Auth::user();
         $profileType = $request->profile_type;
 
         // Verificar se o usuário tem o perfil correspondente
-        if ($profileType === 'company' && !$user->company) {
+        if ($profileType === 'company' && ! $user->company) {
             return back()->with('error', 'Perfil de empresa não encontrado.');
         }
 
-        if ($profileType === 'freelancer' && !$user->freelancer) {
+        if ($profileType === 'freelancer' && ! $user->freelancer) {
             return back()->with('error', 'Perfil de freelancer não encontrado.');
         }
 
         // Upload da imagem
         if ($request->hasFile('profile_photo')) {
             $file = $request->file('profile_photo');
-            $filename = time() . '_' . $user->id . '_' . $profileType . '.' . $file->getClientOriginalExtension();
-            
+            $filename = time().'_'.$user->id.'_'.$profileType.'.'.$file->getClientOriginalExtension();
+
             // Salvar na pasta public/storage/profile_photos
             $path = $file->storeAs('profile_photos', $filename, 'public');
 
@@ -62,7 +60,7 @@ class ProfilePhotoController extends Controller
     public function delete(Request $request)
     {
         $request->validate([
-            'profile_type' => 'required|in:company,freelancer'
+            'profile_type' => 'required|in:company,freelancer',
         ]);
 
         $user = Auth::user();
@@ -86,11 +84,11 @@ class ProfilePhotoController extends Controller
     public function checkUpdates(Request $request): JsonResponse
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'error' => 'Unauthorized'
+                'error' => 'Unauthorized',
             ], 401);
         }
 
@@ -124,21 +122,21 @@ class ProfilePhotoController extends Controller
         $initials = $this->generateInitials($displayName);
 
         $data = [
-            'photo_url'   => $photoUrl,
-            'has_photo'   => !is_null($photoUrl),
-            'display_name'=> $displayName,
-            'initials'    => $initials,
-            'role'        => $role,
-            'email'       => $user->email,
+            'photo_url' => $photoUrl,
+            'has_photo' => ! is_null($photoUrl),
+            'display_name' => $displayName,
+            'initials' => $initials,
+            'role' => $role,
+            'email' => $user->email,
         ];
 
         return response()->json([
-            'success'   => true,
-            'changed'   => true,
-            'data'      => $data,
+            'success' => true,
+            'changed' => true,
+            'data' => $data,
             'timestamp' => $lastModified ? $lastModified->getTimestamp() : now()->getTimestamp(),
         ])->header('Cache-Control', 'no-cache, must-revalidate')
-          ->header('Last-Modified', ($lastModified ? $lastModified->format('D, d M Y H:i:s \G\M\T') : gmdate('D, d M Y H:i:s', time()) . ' GMT'));
+            ->header('Last-Modified', ($lastModified ? $lastModified->format('D, d M Y H:i:s \G\M\T') : gmdate('D, d M Y H:i:s', time()).' GMT'));
     }
 
     /**
@@ -147,11 +145,11 @@ class ProfilePhotoController extends Controller
     public function getProfileData(Request $request): JsonResponse
     {
         $user = Auth::user();
-        
-        if (!$user) {
+
+        if (! $user) {
             return response()->json([
                 'success' => false,
-                'error' => 'Unauthorized'
+                'error' => 'Unauthorized',
             ], 401);
         }
 
@@ -163,14 +161,14 @@ class ProfilePhotoController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
-                'id'           => $user->id,
+                'id' => $user->id,
                 'display_name' => $displayName,
-                'email'        => $user->email,
-                'role'         => $activeRole,
-                'photo_url'    => $profilePhotoUrl,
-                'has_photo'    => !is_null($profilePhotoUrl),
-                'initials'     => $initials,
-            ]
+                'email' => $user->email,
+                'role' => $activeRole,
+                'photo_url' => $profilePhotoUrl,
+                'has_photo' => ! is_null($profilePhotoUrl),
+                'initials' => $initials,
+            ],
         ]);
     }
 
@@ -183,15 +181,15 @@ class ProfilePhotoController extends Controller
 
         // Preferir foto específica do perfil ativo
         if ($activeRole === 'company' && $user->company && $user->company->profile_photo) {
-            return asset('storage/' . $user->company->profile_photo);
+            return asset('storage/'.$user->company->profile_photo);
         }
         if ($activeRole === 'freelancer' && $user->freelancer && $user->freelancer->profile_photo) {
-            return asset('storage/' . $user->freelancer->profile_photo);
+            return asset('storage/'.$user->freelancer->profile_photo);
         }
 
         // Fallback para foto do usuário
         if (isset($user->profile_photo) && $user->profile_photo) {
-            return asset('storage/' . $user->profile_photo);
+            return asset('storage/'.$user->profile_photo);
         }
 
         return null;
@@ -216,6 +214,7 @@ class ProfilePhotoController extends Controller
         } elseif ($activeRole === 'company' && $user->company) {
             $name = $user->company->display_name ?? $name;
         }
+
         return $name;
     }
 
@@ -227,11 +226,11 @@ class ProfilePhotoController extends Controller
         if (method_exists($user, 'isAdmin') && $user->isAdmin()) {
             return 'admin';
         }
-        
+
         if (method_exists($user, 'isCompany') && $user->isCompany()) {
             return 'company';
         }
-        
+
         if (method_exists($user, 'isFreelancer') && $user->isFreelancer()) {
             return 'freelancer';
         }
@@ -266,6 +265,6 @@ class ProfilePhotoController extends Controller
         $firstInitial = strtoupper(substr($words[0], 0, 1));
         $lastInitial = strtoupper(substr(end($words), 0, 1));
 
-        return $firstInitial . $lastInitial;
+        return $firstInitial.$lastInitial;
     }
 }

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('freelancer_id')->constrained()->cascadeOnDelete();
             $table->foreignId('service_category_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
-            
+
             $table->unique(['freelancer_id', 'service_category_id'], 'freelancer_category_unique');
         });
     }

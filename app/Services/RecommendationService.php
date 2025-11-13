@@ -2,14 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Company;
 use App\Models\Freelancer;
 use App\Models\JobVacancy;
 use App\Models\Preference;
 use App\Models\Recommendation;
-use App\Models\JobMatch;
-use App\Models\Skill;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -38,45 +36,72 @@ class RecommendationService
 
     private function jaccard(array $a, array $b): float
     {
-        $setA = collect($a)->filter()->map(fn($s) => Str::lower(trim($s)))->unique();
-        $setB = collect($b)->filter()->map(fn($s) => Str::lower(trim($s)))->unique();
-        if ($setA->isEmpty() && $setB->isEmpty()) return 0.0;
+        $setA = collect($a)->filter()->map(fn ($s) => Str::lower(trim($s)))->unique();
+        $setB = collect($b)->filter()->map(fn ($s) => Str::lower(trim($s)))->unique();
+        if ($setA->isEmpty() && $setB->isEmpty()) {
+            return 0.0;
+        }
         $inter = $setA->intersect($setB)->count();
         $union = $setA->merge($setB)->unique()->count();
+
         return $union > 0 ? $inter / $union : 0.0;
     }
 
     private function seniorityFit(?int $u, ?int $t): float
     {
-        if (!$u && !$t) return 0.5;
+        if (! $u && ! $t) {
+            return 0.5;
+        }
         if ($u && $t) {
             $diff = abs($u - $t);
+
             return max(0.0, 1.0 - ($diff * 0.5));
         }
+
         return 0.5;
     }
 
     private function faixaCompat(?array $u, ?array $t): float
     {
-        if (!$u || !$t) return 0.5;
+        if (! $u || ! $t) {
+            return 0.5;
+        }
         [$umin, $umax] = [$u['min'] ?? null, $u['max'] ?? null];
         [$tmin, $tmax] = [$t['min'] ?? null, $t['max'] ?? null];
-        if ($umin === null || $umax === null || $tmin === null || $tmax === null) return 0.5;
-        if ($umax < $tmin || $tmax < $umin) return 0.0;
-        if (($tmin >= $umin && $tmin <= $umax) || ($umin >= $tmin && $umin <= $tmax)) return 1.0;
+        if ($umin === null || $umax === null || $tmin === null || $tmax === null) {
+            return 0.5;
+        }
+        if ($umax < $tmin || $tmax < $umin) {
+            return 0.0;
+        }
+        if (($tmin >= $umin && $tmin <= $umax) || ($umin >= $tmin && $umin <= $tmax)) {
+            return 1.0;
+        }
+
         return 0.7;
     }
 
     private function modalidadeFit(?array $u, ?array $t): float
     {
-        if (!$u || !$t) return 0.5;
-        if (!empty($u['remote_ok'])) return 1.0;
-        if (!empty($t['location_type']) && Str::lower($t['location_type']) === 'remoto') return 1.0;
-        $radius = (int)($u['radius_km'] ?? 0);
-        $locU = trim((string)($u['location'] ?? ''));
-        $locT = trim((string)($t['location'] ?? ''));
-        if ($radius <= 0 || $locU === '' || $locT === '') return 0.5;
-        if (Str::lower($locU) === Str::lower($locT)) return 1.0;
+        if (! $u || ! $t) {
+            return 0.5;
+        }
+        if (! empty($u['remote_ok'])) {
+            return 1.0;
+        }
+        if (! empty($t['location_type']) && Str::lower($t['location_type']) === 'remoto') {
+            return 1.0;
+        }
+        $radius = (int) ($u['radius_km'] ?? 0);
+        $locU = trim((string) ($u['location'] ?? ''));
+        $locT = trim((string) ($t['location'] ?? ''));
+        if ($radius <= 0 || $locU === '' || $locT === '') {
+            return 0.5;
+        }
+        if (Str::lower($locU) === Str::lower($locT)) {
+            return 1.0;
+        }
+
         return 0.5;
     }
 
@@ -84,7 +109,8 @@ class RecommendationService
     {
         if ($target instanceof JobVacancy) {
             $company = $target->company;
-            $signals = 0; $total = 5;
+            $signals = 0;
+            $total = 5;
             if ($company) {
                 $signals += $company->website ? 1 : 0;
                 $signals += $company->linkedin_url ? 1 : 0;
@@ -92,17 +118,21 @@ class RecommendationService
                 $signals += $company->sector ? 1 : 0;
                 $signals += $company->is_active ? 1 : 0;
             }
+
             return $total > 0 ? $signals / $total : 0.5;
         }
         if ($target instanceof Freelancer) {
-            $signals = 0; $total = 5;
+            $signals = 0;
+            $total = 5;
             $signals += $target->portfolio_url ? 1 : 0;
             $signals += $target->linkedin_url ? 1 : 0;
             $signals += $target->cv_url ? 1 : 0;
             $signals += $target->bio ? 1 : 0;
             $signals += $target->is_active ? 1 : 0;
+
             return $total > 0 ? $signals / $total : 0.5;
         }
+
         return 0.5;
     }
 
@@ -128,9 +158,9 @@ class RecommendationService
         // Preferências de faixa e modalidade com defaults do perfil, quando disponíveis
         $faixaU = ['min' => $pref?->salary_min, 'max' => $pref?->salary_max];
         $modalU = [
-            'remote_ok' => (bool)($pref?->remote_ok ?? false),
+            'remote_ok' => (bool) ($pref?->remote_ok ?? false),
             'radius_km' => $pref?->radius_km,
-            'location'  => $pref?->location ?? ($user->isFreelancer() ? ($user->freelancer?->location) : ($user->company?->location)),
+            'location' => $pref?->location ?? ($user->isFreelancer() ? ($user->freelancer?->location) : ($user->company?->location)),
         ];
 
         if ($user->isFreelancer() && $user->freelancer) {
@@ -140,8 +170,8 @@ class RecommendationService
             $query = JobVacancy::query()->active()->notAppliedBy($subjectId);
             // Não filtrar por desired_roles aqui para evitar excluir vagas de outros segmentos.
             // Em vez disso, usamos desired_roles apenas como um sinal positivo dentro do score (boost leve).
-            $desired = collect($pref?->desired_roles ?? [])->filter()->map(function($v){
-                return Str::lower(trim((string)$v));
+            $desired = collect($pref?->desired_roles ?? [])->filter()->map(function ($v) {
+                return Str::lower(trim((string) $v));
             })->values()->all();
             $candidates = $query->limit(500)->get();
             $scored = [];
@@ -152,12 +182,14 @@ class RecommendationService
                 $confidence = $this->sinalConfiancaForTarget($job);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
                 // Boost leve se a categoria da vaga estiver nos desired_roles do usuário
-                $catName = Str::lower(trim((string)($job->category_id ? optional(\App\Models\Category::find($job->category_id))->name : $job->category)));
+                $catName = Str::lower(trim((string) ($job->category_id ? optional(\App\Models\Category::find($job->category_id))->name : $job->category)));
                 if ($catName && in_array($catName, $desired)) {
                     $score = min(1.0, $score + 0.05);
                 }
                 $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
-                if ($segmentOnly && $segMatch <= 0) continue;
+                if ($segmentOnly && $segMatch <= 0) {
+                    continue;
+                }
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
                     ->where('subject_id', $subjectId)
@@ -165,16 +197,18 @@ class RecommendationService
                     ->where('target_id', $job->id)
                     ->where('created_at', '>=', Carbon::now()->subDays(7))
                     ->exists();
-                if ($existsRecent) continue;
+                if ($existsRecent) {
+                    continue;
+                }
                 $scored[] = ['target' => $job, 'score' => $score, 'seg' => $segMatch];
             }
             // Primeiro, similares de segmento (seg>0), depois demais
-            $similar = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) > 0));
-            $others  = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) <= 0));
-            usort($similar, fn($a,$b) => $b['score'] <=> $a['score']);
-            usort($others, fn($a,$b) => $b['score'] <=> $a['score']);
+            $similar = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) > 0));
+            $others = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) <= 0));
+            usort($similar, fn ($a, $b) => $b['score'] <=> $a['score']);
+            usort($others, fn ($a, $b) => $b['score'] <=> $a['score']);
             // Aplica corte 0.35 apenas nos similares; para os outros, deixa preencher até topN
-            $similar = array_values(array_filter($similar, fn($x) => $x['score'] >= 0.35));
+            $similar = array_values(array_filter($similar, fn ($x) => $x['score'] >= 0.35));
             $merged = array_merge($similar, $others);
             $top = array_slice($merged, 0, $topN);
             foreach ($top as $item) {
@@ -189,6 +223,7 @@ class RecommendationService
                     'created_at' => Carbon::now(),
                 ]);
             }
+
             return count($top);
         }
 
@@ -206,7 +241,9 @@ class RecommendationService
                 $confidence = $this->sinalConfiancaForTarget($freelancer);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
                 $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
-                if ($segmentOnly && $segMatch <= 0) continue;
+                if ($segmentOnly && $segMatch <= 0) {
+                    continue;
+                }
                 $existsRecent = Recommendation::query()
                     ->where('subject_type', $subjectType)
                     ->where('subject_id', $subjectId)
@@ -214,14 +251,16 @@ class RecommendationService
                     ->where('target_id', $freelancer->id)
                     ->where('created_at', '>=', Carbon::now()->subDays(7))
                     ->exists();
-                if ($existsRecent) continue;
+                if ($existsRecent) {
+                    continue;
+                }
                 $scored[] = ['target' => $freelancer, 'score' => $score, 'seg' => $segMatch];
             }
-            $similar = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) > 0));
-            $others  = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) <= 0));
-            usort($similar, fn($a,$b) => $b['score'] <=> $a['score']);
-            usort($others, fn($a,$b) => $b['score'] <=> $a['score']);
-            $similar = array_values(array_filter($similar, fn($x) => $x['score'] >= 0.35));
+            $similar = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) > 0));
+            $others = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) <= 0));
+            usort($similar, fn ($a, $b) => $b['score'] <=> $a['score']);
+            usort($others, fn ($a, $b) => $b['score'] <=> $a['score']);
+            $similar = array_values(array_filter($similar, fn ($x) => $x['score'] >= 0.35));
             $merged = array_merge($similar, $others);
             $top = array_slice($merged, 0, $topN);
             foreach ($top as $item) {
@@ -236,6 +275,7 @@ class RecommendationService
                     'created_at' => Carbon::now(),
                 ]);
             }
+
             return count($top);
         }
 
@@ -248,12 +288,12 @@ class RecommendationService
      */
     public function prepareCompanyConnectForJob(User $user, int $jobId, int $topN = 50, bool $segmentOnly = false): int
     {
-        if (!($user->isCompany() && $user->company)) {
+        if (! ($user->isCompany() && $user->company)) {
             return 0;
         }
         $company = $user->company;
         $job = JobVacancy::query()->where('id', $jobId)->where('company_id', $company->id)->first();
-        if (!$job) {
+        if (! $job) {
             return 0;
         }
 
@@ -282,15 +322,17 @@ class RecommendationService
             $confidence = $this->sinalConfiancaForTarget($freelancer);
             $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
             $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
-            if ($segmentOnly && $segMatch <= 0) continue;
+            if ($segmentOnly && $segMatch <= 0) {
+                continue;
+            }
             $scored[] = ['target' => $freelancer, 'score' => $score, 'seg' => $segMatch];
         }
 
-        $similar = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) > 0));
-        $others  = array_values(array_filter($scored, fn($x) => ($x['seg'] ?? 0) <= 0));
-        usort($similar, fn($a,$b) => $b['score'] <=> $a['score']);
-        usort($others, fn($a,$b) => $b['score'] <=> $a['score']);
-        $similar = array_values(array_filter($similar, fn($x) => $x['score'] >= 0.35));
+        $similar = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) > 0));
+        $others = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) <= 0));
+        usort($similar, fn ($a, $b) => $b['score'] <=> $a['score']);
+        usort($others, fn ($a, $b) => $b['score'] <=> $a['score']);
+        $similar = array_values(array_filter($similar, fn ($x) => $x['score'] >= 0.35));
         $merged = array_merge($similar, $others);
         $top = array_slice($merged, 0, $topN);
         foreach ($top as $item) {
@@ -322,6 +364,7 @@ class RecommendationService
                 ]);
             }
         }
+
         return count($top);
     }
 
@@ -342,18 +385,22 @@ class RecommendationService
     public function decide(User $user, int $recommendationId, string $action, ?int $jobId = null): array
     {
         $rec = Recommendation::forUser($user)->where('id', $recommendationId)->first();
-        if (!$rec) return ['ok' => false, 'match' => false, 'error' => 'recommendation_not_found'];
+        if (! $rec) {
+            return ['ok' => false, 'match' => false, 'error' => 'recommendation_not_found'];
+        }
         $now = Carbon::now();
         if ($action === 'undo') {
             if ($rec->status === 'rejected' && $rec->decided_at && $now->diffInSeconds($rec->decided_at) <= 5) {
                 $rec->status = 'pending';
                 $rec->decided_at = null;
                 $rec->save();
+
                 return ['ok' => true, 'undone' => true, 'match' => false];
             }
+
             return ['ok' => false, 'match' => false, 'error' => 'undo_not_allowed'];
         }
-        if (!in_array($action, ['liked','rejected','saved'])) {
+        if (! in_array($action, ['liked', 'rejected', 'saved'])) {
             return ['ok' => false, 'match' => false, 'error' => 'invalid_action'];
         }
         $rec->status = $action;
@@ -379,7 +426,7 @@ class RecommendationService
                             ->where('freelancer_id', $freelancerId)
                             ->where('job_vacancy_id', $jobId)
                             ->exists();
-                        if (!$exists) {
+                        if (! $exists) {
                             DB::table('matches')->insert([
                                 'freelancer_id' => $freelancerId,
                                 'job_vacancy_id' => $jobId,
@@ -407,7 +454,7 @@ class RecommendationService
                             ->where('freelancer_id', $freelancerId)
                             ->where('job_vacancy_id', $resolvedJobId)
                             ->exists();
-                        if (!$exists) {
+                        if (! $exists) {
                             DB::table('matches')->insert([
                                 'freelancer_id' => $freelancerId,
                                 'job_vacancy_id' => $resolvedJobId,
@@ -419,6 +466,7 @@ class RecommendationService
                 }
             }
         }
+
         return ['ok' => true, 'match' => $hasMatch];
     }
 
@@ -430,15 +478,20 @@ class RecommendationService
         $segments = [];
         if ($job->category_id) {
             $cat = \App\Models\Category::find($job->category_id);
-            if ($cat?->segment_id) $segments[] = (int)$cat->segment_id;
-        } elseif (!empty($job->category)) {
+            if ($cat?->segment_id) {
+                $segments[] = (int) $cat->segment_id;
+            }
+        } elseif (! empty($job->category)) {
             $cat = \App\Models\Category::where('name', $job->category)->first();
-            if ($cat?->segment_id) $segments[] = (int)$cat->segment_id;
+            if ($cat?->segment_id) {
+                $segments[] = (int) $cat->segment_id;
+            }
         }
         // fallback: usar segmento da empresa
         if (empty($segments) && $job->company?->segment_id) {
-            $segments[] = (int)$job->company->segment_id;
+            $segments[] = (int) $job->company->segment_id;
         }
+
         return array_values(array_unique($segments));
     }
 
@@ -448,11 +501,17 @@ class RecommendationService
     private function segmentsForFreelancer(Freelancer $freelancer): array
     {
         $segs = [];
-        if ($freelancer->segment_id) $segs[] = (int)$freelancer->segment_id;
+        if ($freelancer->segment_id) {
+            $segs[] = (int) $freelancer->segment_id;
+        }
         try {
             $many = $freelancer->segments()->pluck('segments.id')->all();
-            foreach ($many as $sid) { $segs[] = (int)$sid; }
-        } catch (\Throwable $e) {}
+            foreach ($many as $sid) {
+                $segs[] = (int) $sid;
+            }
+        } catch (\Throwable $e) {
+        }
+
         return array_values(array_unique($segs));
     }
 
@@ -462,22 +521,42 @@ class RecommendationService
     private function segmentsForCompany(Company $company): array
     {
         $segs = [];
-        if ($company->segment_id) $segs[] = (int)$company->segment_id;
+        if ($company->segment_id) {
+            $segs[] = (int) $company->segment_id;
+        }
         try {
             $many = $company->segments()->pluck('segments.id')->all();
-            foreach ($many as $sid) { $segs[] = (int)$sid; }
-        } catch (\Throwable $e) {}
+            foreach ($many as $sid) {
+                $segs[] = (int) $sid;
+            }
+        } catch (\Throwable $e) {
+        }
+
         return array_values(array_unique($segs));
     }
 
     private function parseSalaryRange(?string $text): ?array
     {
-        if (!$text) return null;
+        if (! $text) {
+            return null;
+        }
         $digits = [];
         preg_match_all('/(\d+[\.,]?\d*)/u', $text, $m);
-        foreach (($m[1] ?? []) as $raw) { $clean = (float)str_replace([',','.'], '', $raw); if ($clean > 0) $digits[] = $clean; }
-        if (count($digits) >= 2) { sort($digits); return ['min' => $digits[0], 'max' => $digits[1]]; }
-        if (count($digits) === 1) { return ['min' => $digits[0] * 0.9, 'max' => $digits[0] * 1.1]; }
+        foreach (($m[1] ?? []) as $raw) {
+            $clean = (float) str_replace([',', '.'], '', $raw);
+            if ($clean > 0) {
+                $digits[] = $clean;
+            }
+        }
+        if (count($digits) >= 2) {
+            sort($digits);
+
+            return ['min' => $digits[0], 'max' => $digits[1]];
+        }
+        if (count($digits) === 1) {
+            return ['min' => $digits[0] * 0.9, 'max' => $digits[0] * 1.1];
+        }
+
         return null;
     }
 }

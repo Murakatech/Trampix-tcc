@@ -6,15 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Segment;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        if (!Gate::allows('isAdmin')) abort(403);
+        if (! Gate::allows('isAdmin')) {
+            abort(403);
+        }
 
         $categoriesActive = Category::with('segment')
             ->where('active', true)
@@ -44,12 +46,14 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        if (!Gate::allows('isAdmin')) abort(403);
+        if (! Gate::allows('isAdmin')) {
+            abort(403);
+        }
 
         $data = $request->validate([
-            'name' => ['required','string','max:255','unique:categories,name'],
-            'description' => ['nullable','string','max:1000'],
-            'segment_id' => ['nullable','integer','exists:segments,id'],
+            'name' => ['required', 'string', 'max:255', 'unique:categories,name'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'segment_id' => ['nullable', 'integer', 'exists:segments,id'],
         ]);
 
         $category = Category::create([
@@ -68,12 +72,14 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
-        if (!Gate::allows('isAdmin')) abort(403);
+        if (! Gate::allows('isAdmin')) {
+            abort(403);
+        }
 
         $data = $request->validate([
-            'name' => ['required','string','max:255', Rule::unique('categories','name')->ignore($category->id)],
-            'description' => ['nullable','string','max:1000'],
-            'segment_id' => ['nullable','integer','exists:segments,id'],
+            'name' => ['required', 'string', 'max:255', Rule::unique('categories', 'name')->ignore($category->id)],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'segment_id' => ['nullable', 'integer', 'exists:segments,id'],
         ]);
 
         $category->name = $data['name'];
@@ -90,27 +96,35 @@ class CategoryController extends Controller
 
     public function deactivate(Category $category)
     {
-        if (!Gate::allows('isAdmin')) abort(403);
+        if (! Gate::allows('isAdmin')) {
+            abort(403);
+        }
         $category->active = false;
         $category->save();
         Cache::forget('vagas_filter_data');
+
         return redirect()->route('admin.categories.index')
             ->with('ok', "Categoria \"{$category->name}\" desativada.");
     }
 
     public function reactivate(Category $category)
     {
-        if (!Gate::allows('isAdmin')) abort(403);
+        if (! Gate::allows('isAdmin')) {
+            abort(403);
+        }
         $category->active = true;
         $category->save();
         Cache::forget('vagas_filter_data');
+
         return redirect()->route('admin.categories.index')
             ->with('ok', "Categoria \"{$category->name}\" reativada.");
     }
 
     public function destroy(Category $category)
     {
-        if (!Gate::allows('isAdmin')) abort(403);
+        if (! Gate::allows('isAdmin')) {
+            abort(403);
+        }
 
         // Opcionalmente: impedir exclusão se houver vagas associadas
         // if ($category->jobVacancies()->exists()) {

@@ -31,7 +31,7 @@
                 <i class="fas fa-users text-purple-600 text-2xl"></i>
             </div>
             <h3 class="text-2xl font-bold text-gray-900">{{ $totalAplicacoes }}</h3>
-            <p class="text-sm text-gray-500">Total Aplicações</p>
+            <p class="text-sm text-gray-500">Total Candidaturas</p>
         </div>
 
         <div class="trampix-card text-center">
@@ -43,6 +43,56 @@
         </div>
     </div>
 
+    <!-- Ações Rápidas -->
+    <section class="mb-8">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <a href="{{ route('vagas.create') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-plus text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Criar Vaga</p>
+                        <p class="text-gray-900 font-semibold">Nova oportunidade</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('company.vagas.index') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-briefcase text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Minhas Vagas</p>
+                        <p class="text-gray-900 font-semibold">Gerenciar vagas</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('applications.manage') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-user-check text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Total Candidaturas</p>
+                        <p class="text-gray-900 font-semibold">Acompanhar</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{{ route('profile.edit') }}" class="trampix-card hover:shadow-lg transition-all">
+                <div class="flex items-center">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-building-user text-green-600"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-600">Perfil</p>
+                        <p class="text-gray-900 font-semibold">Editar informações</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </section>
+
     <!-- Grid com os dois novos menus -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Menu de Aplicações Recentes -->
@@ -51,7 +101,7 @@
                 <h3 class="text-lg font-semibold text-gray-700 flex items-center">
                     <i class="fas fa-user-check text-blue-500 mr-2"></i> Aplicações Recentes
                 </h3>
-                <a href="{{ route('applications.manage') }}" class="btn-trampix-company text-sm">
+                <a href="{{ route('applications.manage') }}" class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }} text-sm">
                     <i class="fas fa-list mr-1"></i> Ver todas
                 </a>
             </div>
@@ -94,7 +144,7 @@
                 <div class="text-center py-8">
                     <i class="fas fa-user-check text-gray-300 text-3xl mb-3"></i>
                     <p class="text-gray-500 text-sm">Nenhuma aplicação ainda</p>
-                    <a href="{{ route('vagas.create') }}" class="btn-trampix-company text-sm mt-3">
+                    <a href="{{ route('vagas.create') }}" class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }} text-sm mt-3">
                         Criar Primeira Vaga
                     </a>
                 </div>
@@ -108,7 +158,7 @@
                 <h3 class="text-lg font-semibold text-gray-700 flex items-center">
                     <i class="fas fa-briefcase text-green-500 mr-2"></i> Minhas Vagas Ativas
                 </h3>
-                <a href="{{ route('company.vagas.index') }}" class="btn-trampix-company text-sm">
+                <a href="{{ route('company.vagas.index') }}" class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }} text-sm">
                     <i class="fas fa-list mr-1"></i> Ver todas
                 </a>
             </div>
@@ -140,7 +190,7 @@
                             </div>
                         </div>
                         <div class="ml-3">
-                            <a href="{{ route('vagas.show', $job) }}" class="btn-trampix-company text-xs px-3 py-1">
+                            <a href="{{ route('vagas.show', $job) }}" class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }} text-xs px-3 py-1">
                                 Ver
                             </a>
                         </div>
@@ -150,7 +200,7 @@
                 <div class="text-center py-8">
                     <i class="fas fa-briefcase text-gray-300 text-3xl mb-3"></i>
                     <p class="text-gray-500 text-sm">Nenhuma vaga ativa</p>
-                    <a href="{{ route('vagas.create') }}" class="btn-trampix-company text-sm mt-3">
+                    <a href="{{ route('vagas.create') }}" class="{{ session('active_role') === 'company' ? 'btn-trampix-company' : 'btn-trampix-primary' }} text-sm mt-3">
                         Criar Primeira Vaga
                     </a>
                 </div>

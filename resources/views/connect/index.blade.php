@@ -10,7 +10,7 @@
 @endsection
 
 @section('content')
-<div class="space-y-6" x-data="connectModule({{ isset($selectedJob) && $selectedJob ? $selectedJob->id : 'null' }})">
+<div class="space-y-6" x-data="connectModule({{ isset($selectedJob) && $selectedJob ? $selectedJob->id : 'null' }}, {{ isset($matchNotice) ? count($matchNotice) : 0 }})">
   <!-- Fluxo de empresa: selecionar uma vaga antes de ver cards -->
   @if(auth()->user()?->isCompany() && isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob))
   <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-5">
@@ -203,13 +203,14 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <script>
-  function connectModule(selectedJobId = null) {
+  function connectModule(selectedJobId = null, newMatchesCount = 0) {
     return {
       card: null,
       disabled: false,
       cardsShown: 0,
       lastRejectedId: null,
       selectedJobId: selectedJobId,
+      newMatchesCount: newMatchesCount,
       companyMustSelectFirst: "{{ auth()->user()?->isCompany() && isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob) ? 'true' : 'false' }}" === "true",
       snackbar: { visible: false, message: '', undo: false, timer: null },
       matchMenu: { visible: false, title: '', options: [], timer: null },
@@ -238,6 +239,7 @@
           const el = document.getElementById('MATCHES_DATA');
           this.userMatches = el ? JSON.parse(el.textContent || '[]') : [];
         } catch (e) { this.userMatches = []; }
+        if ((this.newMatchesCount || 0) > 0) { this.showConfetti(); }
       },
       async loadNext() {
         try {

@@ -4,37 +4,36 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use App\Models\Segment;
-use App\Models\ActivityArea;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\Auth;
 
 class CompanyController extends Controller
 {
     public function index()
     {
         Gate::authorize('isAdmin');
-        
+
         $companies = Company::with('user')
             ->where('is_active', true)
             ->paginate(15);
-            
+
         return view('companies.index', compact('companies'));
     }
 
     public function show(Company $company)
     {
         // Verificar se a empresa está ativa
-        if (!$company->is_active) {
+        if (! $company->is_active) {
             abort(404, 'Empresa não encontrada.');
         }
-        
+
         // Carregar relacionamentos necessários
-        $company->load(['user', 'vacancies' => function($query) {
+        $company->load(['user', 'vacancies' => function ($query) {
             $query->where('status', 'active')->latest()->take(5);
         }]);
-        
+
         // Usar a tela unificada de perfil
         return view('profile.show', [
             'user' => $company->user,
@@ -46,6 +45,7 @@ class CompanyController extends Controller
     public function create()
     {
         Gate::authorize('canCreateCompanyProfile');
+
         // Redirecionar para a tela unificada de seleção/criação de perfil
         return redirect()->route('profile.selection');
     }
@@ -53,7 +53,7 @@ class CompanyController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('canCreateCompanyProfile');
-        
+
         $validated = $request->validate([
             'display_name' => 'required|string|min:2|max:255',
             'cnpj' => 'nullable|string|max:18|unique:companies,cnpj',
@@ -64,8 +64,8 @@ class CompanyController extends Controller
             'linkedin_url' => 'nullable|url|max:255',
             'email' => 'required|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'company_size' => ['nullable','string', 'in:1-10,11-50,51-200,201-500,500+'],
-            'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
+            'company_size' => ['nullable', 'string', 'in:1-10,11-50,51-200,201-500,500+'],
+            'founded_year' => 'nullable|integer|min:1800|max:'.date('Y'),
             'service_categories' => 'nullable|array',
             'service_categories.*' => 'exists:service_categories,id',
             'activity_area_id' => 'nullable|integer',
@@ -95,7 +95,7 @@ class CompanyController extends Controller
                 ->where('is_active', true)
                 ->pluck('id')
                 ->toArray();
-            
+
             $company->serviceCategories()->sync($validCategories);
         }
 
@@ -119,14 +119,14 @@ class CompanyController extends Controller
     public function edit(Company $company)
     {
         Gate::authorize('editCompanyProfile', $company);
-        
+
         return view('companies.edit', compact('company'));
     }
 
     public function update(Request $request, Company $company)
     {
         Gate::authorize('editCompanyProfile', $company);
-        
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             // No update, don't force CNPJ if it's not being changed. Allow partial PATCH updates.
@@ -134,7 +134,7 @@ class CompanyController extends Controller
                 'sometimes',
                 'string',
                 'max:18',
-                Rule::unique('companies', 'cnpj')->ignore($company->id)
+                Rule::unique('companies', 'cnpj')->ignore($company->id),
             ],
             'sector' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:100',
@@ -143,8 +143,8 @@ class CompanyController extends Controller
             'linkedin_url' => 'nullable|url|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'company_size' => ['nullable','string', 'in:1-10,11-50,51-200,201-500,500+'],
-            'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
+            'company_size' => ['nullable', 'string', 'in:1-10,11-50,51-200,201-500,500+'],
+            'founded_year' => 'nullable|integer|min:1800|max:'.date('Y'),
             'service_categories' => 'nullable|array',
             'service_categories.*' => 'exists:service_categories,id',
             'activity_area_id' => 'nullable|integer',
@@ -169,7 +169,7 @@ class CompanyController extends Controller
                 ->where('is_active', true)
                 ->pluck('id')
                 ->toArray();
-            
+
             $company->serviceCategories()->sync($validCategories);
         } else {
             // Se não foram fornecidas categorias, remover todas
@@ -183,7 +183,7 @@ class CompanyController extends Controller
     public function destroy(Company $company)
     {
         Gate::authorize('editCompanyProfile', $company);
-        
+
         // Verificar se há vagas ativas
         if ($company->vacancies()->where('status', 'active')->exists()) {
             return redirect()->back()

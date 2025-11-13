@@ -11,16 +11,24 @@ class BaseMatch extends Model
     use HasFactory;
 
     protected $table = 'matches';
+
     public $timestamps = false; // apenas created_at
 
     protected $fillable = [
-        'freelancer_id','job_vacancy_id','created_at'
+        'freelancer_id', 'job_vacancy_id', 'created_at',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
     ];
 
-    public function freelancer(): BelongsTo { return $this->belongsTo(Freelancer::class); }
-    public function jobVacancy(): BelongsTo { return $this->belongsTo(JobVacancy::class); }
+    public function freelancer(): BelongsTo
+    {
+        return $this->belongsTo(Freelancer::class);
+    }
+
+    public function jobVacancy(): BelongsTo
+    {
+        return $this->belongsTo(JobVacancy::class);
+    }
 }

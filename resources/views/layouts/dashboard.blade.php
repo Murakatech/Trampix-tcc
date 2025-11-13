@@ -1,12 +1,11 @@
 @php
-    // Definir display name baseado no perfil ativo
+    $user = Auth::user();
     $activeRole = session('active_role');
-    $displayName = Auth::user()->name;
-    
-    if ($activeRole === 'freelancer' && Auth::user()->freelancer) {
-        $displayName = Auth::user()->freelancer->display_name ?? Auth::user()->name;
-    } elseif ($activeRole === 'company' && Auth::user()->company) {
-        $displayName = Auth::user()->company->display_name ?? Auth::user()->name;
+    $displayName = $user ? $user->name : 'Trampix';
+    if ($user && $activeRole === 'freelancer' && $user->freelancer) {
+        $displayName = $user->freelancer->display_name ?? $user->name;
+    } elseif ($user && $activeRole === 'company' && $user->company) {
+        $displayName = $user->company->display_name ?? $user->name;
     }
 @endphp
 
@@ -230,12 +229,14 @@
         
         <div class="min-h-screen" x-data="{ sidebarExpanded: false }">
             <!-- Sidebar Component -->
+            @auth
             <div @mouseenter="sidebarExpanded = true" @mouseleave="sidebarExpanded = false">
                 <x-sidebar />
             </div>
+            @endauth
             
             <!-- Main Content -->
-            <div class="main-content-offset transition-all duration-700" 
+            <div class="{{ Auth::check() ? 'main-content-offset' : '' }} transition-all duration-700" 
                  :class="{ 'expanded': sidebarExpanded }"
                  style="transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);">
                 
@@ -288,12 +289,12 @@
                         </div>
 
                         <!-- Profile Icon with Dropdown -->
+                        @auth
                         <div class="relative flex flex-col items-center" x-data="{ open: false }" @click.away="open = false">
-                            <!-- Profile Photo Button -->
                             <button 
                                 @click="open = !open"
                                 @keydown.escape="open = false"
-                                class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 touch-manipulation"
+                                class="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors duração-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 touch-manipulation"
                                 aria-label="Menu do perfil"
                                 aria-expanded="false"
                                 :aria-expanded="open.toString()"
@@ -311,7 +312,6 @@
                                 @endif
                             </button>
 
-                            <!-- Etiqueta discreta abaixo do avatar com cor do papel -->
                             @php
                                 $activeRole = session('active_role')
                                     ?? (Auth::user()->isCompany() ? 'company' : (Auth::user()->isFreelancer() ? 'freelancer' : null));
@@ -324,7 +324,6 @@
                                 @endif
                             </div>
 
-                            <!-- Dropdown Menu -->
                             <div 
                                 x-show="open"
                                 x-transition:enter="transition ease-out duration-200"
@@ -338,11 +337,10 @@
                                 aria-orientation="vertical"
                                 aria-labelledby="profile-menu-button"
                             >
-                                <!-- Profile / Account Link -->
                                 @if(Auth::user()->isAdmin())
                                     <a 
                                         href="{{ route('profile.account') }}" 
-                                        class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150 touch-manipulation"
+                                        class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duração-150 touch-manipulation"
                                         role="menuitem"
                                         @click="open = false"
                                     >
@@ -354,7 +352,7 @@
                                 @else
                                     <a 
                                         href="{{ route('profiles.show', Auth::user()) }}" 
-                                        class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150 touch-manipulation"
+                                        class="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 active:bg-gray-100 transition-colors duração-150 touch-manipulation"
                                         role="menuitem"
                                         @click="open = false"
                                     >
@@ -365,15 +363,13 @@
                                     </a>
                                 @endif
 
-                                <!-- Divider -->
                                 <hr class="my-1 border-gray-200">
                                 
-                                <!-- Logout Button -->
                                 <form method="POST" action="{{ route('logout') }}" class="w-full">
                                     @csrf
                                     <button 
                                         type="submit"
-                                        class="flex items-center w-full px-3 sm:px-4 py-2 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors duration-150 touch-manipulation"
+                                        class="flex items-center w-full px-3 sm:px-4 py-2 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors duração-150 touch-manipulation"
                                         role="menuitem"
                                         @click="open = false"
                                     >
@@ -385,6 +381,7 @@
                                 </form>
                             </div>
                         </div>
+                        @endauth
                     </div>
                 </div>
             </header>

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\JobVacancy;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class JobVacancyStatusController extends Controller
 {
@@ -22,15 +21,15 @@ class JobVacancyStatusController extends Controller
         $acceptedApplications = $vaga->applications->where('status', 'accepted');
         $endedApplications = $vaga->applications->where('status', 'ended');
         $isAcceptedFreelancer = $user?->freelancer && (
-            $acceptedApplications->contains(fn($a) => $a->freelancer_id === $user->freelancer->id) ||
-            $endedApplications->contains(fn($a) => $a->freelancer_id === $user->freelancer->id)
+            $acceptedApplications->contains(fn ($a) => $a->freelancer_id === $user->freelancer->id) ||
+            $endedApplications->contains(fn ($a) => $a->freelancer_id === $user->freelancer->id)
         );
         $currentApplication = null;
         if ($user?->freelancer) {
             $currentApplication = $vaga->applications->firstWhere('freelancer_id', $user->freelancer->id);
         }
 
-        if (!$isCompanyOwner && !$isAcceptedFreelancer) {
+        if (! $isCompanyOwner && ! $isAcceptedFreelancer) {
             abort(403, 'Acesso negado.');
         }
 

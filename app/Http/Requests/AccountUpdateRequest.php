@@ -26,6 +26,7 @@ class AccountUpdateRequest extends FormRequest
     public function rules(): array
     {
         $userId = $this->user()?->id ?? 0;
+
         return self::rulesFor($userId);
     }
 }

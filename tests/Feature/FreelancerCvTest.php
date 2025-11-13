@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\Freelancer;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -24,9 +24,9 @@ class FreelancerCvTest extends TestCase
         $response = $this->withSession(['active_role' => 'freelancer'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'section' => 'freelancer',
-            'cv' => $cv,
-        ]);
+                'section' => 'freelancer',
+                'cv' => $cv,
+            ]);
         // Atualização de CV em perfil freelancer ativo deve redirecionar para página de edição de perfil
         $response->assertRedirect(route('profile.edit'));
         // No fluxo atual, criação redireciona para dashboard sem flash 'success'
@@ -52,9 +52,9 @@ class FreelancerCvTest extends TestCase
         $response = $this->withSession(['active_role' => 'freelancer'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'section' => 'freelancer',
-            'cv' => $newCv,
-        ]);
+                'section' => 'freelancer',
+                'cv' => $newCv,
+            ]);
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
         $freelancer->refresh();
@@ -77,9 +77,9 @@ class FreelancerCvTest extends TestCase
         $response = $this->withSession(['active_role' => 'freelancer'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'section' => 'freelancer',
-            'remove_cv' => true,
-        ]);
+                'section' => 'freelancer',
+                'remove_cv' => true,
+            ]);
         $response->assertRedirect(route('profile.edit'));
         $response->assertSessionHas('success');
         $freelancer->refresh();
@@ -98,9 +98,9 @@ class FreelancerCvTest extends TestCase
         $response = $this->withSession(['active_role' => 'freelancer'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'section' => 'freelancer',
-            'cv' => $bad,
-        ]);
+                'section' => 'freelancer',
+                'cv' => $bad,
+            ]);
 
         $response->assertSessionHasErrors(['cv']);
     }
@@ -115,9 +115,9 @@ class FreelancerCvTest extends TestCase
         // 1) Criar o perfil de freelancer via flag dedicada
         $createResponse = $this->actingAs($user)
             ->patch(route('profile.update'), [
-            'create_freelancer_profile' => true,
-            'bio' => 'Novo perfil criado',
-        ]);
+                'create_freelancer_profile' => true,
+                'bio' => 'Novo perfil criado',
+            ]);
         $createResponse->assertRedirect(route('profile.edit'));
 
         // 2) Fazer upload do CV após o perfil existir
@@ -127,9 +127,9 @@ class FreelancerCvTest extends TestCase
         $uploadResponse = $this->withSession(['active_role' => 'freelancer'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'section' => 'freelancer',
-            'cv' => $cv,
-        ]);
+                'section' => 'freelancer',
+                'cv' => $cv,
+            ]);
         $uploadResponse->assertRedirect(route('profile.edit'));
         $freelancer = Freelancer::where('user_id', $user->id)->first();
         $this->assertNotNull($freelancer);

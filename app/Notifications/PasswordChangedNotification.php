@@ -3,8 +3,8 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
 class PasswordChangedNotification extends Notification
 {
@@ -26,10 +26,10 @@ class PasswordChangedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Senha alterada com sucesso - ' . config('app.name'))
+            ->subject('Senha alterada com sucesso - '.config('app.name'))
             ->line('A senha da sua conta foi alterada com sucesso.')
             ->line('Se você não fez esta alteração, por favor, redefina sua senha imediatamente e entre em contato com o suporte.')
             ->action('Redefinir senha', url(route('password.request')))
-            ->line('Conta: ' . ($notifiable->email ?? 'não informado'));
+            ->line('Conta: '.($notifiable->email ?? 'não informado'));
     }
 }

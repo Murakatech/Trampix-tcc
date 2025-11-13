@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Notifications\ResetPasswordNotification;
 
 class User extends Authenticatable
 {
@@ -75,6 +75,7 @@ class User extends Authenticatable
         if ($type === 'company') {
             return $this->isCompany();
         }
+
         return false;
     }
 
@@ -87,6 +88,7 @@ class User extends Authenticatable
         if ($type === 'company') {
             return $this->companies()->create(array_merge(['is_active' => true], $data));
         }
+
         return null;
     }
 
@@ -94,19 +96,19 @@ class User extends Authenticatable
     public function hasMultipleRoles()
     {
         $rolesCount = 0;
-        
+
         if ($this->isFreelancer()) {
             $rolesCount++;
         }
-        
+
         if ($this->isCompany()) {
             $rolesCount++;
         }
-        
+
         if ($this->isAdmin()) {
             $rolesCount++;
         }
-        
+
         return $rolesCount > 1;
     }
 
@@ -140,7 +142,7 @@ class User extends Authenticatable
         }
 
         // Sem papel ativo definido: fallback ordenado freelancer → company
-        if (!$activeRole) {
+        if (! $activeRole) {
             if ($this->freelancer && $this->freelancer->profile_photo) {
                 return $this->freelancer->profile_photo;
             }
@@ -159,12 +161,12 @@ class User extends Authenticatable
     public function getProfilePhotoUrlAttribute()
     {
         $path = $this->profile_photo_path;
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 
         // Sempre servir do disco "public"
-        return asset('storage/' . ltrim($path, '/'));
+        return asset('storage/'.ltrim($path, '/'));
     }
 
     /**

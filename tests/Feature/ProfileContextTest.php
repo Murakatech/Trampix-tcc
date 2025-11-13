@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Freelancer;
 use App\Models\Company;
+use App\Models\Freelancer;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ProfileContextTest extends TestCase
@@ -129,7 +128,7 @@ class ProfileContextTest extends TestCase
         // Criar usuário
         $user = User::factory()->create([
             'name' => 'João Silva',
-            'email' => 'joao@example.com'
+            'email' => 'joao@example.com',
         ]);
 
         // Simular login
@@ -144,7 +143,7 @@ class ProfileContextTest extends TestCase
         $response->assertSee('joao@example.com');
         $response->assertSee('Alterar Senha');
         $response->assertSee('Excluir Conta');
-        
+
         // Não deve mostrar campos específicos de perfil
         $response->assertDontSee('Biografia');
         $response->assertDontSee('Nome da Empresa');
@@ -176,11 +175,11 @@ class ProfileContextTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'bio' => 'Bio original'
+            'bio' => 'Bio original',
         ]);
         $company = Company::factory()->create([
             'user_id' => $user->id,
-            'name' => 'Empresa Original'
+            'name' => 'Empresa Original',
         ]);
 
         // Simular login com perfil freelancer ativo
@@ -190,7 +189,7 @@ class ProfileContextTest extends TestCase
         // Atualizar dados do freelancer
         $response = $this->patch(route('profile.update'), [
             'bio' => 'Nova biografia do freelancer',
-            'whatsapp' => '11999999999'
+            'whatsapp' => '11999999999',
         ]);
 
         $response->assertRedirect();
@@ -210,11 +209,11 @@ class ProfileContextTest extends TestCase
         // Criar usuário com perfil freelancer
         $user = User::factory()->create([
             'name' => 'Nome Original',
-            'email' => 'original@example.com'
+            'email' => 'original@example.com',
         ]);
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'bio' => 'Bio original'
+            'bio' => 'Bio original',
         ]);
 
         // Simular login
@@ -223,7 +222,7 @@ class ProfileContextTest extends TestCase
         // Atualizar dados da conta
         $response = $this->patch(route('profile.account.update'), [
             'name' => 'Novo Nome',
-            'email' => 'novo@example.com'
+            'email' => 'novo@example.com',
         ]);
 
         $response->assertRedirect();

@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Freelancer;
 use App\Models\Company;
+use App\Models\Freelancer;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,9 +24,9 @@ class ProfileAuthorizationTest extends TestCase
         $response = $this->withSession(['active_role' => 'freelancer'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'section' => 'freelancer',
-            'bio' => 'Bio atualizada',
-        ]);
+                'section' => 'freelancer',
+                'bio' => 'Bio atualizada',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $freelancer->refresh();
@@ -83,9 +83,9 @@ class ProfileAuthorizationTest extends TestCase
         $response = $this->withSession(['active_role' => 'company'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'section' => 'company',
-            'display_name' => 'Empresa Atualizada',
-        ]);
+                'section' => 'company',
+                'display_name' => 'Empresa Atualizada',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $company->refresh();
@@ -139,10 +139,10 @@ class ProfileAuthorizationTest extends TestCase
         $response = $this->withSession(['active_role' => 'freelancer'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'create_freelancer_profile' => true,
-            'section' => 'freelancer',
-            'bio' => 'Nova bio criada',
-        ]);
+                'create_freelancer_profile' => true,
+                'section' => 'freelancer',
+                'bio' => 'Nova bio criada',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $user->refresh();
@@ -159,10 +159,10 @@ class ProfileAuthorizationTest extends TestCase
         $response = $this->withSession(['active_role' => 'company'])
             ->actingAs($user)
             ->patch(route('profile.update'), [
-            'create_company_profile' => true,
-            'section' => 'company',
-            'company_name' => 'Minha Nova Empresa',
-        ]);
+                'create_company_profile' => true,
+                'section' => 'company',
+                'company_name' => 'Minha Nova Empresa',
+            ]);
 
         $response->assertRedirect(route('profile.edit'));
         $user->refresh();

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Application;
 use App\Models\JobVacancy;
 
@@ -16,7 +15,7 @@ class FreelancerDashboardController extends Controller
         $user = auth()->user();
         $freelancer = $user->freelancer;
 
-        if (!$freelancer) {
+        if (! $freelancer) {
             return redirect()->route('dashboard')->with('error', 'Perfil de freelancer não encontrado.');
         }
 
@@ -38,11 +37,12 @@ class FreelancerDashboardController extends Controller
 
         // Vagas recomendadas baseadas nos setores do freelancer (match com categorias de vagas por nome)
         $freelancerCategories = $freelancer->sectors->pluck('name')->toArray();
-        
+
         $recommendedJobs = JobVacancy::where('status', 'active')
-            ->when(!empty($freelancerCategories), function ($query) use ($freelancerCategories) {
+            ->when(! empty($freelancerCategories), function ($query) use ($freelancerCategories) {
                 $ids = \App\Models\ServiceCategory::whereIn('name', $freelancerCategories)->pluck('id');
-                return $query->where(function($q) use ($ids, $freelancerCategories) {
+
+                return $query->where(function ($q) use ($ids, $freelancerCategories) {
                     if ($ids->count() > 0) {
                         $q->whereIn('service_category_id', $ids);
                     }
@@ -89,7 +89,7 @@ class FreelancerDashboardController extends Controller
         $user = auth()->user();
         $freelancer = $user->freelancer;
 
-        if (!$freelancer) {
+        if (! $freelancer) {
             return response()->json(['error' => 'Freelancer não encontrado'], 404);
         }
 
@@ -126,7 +126,7 @@ class FreelancerDashboardController extends Controller
             'applicationsStats' => $applicationsStats,
             'newApplicationsCount' => $newApplicationsCount,
             'newRecommendedJobsCount' => $newRecommendedJobsCount,
-            'lastUpdate' => now()->format('H:i:s')
+            'lastUpdate' => now()->format('H:i:s'),
         ]);
     }
 }

@@ -1,20 +1,19 @@
 <?php
 
-use App\Http\Controllers\JobVacancyController;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ApplicationController;
-use App\Http\Controllers\FreelancerController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CompanyVacancyController;
-use App\Http\Controllers\JobVacancyStatusController;
-use App\Http\Controllers\EvaluationController;
-use App\Http\Controllers\ProfilePhotoController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\FreelancerDashboardController;
 use App\Http\Controllers\CompanyDashboardController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\CompanyVacancyController;
 use App\Http\Controllers\ConnectController;
-use App\Http\Controllers\MatchmakingController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\EvaluationController;
+use App\Http\Controllers\FreelancerController;
+use App\Http\Controllers\FreelancerDashboardController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JobVacancyController;
+use App\Http\Controllers\JobVacancyStatusController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfilePhotoController;
 use Illuminate\Support\Facades\Route;
 
 // garante que {vaga} só aceite números
@@ -31,13 +30,13 @@ Route::view('/docs/categorias-e-areas', 'docs.categories-activity-areas')->name(
 // Rotas de Dashboard Pós-Login
 Route::middleware(['auth'])->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    
+
     // Dashboard específico para freelancers
     Route::middleware(['can:isFreelancer'])->group(function () {
         Route::get('/freelancer/dashboard', [FreelancerDashboardController::class, 'index'])->name('freelancer.dashboard');
         Route::get('/freelancer/dashboard/updates', [FreelancerDashboardController::class, 'getUpdates'])->name('freelancer.dashboard.updates');
     });
-    
+
     // Dashboard específico para empresas
     Route::middleware(['can:isCompany'])->group(function () {
         Route::get('/company/dashboard', [CompanyDashboardController::class, 'index'])->name('company.dashboard');
@@ -54,25 +53,25 @@ Route::middleware(['auth'])->group(function () {
 // Matchmaking dedicado removido em favor de /connect
 
 // Protegido (auth + empresa) — registre ANTES
-Route::middleware(['auth','can:isCompany'])->group(function () {
+Route::middleware(['auth', 'can:isCompany'])->group(function () {
     Route::resource('vagas', \App\Http\Controllers\JobVacancyController::class)
-        ->only(['create','store','edit','update','destroy']);
-    
+        ->only(['create', 'store', 'edit', 'update', 'destroy']);
+
     // Rota adicional para job-vacancies.create (compatibilidade com dashboard)
     Route::get('/job-vacancies/create', [JobVacancyController::class, 'create'])
         ->name('job-vacancies.create');
-    
+
     // Rotas específicas para vagas da empresa
     Route::get('/company/vagas', [CompanyVacancyController::class, 'index'])->name('company.vagas.index');
     Route::get('/company/vagas/{vaga}', [CompanyVacancyController::class, 'show'])->name('company.vagas.show');
     Route::patch('/company/vagas/{vaga}/toggle-status', [CompanyVacancyController::class, 'toggleStatus'])->name('company.vagas.toggle-status');
-    
+
     Route::get('/job-vacancies/{id}/applications', [ApplicationController::class, 'byVacancy'])
         ->name('applications.byVacancy');
-    
+
     Route::get('/applications/manage', [ApplicationController::class, 'manage'])
         ->name('applications.manage');
-    
+
     Route::patch('/applications/{application}/status', [ApplicationController::class, 'updateStatus'])
         ->name('applications.updateStatus');
 });
@@ -84,7 +83,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])
 // Removidas rotas de pages de demonstração e styleguide
 
 // Público
-Route::resource('vagas', JobVacancyController::class)->only(['index','show']);
+Route::resource('vagas', JobVacancyController::class)->only(['index', 'show']);
 // API pública para sugestões de busca de vagas
 Route::get('/api/vagas/suggest', [JobVacancyController::class, 'suggest'])->name('api.vagas.suggest');
 // API pública: categorias por segmento (para filtro dinâmico)
@@ -104,38 +103,38 @@ Route::middleware('auth')->group(function () {
     // Nova rota para configurações de conta
     Route::get('/profile/account', [ProfileController::class, 'account'])->name('profile.account');
     Route::patch('/profile/account', [ProfileController::class, 'updateAccount'])->name('profile.account.update');
-    
+
     // Rota principal do perfil (baseada no active_role)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    
+
     // Rota para trocar perfil
     Route::post('/profile/switch-role', [ProfileController::class, 'switchRole'])->name('profile.switch-role');
-    
+
     // Rota para obter dados do perfil freelancer em JSON
     Route::get('/profile/freelancer', [ProfileController::class, 'showFreelancerProfile'])->name('profile.freelancer.show');
-    
+
     // Rotas para exclusão de perfis específicos
     Route::delete('/profile/freelancer', [ProfileController::class, 'destroyFreelancerProfile'])->name('profile.freelancer.destroy');
     Route::delete('/profile/company', [ProfileController::class, 'destroyCompanyProfile'])->name('profile.company.destroy');
-    
+
     // Rotas para upload de foto de perfil
     Route::post('/profile/photo/upload', [ProfilePhotoController::class, 'upload'])->name('profile.photo.upload');
     Route::delete('/profile/photo/delete', [ProfilePhotoController::class, 'delete'])->name('profile.photo.delete');
-    
+
     // API para atualização dinâmica de perfil
     Route::get('/api/profile/check-updates', [ProfilePhotoController::class, 'checkUpdates'])->name('api.profile.check-updates');
     Route::get('/api/profile/data', [ProfilePhotoController::class, 'getProfileData'])->name('api.profile.data');
-    
+
     // Rotas para imagens de perfil (freelancer e empresa)
     Route::patch('/profile/image', [ProfileController::class, 'updateImage'])->name('profile.image.update');
     Route::delete('/profile/image', [ProfileController::class, 'deleteImage'])->name('profile.image.delete');
-    
+
     // Rotas para upload de currículo
     Route::post('/profile/cv/upload', [ProfileController::class, 'uploadCv'])->name('profile.cv.upload');
     Route::delete('/profile/cv/delete', [ProfileController::class, 'deleteCv'])->name('profile.cv.delete');
-    
+
     // Rotas para perfis de freelancer
     Route::get('/freelancers/profile', [FreelancerController::class, 'showOwn'])->name('freelancers.profile');
     Route::resource('freelancers', FreelancerController::class)
@@ -146,7 +145,7 @@ Route::middleware('auth')->group(function () {
     })->name('freelancers.edit');
     Route::get('/freelancers/{freelancer}/download-cv', [FreelancerController::class, 'downloadCv'])
         ->name('freelancers.download-cv');
-    
+
     // Rotas para perfis de empresa (autenticadas)
     Route::resource('companies', CompanyController::class)
         ->only(['create', 'store', 'update', 'destroy']);
@@ -177,7 +176,7 @@ Route::middleware(['auth'])->group(function () {
     // Trabalhos finalizados (empresa ou freelancer, despacha para a view correta)
     Route::get('/finished-jobs', [ApplicationController::class, 'finishedIndex'])
         ->name('finished.index');
-    
+
     Route::delete('/applications/{application}', [ApplicationController::class, 'cancel'])
         ->name('applications.cancel')
         ->middleware('can:isFreelancer');

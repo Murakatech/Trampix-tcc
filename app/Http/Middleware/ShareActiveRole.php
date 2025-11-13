@@ -18,22 +18,22 @@ class ShareActiveRole
         if (Auth::check()) {
             $user = Auth::user();
             $activeRole = session('active_role');
-            
+
             // Valida se o active_role ainda é válido
             if ($activeRole) {
-                $isValidRole = match($activeRole) {
+                $isValidRole = match ($activeRole) {
                     'freelancer' => $user->isFreelancer(),
                     'company' => $user->isCompany(),
                     default => false
                 };
-                
+
                 // Se o role não é mais válido, remove da sessão
-                if (!$isValidRole) {
+                if (! $isValidRole) {
                     session()->forget('active_role');
                     $activeRole = null;
                 }
             }
-            
+
             // Compartilha dados com todas as views
             View::share([
                 'activeRole' => $activeRole,

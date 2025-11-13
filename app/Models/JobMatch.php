@@ -2,7 +2,4 @@
 
 namespace App\Models;
 
-class JobMatch extends BaseMatch
-{
-}
-
+class JobMatch extends BaseMatch {}

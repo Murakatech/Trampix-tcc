@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Carbon;
-use App\Services\RecommendationService;
-use App\Models\Recommendation;
 use App\Models\JobVacancy;
+use App\Models\Recommendation;
+use App\Services\RecommendationService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ConnectController extends Controller
 {
@@ -21,7 +20,7 @@ class ConnectController extends Controller
         $selectedJob = null;
         $companyVacancies = collect();
         $mode = $request->query('mode');
-        if (in_array($mode, ['segment','all'])) {
+        if (in_array($mode, ['segment', 'all'])) {
             session(['connect_filter' => $mode]);
             session()->forget('connect_cards_shown');
         }
@@ -29,7 +28,7 @@ class ConnectController extends Controller
         // Fluxo para empresa: seleção de vaga antes de ver cards
         if ($user && $user->isCompany() && $user->company) {
             $company = $user->company;
-            $selectedJobId = (int)($request->query('job_id') ?? 0);
+            $selectedJobId = (int) ($request->query('job_id') ?? 0);
             if ($selectedJobId > 0) {
                 $selectedJob = JobVacancy::query()
                     ->where('company_id', $company->id)
@@ -41,7 +40,10 @@ class ConnectController extends Controller
                     // Resetar contador de cards mostrados ao trocar de vaga
                     session()->forget('connect_cards_shown');
                     $segmentOnly = (session('connect_filter') === 'segment');
-                    try { $service->prepareCompanyConnectForJob($user, $selectedJob->id, 50, $segmentOnly); } catch (\Throwable $e) {}
+                    try {
+                        $service->prepareCompanyConnectForJob($user, $selectedJob->id, 50, $segmentOnly);
+                    } catch (\Throwable $e) {
+                    }
                 } else {
                     session()->forget('connect_job_id');
                     // Resetar também caso a vaga informada não pertença à empresa
@@ -119,7 +121,7 @@ class ConnectController extends Controller
     public function next(Request $request, RecommendationService $service)
     {
         // Limite por sessão: 20 cards
-        $count = (int)session()->get('connect_cards_shown', 0);
+        $count = (int) session()->get('connect_cards_shown', 0);
         if ($count >= 20) {
             return response()->json(['done' => true], 204);
         }
@@ -127,7 +129,7 @@ class ConnectController extends Controller
         $user = $request->user();
         $rec = $service->nextCardFor($user);
         // Fallback: se não houver batch gerado ainda, tenta gerar agora e buscar novamente
-        if (!$rec) {
+        if (! $rec) {
             try {
                 if ($user->isCompany() && session()->has('connect_job_id')) {
                     $jobId = (int) session('connect_job_id');
@@ -144,7 +146,7 @@ class ConnectController extends Controller
             }
             $rec = $service->nextCardFor($user);
         }
-        if (!$rec) {
+        if (! $rec) {
             return response()->json(['empty' => true], 204);
         }
 
@@ -166,8 +168,8 @@ class ConnectController extends Controller
         ]);
 
         $user = $request->user();
-        $jobContext = isset($validated['job_vacancy_id']) ? (int)$validated['job_vacancy_id'] : (int) session('connect_job_id');
-        $result = $service->decide($user, (int)$validated['recommendation_id'], $validated['action'], $jobContext > 0 ? $jobContext : null);
+        $jobContext = isset($validated['job_vacancy_id']) ? (int) $validated['job_vacancy_id'] : (int) session('connect_job_id');
+        $result = $service->decide($user, (int) $validated['recommendation_id'], $validated['action'], $jobContext > 0 ? $jobContext : null);
 
         return response()->json($result);
     }
@@ -177,10 +179,11 @@ class ConnectController extends Controller
         if ($rec->target_type === 'job') {
             $job = $rec->targetJob; // relation
             $companyName = $job?->company?->display_name ?: ($job?->company?->name ?: 'Empresa');
+
             return [
                 'id' => $rec->id,
                 'type' => 'job',
-                'score' => round((float)$rec->score, 2),
+                'score' => round((float) $rec->score, 2),
                 'payload' => [
                     'id' => $job?->id,
                     'title' => $job?->title ?: 'Vaga',
@@ -198,16 +201,17 @@ class ConnectController extends Controller
         if ($rec->target_type === 'freelancer') {
             $f = $rec->targetFreelancer;
             $skills = $f?->skills()->pluck('name')->all() ?? [];
+
             return [
                 'id' => $rec->id,
                 'type' => 'freelancer',
-                'score' => round((float)$rec->score, 2),
+                'score' => round((float) $rec->score, 2),
                 'payload' => [
                     'id' => $f?->id,
                     'title' => $f?->display_name ?: 'Freelancer',
                     'location' => $f?->location ?: '-',
                     'mode' => '—',
-                    'range' => $f?->hourly_rate ? ('R$ '.number_format((float)$f->hourly_rate, 2, ',', '.').'/h') : '-',
+                    'range' => $f?->hourly_rate ? ('R$ '.number_format((float) $f->hourly_rate, 2, ',', '.').'/h') : '-',
                     'skills' => $skills,
                     'summary' => Str::limit($f?->bio ?: '', 180),
                     'profile_url' => ($f && $f->user) ? route('profiles.show', $f->user) : null,
@@ -218,8 +222,8 @@ class ConnectController extends Controller
         return [
             'id' => $rec->id,
             'type' => 'unknown',
-            'score' => round((float)$rec->score, 2),
-            'payload' => [ 'title' => '—' ]
+            'score' => round((float) $rec->score, 2),
+            'payload' => ['title' => '—'],
         ];
     }
 }

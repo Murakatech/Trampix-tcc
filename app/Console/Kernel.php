@@ -2,9 +2,9 @@
 
 namespace App\Console;
 
+use App\Jobs\GenerateRecommendationsJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Jobs\GenerateRecommendationsJob;
 
 class Kernel extends ConsoleKernel
 {
@@ -14,7 +14,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // Executa diariamente às 03:00 (ajuste conforme necessidade)
-        $schedule->job(new GenerateRecommendationsJob())->dailyAt('03:00');
+        $schedule->job(new GenerateRecommendationsJob)->dailyAt('03:00');
     }
 
     /**

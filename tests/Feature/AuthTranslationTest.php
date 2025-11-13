@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
-use App\Models\User;
 
 class AuthTranslationTest extends TestCase
 {
@@ -13,12 +13,12 @@ class AuthTranslationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Garantir que o locale está definido como 'pt'
         app()->setLocale('pt');
-        
+
         // Compartilhar a variável $errors com as views para evitar erros
-        view()->share('errors', session()->get('errors', new \Illuminate\Support\MessageBag()));
+        view()->share('errors', session()->get('errors', new \Illuminate\Support\MessageBag));
     }
 
     public function test_login_with_invalid_credentials_shows_portuguese_message()
@@ -32,14 +32,14 @@ class AuthTranslationTest extends TestCase
 
         // Verificar se foi redirecionado de volta para o login
         $response->assertRedirect('/login');
-        
+
         // Verificar se a sessão contém a mensagem de erro em português
         $response->assertSessionHasErrors('email');
-        
+
         // Verificar se a mensagem específica está em português
         $errors = session('errors');
         $emailErrors = $errors->get('email');
-        
+
         $this->assertContains('As credenciais informadas estão incorretas.', $emailErrors);
     }
 
@@ -60,14 +60,14 @@ class AuthTranslationTest extends TestCase
 
         // Verificar se foi redirecionado de volta para o login
         $response->assertRedirect('/login');
-        
+
         // Verificar se a sessão contém a mensagem de erro em português
         $response->assertSessionHasErrors('email');
-        
+
         // Verificar se a mensagem específica está em português
         $errors = session('errors');
         $emailErrors = $errors->get('email');
-        
+
         $this->assertContains('As credenciais informadas estão incorretas.', $emailErrors);
     }
 

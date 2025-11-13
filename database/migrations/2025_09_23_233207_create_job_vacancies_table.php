@@ -15,10 +15,10 @@ return new class extends Migration
             $t->text('description');
             $t->text('requirements')->nullable();
             $t->string('category')->nullable();
-            $t->enum('contract_type',['PJ','CLT','Estágio','Freelance'])->nullable();
-            $t->enum('location_type',['Remoto','Híbrido','Presencial'])->nullable();
+            $t->enum('contract_type', ['PJ', 'CLT', 'Estágio', 'Freelance'])->nullable();
+            $t->enum('location_type', ['Remoto', 'Híbrido', 'Presencial'])->nullable();
             $t->string('salary_range')->nullable();
-            $t->enum('status',['active','closed'])->default('active');
+            $t->enum('status', ['active', 'closed'])->default('active');
             $t->timestamps();
         });
     }

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -11,10 +11,10 @@ return new class extends Migration
     {
         // Adicionar colunas necessárias se não existirem e garantir NOT NULL para whatsapp
         Schema::table('freelancers', function (Blueprint $t) {
-            if (!Schema::hasColumn('freelancers', 'display_name')) {
+            if (! Schema::hasColumn('freelancers', 'display_name')) {
                 $t->string('display_name', 255)->after('user_id');
             }
-            if (!Schema::hasColumn('freelancers', 'whatsapp')) {
+            if (! Schema::hasColumn('freelancers', 'whatsapp')) {
                 // adicionar com valor padrão para evitar falha em tabelas existentes
                 $t->string('whatsapp', 20)->default('')->after('portfolio_url');
             }

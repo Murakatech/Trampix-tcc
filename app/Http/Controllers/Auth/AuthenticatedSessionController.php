@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         $user = Auth::user();
-        
+
         // Admins não precisam de seleção de perfil nem criação de perfis
         // Redirecionar diretamente para o dashboard administrativo
         if ($user->isAdmin()) {
@@ -43,23 +43,23 @@ class AuthenticatedSessionController extends Controller
 
         // Se usuário possui apenas um perfil e não há active_role definido,
         // definir automaticamente o perfil ativo para evitar tela de seleção
-        if (!$activeRole) {
-            if ($hasFreelancer && !$hasCompany) {
+        if (! $activeRole) {
+            if ($hasFreelancer && ! $hasCompany) {
                 session(['active_role' => 'freelancer']);
                 $activeRole = 'freelancer';
-            } elseif ($hasCompany && !$hasFreelancer) {
+            } elseif ($hasCompany && ! $hasFreelancer) {
                 session(['active_role' => 'company']);
                 $activeRole = 'company';
             }
         }
 
         // Se não tem nenhum perfil, redirecionar para seleção de perfil (criação)
-        if (!$hasFreelancer && !$hasCompany) {
+        if (! $hasFreelancer && ! $hasCompany) {
             return redirect()->route('profile.selection');
         }
 
         // Se tem ambos os perfis mas não tem active_role na sessão, redirecionar para seleção de papel
-        if ($hasFreelancer && $hasCompany && !$activeRole) {
+        if ($hasFreelancer && $hasCompany && ! $activeRole) {
             return redirect()->route('select-role.show');
         }
 

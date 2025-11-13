@@ -11,7 +11,7 @@ class Preference extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id','role','desired_roles','segments','skills','seniority_min','seniority_max','remote_ok','salary_min','salary_max','location','radius_km'
+        'user_id', 'role', 'desired_roles', 'segments', 'skills', 'seniority_min', 'seniority_max', 'remote_ok', 'salary_min', 'salary_max', 'location', 'radius_km',
     ];
 
     protected $casts = [

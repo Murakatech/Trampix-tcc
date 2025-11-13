@@ -13,11 +13,11 @@ class FreelancerController extends Controller
     public function index()
     {
         Gate::authorize('isAdmin');
-        
+
         $freelancers = Freelancer::with('user')
             ->where('is_active', true)
             ->paginate(15);
-            
+
         return view('freelancers.index', compact('freelancers'));
     }
 
@@ -27,7 +27,7 @@ class FreelancerController extends Controller
         // 1. O próprio freelancer
         // 2. Administradores
         // 3. Empresas (para visualizar candidatos)
-        if (auth()->user()->isAdmin() || 
+        if (auth()->user()->isAdmin() ||
             (auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id) ||
             auth()->user()->isCompany()) {
             return view('profile.show', [
@@ -43,14 +43,14 @@ class FreelancerController extends Controller
     public function showOwn()
     {
         Gate::authorize('isFreelancer');
-        
+
         $freelancer = auth()->user()->freelancer;
-        
-        if (!$freelancer) {
+
+        if (! $freelancer) {
             return redirect()->route('profile.selection')
                 ->with('info', 'Você precisa criar seu perfil na tela de seleção de perfil.');
         }
-        
+
         return view('profile.show', [
             'user' => $freelancer->user,
             'freelancer' => $freelancer,
@@ -61,6 +61,7 @@ class FreelancerController extends Controller
     public function create()
     {
         Gate::authorize('canCreateFreelancerProfile');
+
         // Redirecionar para a tela unificada de seleção/criação de perfil
         return redirect()->route('profile.selection');
     }
@@ -68,7 +69,7 @@ class FreelancerController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('canCreateFreelancerProfile');
-        
+
         $validated = $request->validate([
             'display_name' => 'required|string|min:2|max:255',
             'bio' => 'nullable|string|max:1000',
@@ -141,14 +142,14 @@ class FreelancerController extends Controller
     public function edit(Freelancer $freelancer)
     {
         Gate::authorize('editFreelancerProfile', $freelancer);
-        
+
         return view('freelancers.edit', compact('freelancer'));
     }
 
     public function update(Request $request, Freelancer $freelancer)
     {
         Gate::authorize('editFreelancerProfile', $freelancer);
-        
+
         $validated = $request->validate([
             'bio' => 'nullable|string|max:1000',
             'linkedin_url' => 'nullable|url|max:255',
@@ -173,7 +174,7 @@ class FreelancerController extends Controller
             if ($freelancer->cv_url) {
                 Storage::disk('public')->delete($freelancer->cv_url);
             }
-            
+
             $cvPath = $request->file('cv')->store('cvs', 'public');
             $validated['cv_url'] = $cvPath;
         }
@@ -206,7 +207,7 @@ class FreelancerController extends Controller
     public function destroy(Freelancer $freelancer)
     {
         Gate::authorize('editFreelancerProfile', $freelancer);
-        
+
         // Remover CV do storage
         if ($freelancer->cv_url) {
             Storage::disk('public')->delete($freelancer->cv_url);
@@ -225,16 +226,16 @@ class FreelancerController extends Controller
         // 1. Administradores
         // 2. O próprio freelancer dono do CV
         // 3. Usuários empresa (podem acessar CVs de candidatos)
-        if (!(auth()->user()->isAdmin() ||
+        if (! (auth()->user()->isAdmin() ||
             (auth()->user()->freelancer && auth()->user()->freelancer->id === $freelancer->id) ||
             auth()->user()->isCompany())) {
             abort(403, 'Acesso negado.');
         }
 
-        if (!$freelancer->cv_url || !Storage::disk('public')->exists($freelancer->cv_url)) {
+        if (! $freelancer->cv_url || ! Storage::disk('public')->exists($freelancer->cv_url)) {
             abort(404, 'CV não encontrado');
         }
 
-        return Storage::disk('public')->download($freelancer->cv_url, 'CV_' . $freelancer->user->name . '.pdf');
+        return Storage::disk('public')->download($freelancer->cv_url, 'CV_'.$freelancer->user->name.'.pdf');
     }
 }

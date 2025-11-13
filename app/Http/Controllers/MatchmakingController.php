@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Carbon;
-use App\Models\JobVacancy;
 use App\Models\Freelancer;
+use App\Models\JobVacancy;
 use App\Models\Recommendation;
+use Illuminate\Http\Request;
 
 class MatchmakingController extends Controller
 {
@@ -23,14 +21,14 @@ class MatchmakingController extends Controller
 
         $jobs = JobVacancy::query()
             ->active()
-            ->where(function($q) use ($segmentIds) {
+            ->where(function ($q) use ($segmentIds) {
                 if ($segmentIds) {
-                    $q->whereHas('category', function($cq) use ($segmentIds) {
+                    $q->whereHas('category', function ($cq) use ($segmentIds) {
                         $cq->whereIn('segment_id', $segmentIds);
                     })
-                    ->orWhereHas('company', function($compQ) use ($segmentIds) {
-                        $compQ->whereIn('segment_id', $segmentIds);
-                    });
+                        ->orWhereHas('company', function ($compQ) use ($segmentIds) {
+                            $compQ->whereIn('segment_id', $segmentIds);
+                        });
                 }
             })
             ->with('company')
@@ -65,7 +63,7 @@ class MatchmakingController extends Controller
                 if ($segmentIds) {
                     $freelancers = Freelancer::query()
                         ->where('is_active', true)
-                        ->whereHas('segments', function($q) use ($segmentIds) {
+                        ->whereHas('segments', function ($q) use ($segmentIds) {
                             $q->whereIn('segments.id', $segmentIds);
                         })
                         ->with('user')
@@ -108,4 +106,3 @@ class MatchmakingController extends Controller
         return response()->json(['success' => true]);
     }
 }
-

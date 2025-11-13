@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
 
 class JobVacancy extends Model
 {
@@ -54,7 +54,7 @@ class JobVacancy extends Model
     public function scopePublicList(Builder $query): Builder
     {
         return $query->active()
-            ->whereDoesntHave('applications', function($q){
+            ->whereDoesntHave('applications', function ($q) {
                 $q->whereIn('status', ['accepted', 'ended']);
             });
     }
@@ -62,18 +62,22 @@ class JobVacancy extends Model
     public function scopeNotAppliedBy(Builder $query, ?int $freelancerId): Builder
     {
         if ($freelancerId) {
-            $query->whereDoesntHave('applications', function($q) use ($freelancerId) {
+            $query->whereDoesntHave('applications', function ($q) use ($freelancerId) {
                 $q->where('freelancer_id', $freelancerId);
             });
         }
+
         return $query;
     }
 
     public function scopeFilterCategories(Builder $query, array $categories): Builder
     {
-        if (empty($categories)) return $query;
+        if (empty($categories)) {
+            return $query;
+        }
         $categoryIds = \App\Models\Category::whereIn('name', $categories)->pluck('id');
-        return $query->where(function($q) use ($categories, $categoryIds) {
+
+        return $query->where(function ($q) use ($categories, $categoryIds) {
             if ($categoryIds->count() > 0) {
                 $q->whereIn('category_id', $categoryIds);
             }
@@ -83,11 +87,14 @@ class JobVacancy extends Model
 
     public function scopeFilterSegment(Builder $query, int $segmentId): Builder
     {
-        if (! $segmentId) return $query;
-        $segmentCategoryQuery = \App\Models\Category::where('segment_id', $segmentId)->select('id','name');
+        if (! $segmentId) {
+            return $query;
+        }
+        $segmentCategoryQuery = \App\Models\Category::where('segment_id', $segmentId)->select('id', 'name');
         $segmentCategoryIds = $segmentCategoryQuery->pluck('id');
         $segmentCategoryNames = $segmentCategoryQuery->pluck('name');
-        return $query->where(function($q) use ($segmentCategoryIds, $segmentCategoryNames) {
+
+        return $query->where(function ($q) use ($segmentCategoryIds, $segmentCategoryNames) {
             if ($segmentCategoryIds->count() > 0) {
                 $q->whereIn('category_id', $segmentCategoryIds);
             }
@@ -106,14 +113,17 @@ class JobVacancy extends Model
 
     public function scopeSearch(Builder $query, ?string $search): Builder
     {
-        if (! $search) return $query;
-        return $query->where(function($q) use ($search) {
+        if (! $search) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($search) {
             $q->where('title', 'like', "%{$search}%")
-              ->orWhere('description', 'like', "%{$search}%")
-              ->orWhere('requirements', 'like', "%{$search}%")
-              ->orWhereHas('company', function($companyQuery) use ($search) {
-                  $companyQuery->where('name', 'like', "%{$search}%");
-              });
+                ->orWhere('description', 'like', "%{$search}%")
+                ->orWhere('requirements', 'like', "%{$search}%")
+                ->orWhereHas('company', function ($companyQuery) use ($search) {
+                    $companyQuery->where('name', 'like', "%{$search}%");
+                });
         });
     }
 }

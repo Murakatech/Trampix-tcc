@@ -17,7 +17,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (!Schema::hasColumn('freelancers', 'phone')) {
+        if (! Schema::hasColumn('freelancers', 'phone')) {
             Schema::table('freelancers', function (Blueprint $table) {
                 $table->string('phone')->nullable()->after('cv_url');
             });

@@ -22,13 +22,13 @@ class CompanyUpdateRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('companies', 'display_name')->ignore($companyId)
+                Rule::unique('companies', 'display_name')->ignore($companyId),
             ],
             'cnpj' => [
                 'nullable',
                 'string',
                 'max:18',
-                Rule::unique('companies', 'cnpj')->ignore($companyId)
+                Rule::unique('companies', 'cnpj')->ignore($companyId),
             ],
             'sector' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:100',
@@ -36,7 +36,7 @@ class CompanyUpdateRequest extends FormRequest
             'website' => 'nullable|url|max:255',
             'phone' => 'nullable|string|max:20',
             'employees_count' => 'nullable|integer|min:1|max:999999',
-            'founded_year' => 'nullable|integer|min:1800|max:' . date('Y'),
+            'founded_year' => 'nullable|integer|min:1800|max:'.date('Y'),
             // Segments (até 3) para a empresa
             'segments' => 'nullable|array|max:3',
             'segments.*' => 'exists:segments,id',
@@ -50,6 +50,7 @@ class CompanyUpdateRequest extends FormRequest
     public function rules(): array
     {
         $companyId = $this->user()?->company?->id;
+
         return self::rulesFor($companyId);
     }
 

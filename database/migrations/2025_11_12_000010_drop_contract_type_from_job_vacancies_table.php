@@ -20,7 +20,7 @@ return new class extends Migration
         if (! Schema::hasColumn('job_vacancies', 'contract_type')) {
             Schema::table('job_vacancies', function (Blueprint $table) {
                 // Restaurar coluna com enum aproximado (compatível com MySQL)
-                $table->enum('contract_type', ['PJ','CLT','Estágio','Freelance'])->nullable();
+                $table->enum('contract_type', ['PJ', 'CLT', 'Estágio', 'Freelance'])->nullable();
             });
         }
     }

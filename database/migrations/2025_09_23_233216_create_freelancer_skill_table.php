@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('freelancer_skill', function (Blueprint $t) {
             $t->foreignId('freelancer_id')->constrained()->cascadeOnDelete();
             $t->foreignId('skill_id')->constrained()->cascadeOnDelete();
-            $t->primary(['freelancer_id','skill_id']);
+            $t->primary(['freelancer_id', 'skill_id']);
         });
     }
 

@@ -23,14 +23,16 @@ return new class extends Migration
 
         foreach ($vacancies as $vaga) {
             $name = trim($vaga->category ?? '');
-            if ($name === '') continue;
+            if ($name === '') {
+                continue;
+            }
 
             // Tentativa 1: correspondência direta
             $catId = $categoriesMap[$name] ?? null;
 
             // Tentativa 2: correspondência case-insensitive
-            if (!$catId) {
-                $lowerMap = collect($categoriesMap)->mapWithKeys(function($id, $n) {
+            if (! $catId) {
+                $lowerMap = collect($categoriesMap)->mapWithKeys(function ($id, $n) {
                     return [mb_strtolower(trim($n)) => $id];
                 });
                 $catId = $lowerMap[mb_strtolower($name)] ?? null;

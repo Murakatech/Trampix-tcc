@@ -22,7 +22,7 @@ class FreelancerUpdateRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
-                Rule::unique('freelancers', 'display_name')->ignore($freelancerId)
+                Rule::unique('freelancers', 'display_name')->ignore($freelancerId),
             ],
             'bio' => 'nullable|string|max:1000',
             'linkedin_url' => 'nullable|url|max:255',
@@ -47,6 +47,7 @@ class FreelancerUpdateRequest extends FormRequest
     public function rules(): array
     {
         $freelancerId = $this->user()?->freelancer?->id;
+
         return self::rulesFor($freelancerId);
     }
 }

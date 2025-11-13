@@ -11,14 +11,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Básico para iniciar do zero: segmentos e categorias
         $this->call([
             CategoryPerSegmentSeeder::class,
-            AccountsSeeder::class,
-            VacanciesSeeder::class,
-            FeedbackSeeder::class,
-            DevSeeder::class,
-            PreferenceSeeder::class,
+            CompaniesAndVacanciesSeeder::class,
+            FreelancersAndApplicationsSeeder::class,
+            PartnershipsAndEvaluationsSeeder::class,
         ]);
     }
 }

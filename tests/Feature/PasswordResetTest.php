@@ -3,12 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
-use App\Notifications\ResetPasswordNotification;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
@@ -18,15 +17,15 @@ class PasswordResetTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Fake notifications para capturar emails
         Notification::fake();
-        
+
         // Desabilita middleware CSRF para testes
         $this->withoutMiddleware();
-        
+
         // Compartilha variável $errors para as views
-        view()->share('errors', session()->get('errors', new \Illuminate\Support\MessageBag()));
+        view()->share('errors', session()->get('errors', new \Illuminate\Support\MessageBag));
     }
 
     /** @test */
@@ -51,10 +50,10 @@ class PasswordResetTest extends TestCase
         ]);
 
         $response->assertStatus(302);
-        
+
         // Verifica se a notificação foi enviada
         Notification::assertSentTo($user, ResetPasswordNotification::class);
-        
+
         // Verifica se o token foi salvo na tabela
         $this->assertDatabaseHas('password_reset_tokens', [
             'email' => 'test@example.com',
@@ -69,10 +68,10 @@ class PasswordResetTest extends TestCase
         ]);
 
         $response->assertStatus(302);
-        
+
         // Verifica que nenhuma notificação foi enviada
         Notification::assertNothingSent();
-        
+
         // Verifica que nenhum token foi criado
         $this->assertDatabaseMissing('password_reset_tokens', [
             'email' => 'nonexistent@example.com',
@@ -83,7 +82,7 @@ class PasswordResetTest extends TestCase
     public function test_password_reset_screen_can_be_rendered_with_valid_token()
     {
         $user = User::factory()->create();
-        
+
         // Cria um token válido
         $token = 'valid-token';
         DB::table('password_reset_tokens')->insert([
@@ -106,7 +105,7 @@ class PasswordResetTest extends TestCase
         $user = User::factory()->create([
             'password' => Hash::make('old-password'),
         ]);
-        
+
         // Cria um token válido
         $token = 'valid-token';
         DB::table('password_reset_tokens')->insert([
@@ -124,11 +123,11 @@ class PasswordResetTest extends TestCase
 
         $response->assertStatus(302);
         $response->assertRedirect('/login');
-        
+
         // Verifica se a senha foi atualizada
         $user->refresh();
         $this->assertTrue(Hash::check('new-password', $user->password));
-        
+
         // Verifica se o token foi removido
         $this->assertDatabaseMissing('password_reset_tokens', [
             'email' => $user->email,
@@ -148,7 +147,7 @@ class PasswordResetTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['email']);
-        
+
         // Verifica que a senha não foi alterada
         $user->refresh();
         $this->assertFalse(Hash::check('new-password', $user->password));
@@ -158,7 +157,7 @@ class PasswordResetTest extends TestCase
     public function test_password_reset_with_expired_token()
     {
         $user = User::factory()->create();
-        
+
         // Cria um token expirado (mais de 60 minutos)
         $token = 'expired-token';
         DB::table('password_reset_tokens')->insert([
@@ -175,7 +174,7 @@ class PasswordResetTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors(['email']);
-        
+
         // Verifica que a senha não foi alterada
         $user->refresh();
         $this->assertFalse(Hash::check('new-password', $user->password));
@@ -185,7 +184,7 @@ class PasswordResetTest extends TestCase
     public function test_password_reset_validation_rules()
     {
         $user = User::factory()->create();
-        
+
         $token = 'valid-token';
         DB::table('password_reset_tokens')->insert([
             'email' => $user->email,
@@ -234,7 +233,7 @@ class PasswordResetTest extends TestCase
     public function test_password_reset_redirects_to_login_with_success_message()
     {
         $user = User::factory()->create();
-        
+
         $token = 'valid-token';
         DB::table('password_reset_tokens')->insert([
             'email' => $user->email,

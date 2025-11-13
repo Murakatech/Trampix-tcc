@@ -2,11 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\Freelancer;
 use App\Models\Company;
+use App\Models\Freelancer;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class RoleSelectionTest extends TestCase
@@ -22,7 +21,7 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Fazer login
@@ -43,13 +42,13 @@ class RoleSelectionTest extends TestCase
         // Criar usuário com apenas perfil empresa
         $user = User::factory()->create();
         $company = Company::factory()->create(['user_id' => $user->id]);
-        
+
         // Fazer login
         $this->actingAs($user);
-        
+
         // Acessar tela de seleção
         $response = $this->get(route('select-role.show'));
-        
+
         // Verificar que a view é exibida
         $response->assertStatus(200);
         $response->assertViewIs('auth.select_role');
@@ -62,13 +61,13 @@ class RoleSelectionTest extends TestCase
     {
         // Criar usuário sem perfis
         $user = User::factory()->create();
-        
+
         // Fazer login
         $this->actingAs($user);
-        
+
         // Acessar tela de seleção
         $response = $this->get(route('select-role.show'));
-        
+
         // Verificar que a view é exibida
         $response->assertStatus(200);
         $response->assertViewIs('auth.select_role');
@@ -85,11 +84,11 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
         $company = Company::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Fazer login
@@ -100,7 +99,7 @@ class RoleSelectionTest extends TestCase
 
         // Verificar redirecionamento para seleção de perfil
         $response->assertRedirect('/select-role');
-        
+
         // Verificar que active_role não foi definido na sessão
         $this->assertNull(session('active_role'));
     }
@@ -121,7 +120,7 @@ class RoleSelectionTest extends TestCase
 
         // Verificar redirecionamento para seleção de perfil (criação)
         $response->assertRedirect('/profile-selection');
-        
+
         // Verificar que active_role não foi definido na sessão
         $this->assertNull(session('active_role'));
     }
@@ -135,11 +134,11 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
         $company = Company::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Autenticar usuário
@@ -163,11 +162,11 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
         $company = Company::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Autenticar usuário
@@ -175,12 +174,12 @@ class RoleSelectionTest extends TestCase
 
         // Selecionar perfil freelancer
         $response = $this->post('/select-role', [
-            'role' => 'freelancer'
+            'role' => 'freelancer',
         ]);
 
         // Verificar redirecionamento para dashboard
         $response->assertRedirect('/dashboard');
-        
+
         // Verificar que active_role foi definido na sessão
         $this->assertEquals('freelancer', session('active_role'));
     }
@@ -194,11 +193,11 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
         $company = Company::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Autenticar usuário
@@ -206,12 +205,12 @@ class RoleSelectionTest extends TestCase
 
         // Selecionar perfil empresa
         $response = $this->post('/select-role', [
-            'role' => 'company'
+            'role' => 'company',
         ]);
 
         // Verificar redirecionamento para dashboard
         $response->assertRedirect('/dashboard');
-        
+
         // Verificar que active_role foi definido na sessão
         $this->assertEquals('company', session('active_role'));
     }
@@ -225,11 +224,11 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
         $company = Company::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Autenticar usuário e definir perfil inicial
@@ -241,7 +240,7 @@ class RoleSelectionTest extends TestCase
 
         // Verificar redirecionamento para seleção de perfil
         $response->assertRedirect('/select-role');
-        
+
         // Verificar que active_role foi removido da sessão
         $this->assertNull(session('active_role'));
     }
@@ -255,7 +254,7 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Autenticar usuário
@@ -266,7 +265,7 @@ class RoleSelectionTest extends TestCase
 
         // Tentar selecionar perfil empresa (que não existe)
         $response = $this->post(route('select-role.select'), [
-            'role' => 'company'
+            'role' => 'company',
         ]);
 
         // Verificar redirecionamento de volta com erro
@@ -283,11 +282,11 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
         $company = Company::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Simular sessão existente com active_role
@@ -301,7 +300,7 @@ class RoleSelectionTest extends TestCase
 
         // Verificar redirecionamento direto para dashboard
         $response->assertRedirect('/dashboard');
-        
+
         // Verificar que active_role foi mantido na sessão
         $this->assertEquals('company', session('active_role'));
     }
@@ -315,11 +314,11 @@ class RoleSelectionTest extends TestCase
         $user = User::factory()->create();
         $freelancer = Freelancer::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
         $company = Company::factory()->create([
             'user_id' => $user->id,
-            'is_active' => true
+            'is_active' => true,
         ]);
 
         // Autenticar usuário e definir perfil ativo

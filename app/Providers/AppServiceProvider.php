@@ -2,9 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\RecommendationService;
 use Illuminate\Foundation\Vite;
 use Illuminate\Support\ServiceProvider;
-use App\Services\RecommendationService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // RecommendationService como singleton para DI
         $this->app->singleton(RecommendationService::class, function ($app) {
-            return new RecommendationService();
+            return new RecommendationService;
         });
     }
 
@@ -28,7 +28,8 @@ class AppServiceProvider extends ServiceProvider
         // file which may not exist in CI, causing errors when rendering
         // views with the @vite directive.
         if (app()->environment('testing')) {
-            app()->bind(Vite::class, fn () => new class {
+            app()->bind(Vite::class, fn () => new class
+            {
                 public function __invoke(...$args)
                 {
                     // Return empty string so Blade @vite() outputs nothing

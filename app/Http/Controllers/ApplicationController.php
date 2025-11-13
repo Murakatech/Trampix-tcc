@@ -13,8 +13,8 @@ class ApplicationController extends Controller
     public function index()
     {
         $freelancer = Auth::user()->freelancer;
-        
-        if (!$freelancer) {
+
+        if (! $freelancer) {
             return redirect()->route('dashboard')->with('error', 'Você precisa completar seu perfil de freelancer primeiro.');
         }
 
@@ -23,12 +23,12 @@ class ApplicationController extends Controller
         // - Ocultar finalizadas com avaliação enviada pelo freelancer
         $applications = Application::with('jobVacancy.company')
             ->where('freelancer_id', $freelancer->id)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('status', '!=', 'rejected')
-                  ->where(function($q2) {
-                      $q2->where('status', '!=', 'ended')
-                         ->orWhereNull('evaluated_by_freelancer_at');
-                  });
+                    ->where(function ($q2) {
+                        $q2->where('status', '!=', 'ended')
+                            ->orWhereNull('evaluated_by_freelancer_at');
+                    });
             })
             ->latest()
             ->get();
@@ -36,9 +36,9 @@ class ApplicationController extends Controller
         // Contagem de rejeições não reconhecidas para mostrar o aviso até o freela apertar "OK"
         $unackRejectedCount = Application::where('freelancer_id', $freelancer->id)
             ->where('status', 'rejected')
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->whereNull('rejected_acknowledged')
-                  ->orWhere('rejected_acknowledged', false);
+                    ->orWhere('rejected_acknowledged', false);
             })
             ->count();
 
@@ -60,9 +60,9 @@ class ApplicationController extends Controller
 
         Application::create([
             'job_vacancy_id' => $jobVacancyId,
-            'freelancer_id'  => $freelancer->id,
-            'cover_letter'   => $request->input('cover_letter'),
-            'status'         => 'pending',
+            'freelancer_id' => $freelancer->id,
+            'cover_letter' => $request->input('cover_letter'),
+            'status' => 'pending',
         ]);
 
         return back()->with('success', 'Candidatura enviada com sucesso!');
@@ -72,21 +72,21 @@ class ApplicationController extends Controller
     public function manage()
     {
         $company = Auth::user()->company;
-        
-        if (!$company) {
+
+        if (! $company) {
             return redirect()->route('dashboard')->with('error', 'Perfil de empresa não encontrado.');
         }
 
         // Buscar todas as candidaturas para vagas da empresa
-        $applications = Application::whereHas('jobVacancy', function($query) use ($company) {
-                $query->where('company_id', $company->id);
-            })
+        $applications = Application::whereHas('jobVacancy', function ($query) use ($company) {
+            $query->where('company_id', $company->id);
+        })
             // Ocultar finalizadas que já foram avaliadas pela empresa (migram para Trabalhos Finalizados)
-            ->where(function($q) {
+            ->where(function ($q) {
                 $q->where('status', '!=', 'ended')
-                  ->orWhere(function($q2) {
-                      $q2->where('status', 'ended')->whereNull('evaluated_by_company_at');
-                  });
+                    ->orWhere(function ($q2) {
+                        $q2->where('status', 'ended')->whereNull('evaluated_by_company_at');
+                    });
             })
             ->with(['jobVacancy', 'freelancer.user'])
             ->orderBy('created_at', 'desc')
@@ -94,16 +94,16 @@ class ApplicationController extends Controller
 
         // Estatísticas das candidaturas
         $stats = [
-            'total' => Application::whereHas('jobVacancy', function($query) use ($company) {
+            'total' => Application::whereHas('jobVacancy', function ($query) use ($company) {
                 $query->where('company_id', $company->id);
             })->count(),
-            'pending' => Application::whereHas('jobVacancy', function($query) use ($company) {
+            'pending' => Application::whereHas('jobVacancy', function ($query) use ($company) {
                 $query->where('company_id', $company->id);
             })->where('status', 'pending')->count(),
-            'accepted' => Application::whereHas('jobVacancy', function($query) use ($company) {
+            'accepted' => Application::whereHas('jobVacancy', function ($query) use ($company) {
                 $query->where('company_id', $company->id);
             })->where('status', 'accepted')->count(),
-            'rejected' => Application::whereHas('jobVacancy', function($query) use ($company) {
+            'rejected' => Application::whereHas('jobVacancy', function ($query) use ($company) {
                 $query->where('company_id', $company->id);
             })->where('status', 'rejected')->count(),
         ];
@@ -121,26 +121,27 @@ class ApplicationController extends Controller
             ->with(['applications.freelancer.user'])
             ->find($id);
 
-        if (!$jobVacancy) {
+        if (! $jobVacancy) {
             abort(404, 'Vaga não encontrada ou não pertence à empresa.');
         }
 
         // Compatibilidade com a view
         $applications = $jobVacancy->applications;
+
         return view('applications.by_vacancy', [
             'jobVacancy' => $jobVacancy,
             'vacancy' => $jobVacancy,
             'applications' => $applications,
         ]);
     }
-    
+
     // Atualizar status da candidatura (empresa)
     public function updateStatus(Request $request, \App\Models\Application $application)
     {
         $request->validate(['status' => 'required|in:pending,accepted,rejected,ended']);
 
         $companyId = Auth::user()?->company?->id;
-        if (!$companyId || $application->jobVacancy->company_id !== $companyId) {
+        if (! $companyId || $application->jobVacancy->company_id !== $companyId) {
             return back()->with('error', 'Você não tem permissão para alterar esta candidatura.');
         }
 
@@ -153,7 +154,7 @@ class ApplicationController extends Controller
             'rejected' => 'Rejeitado',
             'ended' => 'Finalizado',
         ];
-        
+
         $application->update(['status' => $newStatus]);
 
         // Mensagem customizada para finalização de contrato
@@ -164,6 +165,7 @@ class ApplicationController extends Controller
 
         $oldLabel = $statusLabels[$oldStatus] ?? ucfirst($oldStatus);
         $newLabel = $statusLabels[$newStatus] ?? ucfirst($newStatus);
+
         return back()->with('success', "Status alterado de '{$oldLabel}' para '{$newLabel}' com sucesso!");
     }
 
@@ -176,9 +178,9 @@ class ApplicationController extends Controller
 
         if ($user?->company) {
             $company = $user->company;
-            $applications = Application::whereHas('jobVacancy', function($q) use ($company) {
-                    $q->where('company_id', $company->id);
-                })
+            $applications = Application::whereHas('jobVacancy', function ($q) use ($company) {
+                $q->where('company_id', $company->id);
+            })
                 ->where('status', 'ended')
                 ->whereNotNull('evaluated_by_company_at')
                 ->with(['jobVacancy.company', 'freelancer.user'])
@@ -191,11 +193,11 @@ class ApplicationController extends Controller
         if ($user?->freelancer) {
             $freelancer = $user->freelancer;
             $applications = Application::where('freelancer_id', $freelancer->id)
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->where('status', 'rejected')
-                      ->orWhere(function($q2) {
-                          $q2->where('status', 'ended')->whereNotNull('evaluated_by_freelancer_at');
-                      });
+                        ->orWhere(function ($q2) {
+                            $q2->where('status', 'ended')->whereNotNull('evaluated_by_freelancer_at');
+                        });
                 })
                 ->with(['jobVacancy.company.user'])
                 ->latest()
@@ -213,7 +215,7 @@ class ApplicationController extends Controller
     public function acknowledgeAllRejections()
     {
         $user = Auth::user();
-        if (!$user?->freelancer) {
+        if (! $user?->freelancer) {
             abort(403, 'Apenas freelancers podem reconhecer rejeições.');
         }
 
@@ -249,7 +251,7 @@ class ApplicationController extends Controller
     public function resign(\App\Models\Application $application)
     {
         $user = Auth::user();
-        if (!$user?->freelancer || $application->freelancer_id !== $user->freelancer->id) {
+        if (! $user?->freelancer || $application->freelancer_id !== $user->freelancer->id) {
             return back()->with('error', 'Você não tem permissão para encerrar esta parceria.');
         }
 
@@ -258,6 +260,7 @@ class ApplicationController extends Controller
         }
 
         $application->update(['status' => 'ended']);
+
         return back()->with('success', 'Parceria finalizada com sucesso!');
     }
 

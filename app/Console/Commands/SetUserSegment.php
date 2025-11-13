@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
-use App\Models\User;
 use App\Models\Freelancer;
 use App\Models\Preference;
 use App\Models\Segment;
+use App\Models\User;
+use Illuminate\Console\Command;
 
 class SetUserSegment extends Command
 {
@@ -28,14 +28,16 @@ class SetUserSegment extends Command
         $segmentName = $this->argument('segmentName');
 
         $user = User::where('email', $email)->first();
-        if (!$user) {
+        if (! $user) {
             $this->error("Usuário não encontrado: {$email}");
+
             return self::FAILURE;
         }
 
         $freelancer = Freelancer::where('user_id', $user->id)->first();
-        if (!$freelancer) {
+        if (! $freelancer) {
             $this->error('Este usuário não possui perfil de freelancer.');
+
             return self::FAILURE;
         }
 
@@ -43,22 +45,23 @@ class SetUserSegment extends Command
         $segment = null;
         if ($segmentName) {
             $segment = Segment::where('name', $segmentName)->first();
-            if (!$segment) {
+            if (! $segment) {
                 $segment = Segment::where('name', 'like', "%{$segmentName}%").first();
             }
         }
-        if (!$segment) {
+        if (! $segment) {
             // fallback para um segmento existente
             $segment = Segment::orderBy('id')->first();
         }
-        if (!$segment) {
+        if (! $segment) {
             $this->error('Nenhum segmento encontrado na base de dados. Execute os seeders primeiro.');
+
             return self::FAILURE;
         }
 
         // Atualiza freelancer.segment_id se necessário
         $changed = false;
-        if (!$freelancer->segment_id) {
+        if (! $freelancer->segment_id) {
             $freelancer->segment_id = $segment->id;
             $freelancer->save();
             $changed = true;
@@ -66,7 +69,7 @@ class SetUserSegment extends Command
 
         // Atualiza preferências para usar IDs de segmento
         $pref = Preference::where('user_id', $user->id)->first();
-        if (!$pref) {
+        if (! $pref) {
             $pref = new Preference([
                 'user_id' => $user->id,
                 'role' => 'freelancer',
@@ -86,11 +89,21 @@ class SetUserSegment extends Command
             // Se vierem como strings, substitui por array de ids com o segmento escolhido
             $pref->segments = [$segment->id];
             $pref->role = $pref->role ?: 'freelancer';
-            if ($pref->desired_roles === null) $pref->desired_roles = [];
-            if ($pref->skills === null) $pref->skills = [];
-            if ($pref->seniority_min === null) $pref->seniority_min = 0;
-            if ($pref->seniority_max === null) $pref->seniority_max = 100;
-            if ($pref->remote_ok === null) $pref->remote_ok = true;
+            if ($pref->desired_roles === null) {
+                $pref->desired_roles = [];
+            }
+            if ($pref->skills === null) {
+                $pref->skills = [];
+            }
+            if ($pref->seniority_min === null) {
+                $pref->seniority_min = 0;
+            }
+            if ($pref->seniority_max === null) {
+                $pref->seniority_max = 100;
+            }
+            if ($pref->remote_ok === null) {
+                $pref->remote_ok = true;
+            }
             $pref->save();
         }
 

@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\JobVacancy;
 use App\Models\Application;
+use App\Models\JobVacancy;
 
 class CompanyDashboardController extends Controller
 {
@@ -16,7 +15,7 @@ class CompanyDashboardController extends Controller
         $user = auth()->user();
         $company = $user->company;
 
-        if (!$company) {
+        if (! $company) {
             return redirect()->route('dashboard')->with('error', 'Perfil de empresa não encontrado.');
         }
 
@@ -31,15 +30,15 @@ class CompanyDashboardController extends Controller
             'total' => $company->jobVacancies()->count(),
             'open' => $company->jobVacancies()->where('status', 'open')->count(),
             'closed' => $company->jobVacancies()->where('status', 'closed')->count(),
-            'total_applications' => Application::whereHas('jobVacancy', function($query) use ($company) {
+            'total_applications' => Application::whereHas('jobVacancy', function ($query) use ($company) {
                 $query->where('company_id', $company->id);
             })->count(),
         ];
 
         // Candidaturas recentes para vagas da empresa
-        $recentApplications = Application::whereHas('jobVacancy', function($query) use ($company) {
-                $query->where('company_id', $company->id);
-            })
+        $recentApplications = Application::whereHas('jobVacancy', function ($query) use ($company) {
+            $query->where('company_id', $company->id);
+        })
             ->with(['jobVacancy', 'freelancer.user'])
             ->orderBy('created_at', 'desc')
             ->limit(5)

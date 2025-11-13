@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('companies', function (Blueprint $table) {
-            if (!Schema::hasColumn('companies', 'segment_id')) {
+            if (! Schema::hasColumn('companies', 'segment_id')) {
                 $table->foreignId('segment_id')
                     ->nullable()
                     ->constrained('segments')
@@ -18,7 +18,7 @@ return new class extends Migration
         });
 
         Schema::table('freelancers', function (Blueprint $table) {
-            if (!Schema::hasColumn('freelancers', 'segment_id')) {
+            if (! Schema::hasColumn('freelancers', 'segment_id')) {
                 $table->foreignId('segment_id')
                     ->nullable()
                     ->constrained('segments')

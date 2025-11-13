@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Freelancer;
+use App\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class FreelancerPolicy
@@ -29,6 +29,7 @@ class FreelancerPolicy
         if ($freelancer->is_active) {
             return true;
         }
+
         return $user && $freelancer->user_id === $user->id;
     }
 

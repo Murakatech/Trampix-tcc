@@ -28,7 +28,7 @@ class ProfileCreationFormTest extends TestCase
     {
         // Este teste verifica se o arquivo de view contém o campo display_name
         $viewContent = file_get_contents(resource_path('views/companies/create.blade.php'));
-        
+
         $this->assertStringContainsString('name="display_name"', $viewContent);
         $this->assertStringContainsString('Nome da Empresa', $viewContent);
     }
@@ -46,16 +46,16 @@ class ProfileCreationFormTest extends TestCase
                 'whatsapp' => '(16) 99999-9999',
                 'location' => 'São Paulo, SP',
                 'hourly_rate' => 75.00,
-                'availability' => 'Disponível para projetos de 20h/semana'
+                'availability' => 'Disponível para projetos de 20h/semana',
             ]);
 
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('success', 'Perfil de freelancer criado com sucesso!');
-        
+
         $this->assertDatabaseHas('freelancers', [
             'user_id' => $user->id,
             'display_name' => 'João Silva Dev',
-            'bio' => 'Desenvolvedor experiente em Laravel e Vue.js'
+            'bio' => 'Desenvolvedor experiente em Laravel e Vue.js',
         ]);
     }
 
@@ -71,16 +71,16 @@ class ProfileCreationFormTest extends TestCase
                 'website' => 'https://techsolutions.com',
                 'phone' => '(11) 3333-4444',
                 'employees_count' => 25,
-                'founded_year' => 2020
+                'founded_year' => 2020,
             ]);
 
         $response->assertRedirect(route('dashboard'));
         $response->assertSessionHas('success', 'Perfil de empresa criado com sucesso!');
-        
+
         $this->assertDatabaseHas('companies', [
             'user_id' => $user->id,
             'name' => 'Tech Solutions Ltda',
-            'display_name' => 'Tech Solutions Ltda'
+            'display_name' => 'Tech Solutions Ltda',
         ]);
     }
 
@@ -91,7 +91,7 @@ class ProfileCreationFormTest extends TestCase
 
         $response = $this->actingAs($user)
             ->post(route('freelancers.store'), [
-                'bio' => 'Desenvolvedor experiente'
+                'bio' => 'Desenvolvedor experiente',
                 // display_name omitido intencionalmente
             ]);
 
@@ -105,7 +105,7 @@ class ProfileCreationFormTest extends TestCase
 
         $response = $this->actingAs($user)
             ->post(route('companies.store'), [
-                'description' => 'Empresa de tecnologia'
+                'description' => 'Empresa de tecnologia',
                 // display_name omitido intencionalmente
             ]);
 
