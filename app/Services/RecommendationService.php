@@ -181,7 +181,7 @@ class RecommendationService
             $scored = [];
             foreach ($candidates as $job) {
                 $segmentsTarget = $this->segmentsForJob($job);
-                $faixaT = ['min' => $job->salary_min, 'max' => $job->salary_max];
+        $faixaT = ['min' => $job->salary_min, 'max' => $job->salary_max];
                 $modalT = ['location_type' => $job->location_type, 'location' => $job->company?->location];
                 $confidence = $this->sinalConfiancaForTarget($job);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
@@ -216,16 +216,15 @@ class RecommendationService
             $merged = array_merge($similar, $others);
             $top = array_slice($merged, 0, $topN);
             foreach ($top as $item) {
-                Recommendation::create([
-                    'subject_type' => $subjectType,
-                    'subject_id' => $subjectId,
-                    'target_type' => 'job',
-                    'target_id' => $item['target']->id,
-                    'score' => $item['score'],
-                    'batch_date' => $today,
-                    'status' => 'pending',
-                    'created_at' => Carbon::now(),
-                ]);
+                \App\Models\FreelancerJobRecommendation::updateOrCreate(
+                    ['freelancer_id' => $subjectId, 'job_vacancy_id' => $item['target']->id],
+                    [
+                        'score' => $item['score'],
+                        'batch_date' => $today,
+                        'status' => 'pending',
+                        'created_at' => Carbon::now(),
+                    ]
+                );
             }
 
             return count($top);
@@ -268,16 +267,15 @@ class RecommendationService
             $merged = array_merge($similar, $others);
             $top = array_slice($merged, 0, $topN);
             foreach ($top as $item) {
-                Recommendation::create([
-                    'subject_type' => $subjectType,
-                    'subject_id' => $subjectId,
-                    'target_type' => 'freelancer',
-                    'target_id' => $item['target']->id,
-                    'score' => $item['score'],
-                    'batch_date' => $today,
-                    'status' => 'pending',
-                    'created_at' => Carbon::now(),
-                ]);
+                \App\Models\CompanyFreelancerRecommendation::updateOrCreate(
+                    ['company_id' => $subjectId, 'freelancer_id' => $item['target']->id],
+                    [
+                        'score' => $item['score'],
+                        'batch_date' => $today,
+                        'status' => 'pending',
+                        'created_at' => Carbon::now(),
+                    ]
+                );
             }
 
             return count($top);
@@ -377,10 +375,21 @@ class RecommendationService
      */
     public function nextCardFor(User $user): ?Recommendation
     {
-        return Recommendation::forUser($user)
-            ->where('status', 'pending')
-            ->orderByDesc('score')
-            ->first();
+        if ($user->isFreelancer() && $user->freelancer) {
+            return \App\Models\FreelancerJobRecommendation::query()
+                ->where('freelancer_id', $user->freelancer->id)
+                ->where('status', 'pending')
+                ->orderByDesc('score')
+                ->first();
+        }
+        if ($user->isCompany() && $user->company) {
+            return \App\Models\CompanyFreelancerRecommendation::query()
+                ->where('company_id', $user->company->id)
+                ->where('status', 'pending')
+                ->orderByDesc('score')
+                ->first();
+        }
+        return null;
     }
 
     /**
@@ -388,7 +397,21 @@ class RecommendationService
      */
     public function decide(User $user, int $recommendationId, string $action, ?int $jobId = null): array
     {
-        $rec = Recommendation::forUser($user)->where('id', $recommendationId)->first();
+        $rec = null;
+        $type = null;
+        if ($user->isFreelancer() && $user->freelancer) {
+            $rec = \App\Models\FreelancerJobRecommendation::query()
+                ->where('id', $recommendationId)
+                ->where('freelancer_id', $user->freelancer->id)
+                ->first();
+            $type = 'fjr';
+        } elseif ($user->isCompany() && $user->company) {
+            $rec = \App\Models\CompanyFreelancerRecommendation::query()
+                ->where('id', $recommendationId)
+                ->where('company_id', $user->company->id)
+                ->first();
+            $type = 'cfr';
+        }
         if (! $rec) {
             return ['ok' => false, 'match' => false, 'error' => 'recommendation_not_found'];
         }
@@ -412,17 +435,15 @@ class RecommendationService
         $rec->save();
         $hasMatch = false;
         if ($action === 'liked') {
-            if ($rec->target_type === 'job' && $rec->subject_type === 'freelancer') {
-                $freelancerId = $rec->subject_id;
-                $jobId = $rec->target_id;
+            if ($type === 'fjr') {
+                $freelancerId = $rec->freelancer_id;
+                $jobId = $rec->job_vacancy_id;
                 $job = JobVacancy::find($jobId);
                 if ($job && $job->company) {
                     $companyId = $job->company->id;
-                    $inverseLiked = Recommendation::query()
-                        ->where('subject_type', 'company')
-                        ->where('subject_id', $companyId)
-                        ->where('target_type', 'freelancer')
-                        ->where('target_id', $freelancerId)
+                    $inverseLiked = \App\Models\CompanyFreelancerRecommendation::query()
+                        ->where('company_id', $companyId)
+                        ->where('freelancer_id', $freelancerId)
                         ->where('status', 'liked')
                         ->exists();
                     if ($inverseLiked) {
@@ -440,17 +461,14 @@ class RecommendationService
                         $hasMatch = true;
                     }
                 }
-            } elseif ($rec->target_type === 'freelancer' && $rec->subject_type === 'company') {
-                $companyId = $rec->subject_id;
-                $freelancerId = $rec->target_id;
-                // Usar jobId do contexto (selecionado na UI); fallback: primeira vaga da empresa
+            } elseif ($type === 'cfr') {
+                $companyId = $rec->company_id;
+                $freelancerId = $rec->freelancer_id;
                 $resolvedJobId = $jobId ?: JobVacancy::query()->where('company_id', $companyId)->value('id');
                 if ($resolvedJobId) {
-                    $inverseLiked = Recommendation::query()
-                        ->where('subject_type', 'freelancer')
-                        ->where('subject_id', $freelancerId)
-                        ->where('target_type', 'job')
-                        ->where('target_id', $resolvedJobId)
+                    $inverseLiked = \App\Models\FreelancerJobRecommendation::query()
+                        ->where('freelancer_id', $freelancerId)
+                        ->where('job_vacancy_id', $resolvedJobId)
                         ->where('status', 'liked')
                         ->exists();
                     if ($inverseLiked) {

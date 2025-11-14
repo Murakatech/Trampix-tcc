@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Freelancer;
 use App\Models\JobVacancy;
-use App\Models\Recommendation;
+use App\Models\FreelancerJobRecommendation;
 use Illuminate\Http\Request;
 
 class MatchmakingController extends Controller
@@ -88,11 +88,9 @@ class MatchmakingController extends Controller
         ]);
 
         $freelancerId = $user->freelancer->id;
-        $rec = Recommendation::firstOrCreate([
-            'subject_type' => 'freelancer',
-            'subject_id' => $freelancerId,
-            'target_type' => 'job',
-            'target_id' => (int) $validated['job_id'],
+        $rec = FreelancerJobRecommendation::firstOrCreate([
+            'freelancer_id' => $freelancerId,
+            'job_vacancy_id' => (int) $validated['job_id'],
         ], [
             'score' => 0,
             'batch_date' => now()->toDateString(),

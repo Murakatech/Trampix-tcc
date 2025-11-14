@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\JobVacancy;
 use App\Models\Recommendation;
+use App\Models\FreelancerJobRecommendation;
+use App\Models\CompanyFreelancerRecommendation;
 use App\Services\RecommendationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -174,10 +176,10 @@ class ConnectController extends Controller
         return response()->json($result);
     }
 
-    private function mapRecommendationToCard(Recommendation $rec): array
+    private function mapRecommendationToCard($rec): array
     {
-        if ($rec->target_type === 'job') {
-            $job = $rec->targetJob; // relation
+        if ($rec instanceof FreelancerJobRecommendation) {
+            $job = $rec->job;
             $companyName = $job?->company?->display_name ?: ($job?->company?->name ?: 'Empresa');
 
             return [
@@ -190,16 +192,16 @@ class ConnectController extends Controller
                     'company' => $companyName,
                     'location' => $job?->company?->location ?: '-',
                     'mode' => $job?->location_type ?: '-',
-                    'range' => $job?->salary_range ?: '-',
-                    'skills' => [], // opcionalmente re-extrair do texto
+                    'range' => ($job && $job->salary_min && $job->salary_max) ? ('R$ '.number_format((float)$job->salary_min, 2, ',', '.').' - R$ '.number_format((float)$job->salary_max, 2, ',', '.')) : '-',
+                    'skills' => [],
                     'summary' => Str::limit($job?->description ?: '', 180),
                     'job_url' => $job ? route('vagas.show', $job->id) : null,
                 ],
             ];
         }
 
-        if ($rec->target_type === 'freelancer') {
-            $f = $rec->targetFreelancer;
+        if ($rec instanceof CompanyFreelancerRecommendation) {
+            $f = $rec->freelancer;
             $skills = $f?->skills()->pluck('name')->all() ?? [];
 
             return [
