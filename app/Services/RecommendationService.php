@@ -168,58 +168,23 @@ class RecommendationService
         ];
 
         if ($user->isFreelancer() && $user->freelancer) {
-            $subjectType = 'freelancer';
             $subjectId = $user->freelancer->id;
-            // Inclui TODAS as vagas ativas (não aplicadas), priorizando por score de segmento
             $query = JobVacancy::query()->active()->notAppliedBy($subjectId);
-            // Não filtrar por desired_roles aqui para evitar excluir vagas de outros segmentos.
-            // Em vez disso, usamos desired_roles apenas como um sinal positivo dentro do score (boost leve).
-            $desired = collect($pref?->desired_roles ?? [])->filter()->map(function ($v) {
-                return Str::lower(trim((string) $v));
-            })->values()->all();
-            $candidates = $query->limit(500)->get();
-            $scored = [];
-            foreach ($candidates as $job) {
-                $segmentsTarget = $this->segmentsForJob($job);
-        $faixaT = ['min' => $job->salary_min, 'max' => $job->salary_max];
-                $modalT = ['location_type' => $job->location_type, 'location' => $job->company?->location];
-                $confidence = $this->sinalConfiancaForTarget($job);
-                $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
-                // Boost leve se a categoria da vaga estiver nos desired_roles do usuário
-                $catName = Str::lower(trim((string) ($job->category_id ? optional(\App\Models\Category::find($job->category_id))->name : '')));
-                if ($catName && in_array($catName, $desired)) {
-                    $score = min(1.0, $score + 0.05);
-                }
-                $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
-                if ($segmentOnly && $segMatch <= 0) {
-                    continue;
-                }
-                $existsRecent = Recommendation::query()
-                    ->where('subject_type', $subjectType)
-                    ->where('subject_id', $subjectId)
-                    ->where('target_type', 'job')
-                    ->where('target_id', $job->id)
-                    ->where('created_at', '>=', Carbon::now()->subDays(7))
-                    ->exists();
-                if ($existsRecent) {
-                    continue;
-                }
-                $scored[] = ['target' => $job, 'score' => $score, 'seg' => $segMatch];
+            if (! empty($segmentsUser)) {
+                $query->where(function ($q) use ($segmentsUser) {
+                    $q->whereHas('category', function ($cq) use ($segmentsUser) {
+                        $cq->whereIn('segment_id', $segmentsUser);
+                    })->orWhereHas('company', function ($compQ) use ($segmentsUser) {
+                        $compQ->whereIn('segment_id', $segmentsUser);
+                    });
+                });
             }
-            // Primeiro, similares de segmento (seg>0), depois demais
-            $similar = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) > 0));
-            $others = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) <= 0));
-            usort($similar, fn ($a, $b) => $b['score'] <=> $a['score']);
-            usort($others, fn ($a, $b) => $b['score'] <=> $a['score']);
-            // Aplica corte 0.35 apenas nos similares; para os outros, deixa preencher até topN
-            $similar = array_values(array_filter($similar, fn ($x) => $x['score'] >= 0.35));
-            $merged = array_merge($similar, $others);
-            $top = array_slice($merged, 0, $topN);
-            foreach ($top as $item) {
+            $candidates = $query->inRandomOrder()->limit($topN)->get();
+            foreach ($candidates as $job) {
                 \App\Models\FreelancerJobRecommendation::updateOrCreate(
-                    ['freelancer_id' => $subjectId, 'job_vacancy_id' => $item['target']->id],
+                    ['freelancer_id' => $subjectId, 'job_vacancy_id' => $job->id],
                     [
-                        'score' => $item['score'],
+                        'score' => 0.0,
                         'batch_date' => $today,
                         'status' => 'pending',
                         'created_at' => Carbon::now(),
@@ -227,50 +192,23 @@ class RecommendationService
                 );
             }
 
-            return count($top);
+            return $candidates->count();
         }
 
         if ($user->isCompany() && $user->company) {
-            $subjectType = 'company';
             $subjectId = $user->company->id;
             $query = Freelancer::query()->where('is_active', true);
-            // Não filtra apenas pelos segmentos; considera todos e pontua por segmentos
-            $candidates = $query->limit(500)->get();
-            $scored = [];
-            foreach ($candidates as $freelancer) {
-                $segmentsTarget = $this->segmentsForFreelancer($freelancer);
-                $faixaT = ['min' => null, 'max' => null];
-                $modalT = ['location' => $freelancer->location, 'location_type' => null];
-                $confidence = $this->sinalConfiancaForTarget($freelancer);
-                $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
-                $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
-                if ($segmentOnly && $segMatch <= 0) {
-                    continue;
-                }
-                $existsRecent = Recommendation::query()
-                    ->where('subject_type', $subjectType)
-                    ->where('subject_id', $subjectId)
-                    ->where('target_type', 'freelancer')
-                    ->where('target_id', $freelancer->id)
-                    ->where('created_at', '>=', Carbon::now()->subDays(7))
-                    ->exists();
-                if ($existsRecent) {
-                    continue;
-                }
-                $scored[] = ['target' => $freelancer, 'score' => $score, 'seg' => $segMatch];
+            if (! empty($segmentsUser)) {
+                $query->whereHas('segments', function ($q) use ($segmentsUser) {
+                    $q->whereIn('segments.id', $segmentsUser);
+                });
             }
-            $similar = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) > 0));
-            $others = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) <= 0));
-            usort($similar, fn ($a, $b) => $b['score'] <=> $a['score']);
-            usort($others, fn ($a, $b) => $b['score'] <=> $a['score']);
-            $similar = array_values(array_filter($similar, fn ($x) => $x['score'] >= 0.35));
-            $merged = array_merge($similar, $others);
-            $top = array_slice($merged, 0, $topN);
-            foreach ($top as $item) {
+            $candidates = $query->inRandomOrder()->limit($topN)->get();
+            foreach ($candidates as $freelancer) {
                 \App\Models\CompanyFreelancerRecommendation::updateOrCreate(
-                    ['company_id' => $subjectId, 'freelancer_id' => $item['target']->id],
+                    ['company_id' => $subjectId, 'freelancer_id' => $freelancer->id],
                     [
-                        'score' => $item['score'],
+                        'score' => 0.0,
                         'batch_date' => $today,
                         'status' => 'pending',
                         'created_at' => Carbon::now(),
@@ -278,7 +216,7 @@ class RecommendationService
                 );
             }
 
-            return count($top);
+            return $candidates->count();
         }
 
         return 0;
@@ -302,72 +240,34 @@ class RecommendationService
         $today = Carbon::today();
         // Substituir segmentos do usuário pelos segmentos inferidos da VAGA selecionada
         $segmentsUser = $this->segmentsForJob($job);
-        $faixaU = ['min' => null, 'max' => null];
-        $modalU = ['remote_ok' => false, 'radius_km' => null, 'location' => $company->location];
 
         // Limpar recomendações pendentes para evitar mistura de contexto
-        Recommendation::query()
-            ->where('subject_type', 'company')
-            ->where('subject_id', $company->id)
+        \App\Models\CompanyFreelancerRecommendation::query()
+            ->where('company_id', $company->id)
             ->where('status', 'pending')
             ->delete();
 
-        $subjectType = 'company';
         $subjectId = $company->id;
-
-        $candidates = Freelancer::query()->where('is_active', true)->limit(500)->get();
-        $scored = [];
-        foreach ($candidates as $freelancer) {
-            $segmentsTarget = $this->segmentsForFreelancer($freelancer);
-            $faixaT = ['min' => null, 'max' => null];
-            $modalT = ['location' => $freelancer->location, 'location_type' => null];
-            $confidence = $this->sinalConfiancaForTarget($freelancer);
-            $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);
-            $segMatch = $this->jaccard($segmentsUser, $segmentsTarget);
-            if ($segmentOnly && $segMatch <= 0) {
-                continue;
-            }
-            $scored[] = ['target' => $freelancer, 'score' => $score, 'seg' => $segMatch];
+        $query = Freelancer::query()->where('is_active', true);
+        if (! empty($segmentsUser)) {
+            $query->whereHas('segments', function ($q) use ($segmentsUser) {
+                $q->whereIn('segments.id', $segmentsUser);
+            });
         }
-
-        $similar = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) > 0));
-        $others = array_values(array_filter($scored, fn ($x) => ($x['seg'] ?? 0) <= 0));
-        usort($similar, fn ($a, $b) => $b['score'] <=> $a['score']);
-        usort($others, fn ($a, $b) => $b['score'] <=> $a['score']);
-        $similar = array_values(array_filter($similar, fn ($x) => $x['score'] >= 0.35));
-        $merged = array_merge($similar, $others);
-        $top = array_slice($merged, 0, $topN);
-        foreach ($top as $item) {
-            // Reativar recomendação existente (qualquer status) ou criar nova, para garantir cards no contexto da vaga
-            $existing = Recommendation::query()
-                ->where('subject_type', $subjectType)
-                ->where('subject_id', $subjectId)
-                ->where('target_type', 'freelancer')
-                ->where('target_id', $item['target']->id)
-                ->orderByDesc('created_at')
-                ->first();
-            if ($existing) {
-                $existing->score = $item['score'];
-                $existing->batch_date = $today;
-                $existing->status = 'pending';
-                $existing->decided_at = null;
-                $existing->created_at = Carbon::now();
-                $existing->save();
-            } else {
-                Recommendation::create([
-                    'subject_type' => $subjectType,
-                    'subject_id' => $subjectId,
-                    'target_type' => 'freelancer',
-                    'target_id' => $item['target']->id,
-                    'score' => $item['score'],
+        $top = $query->inRandomOrder()->limit($topN)->get();
+        foreach ($top as $freelancer) {
+            \App\Models\CompanyFreelancerRecommendation::updateOrCreate(
+                ['company_id' => $subjectId, 'freelancer_id' => $freelancer->id],
+                [
+                    'score' => 0.0,
                     'batch_date' => $today,
                     'status' => 'pending',
                     'created_at' => Carbon::now(),
-                ]);
-            }
+                ]
+            );
         }
 
-        return count($top);
+        return $top->count();
     }
 
     /**
@@ -379,14 +279,14 @@ class RecommendationService
             return \App\Models\FreelancerJobRecommendation::query()
                 ->where('freelancer_id', $user->freelancer->id)
                 ->where('status', 'pending')
-                ->orderByDesc('score')
+                ->inRandomOrder()
                 ->first();
         }
         if ($user->isCompany() && $user->company) {
             return \App\Models\CompanyFreelancerRecommendation::query()
                 ->where('company_id', $user->company->id)
                 ->where('status', 'pending')
-                ->orderByDesc('score')
+                ->inRandomOrder()
                 ->first();
         }
         return null;

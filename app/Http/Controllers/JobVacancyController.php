@@ -31,27 +31,11 @@ class JobVacancyController extends Controller
 
         // Cache dos dados de filtros (válido por 30 minutos)
         $filterData = Cache::remember('vagas_filter_data', 1800, function () {
-            // Todas as categorias cadastradas no sistema (ordenadas por nome)
-            $allCategoryNames = Category::orderBy('name')->pluck('name')->toArray();
-
-            // Complemento com categorias legadas existentes nas vagas (strings antigas)
-            $namesFromLegacy = JobVacancy::where('status', 'active')
-                ->whereNotNull('category')
-                ->distinct()
-                ->pluck('category')
-                ->toArray();
-
-            // Disponibilizar no dropdown: todas cadastradas + legadas não cadastradas
-            $availableCategories = collect($allCategoryNames)
-                ->merge($namesFromLegacy)
-                ->unique()
-                ->sort()
-                ->values();
+            $availableCategories = Category::orderBy('name')->get();
 
             return [
                 'availableCategories' => $availableCategories,
                 'locationTypes' => ['Presencial', 'Remoto', 'Híbrido'],
-                // Lista de segmentos disponíveis para filtro
                 'segments' => Segment::where('active', true)->orderBy('name')->select('id', 'name')->get(),
             ];
         });
@@ -64,7 +48,7 @@ class JobVacancyController extends Controller
             'category:id,name,segment_id',
             'category.segment:id,name',
         ])
-            ->select(['id', 'title', 'description', 'requirements', 'category', 'category_id', 'location_type', 'salary_range', 'status', 'company_id', 'created_at'])
+            ->select(['id', 'title', 'description', 'requirements', 'category_id', 'location_type', 'salary_range', 'status', 'company_id', 'created_at'])
             ->publicList()
             ->orderBy('created_at', 'desc');
 
@@ -78,17 +62,10 @@ class JobVacancyController extends Controller
             }
         }
 
-        // Filtro por categorias
-        // Suporta múltiplas seleções via "categories[]" e seleção simples via "category"
-        if ($request->filled('categories') || $request->filled('category')) {
-            $categories = collect((array) $request->get('categories', []));
-            if ($request->filled('category')) {
-                $categories = $categories->merge([(string) $request->get('category')]);
-            }
-            $categories = $categories->filter()->unique()->values()->all();
-            if (! empty($categories)) {
-                $query->filterCategories($categories);
-            }
+        // Filtro por categoria via category_id
+        if ($request->filled('category_id')) {
+            $query->where('category_id', (int) $request->category_id);
+            $cacheKey .= '_cat_'.(int) $request->category_id;
         }
 
         // Filtro por segmento (novo)
@@ -133,7 +110,7 @@ class JobVacancyController extends Controller
 
         // Cache da página por 10 minutos se não houver filtros específicos
         // Evitar cache compartilhado para freelancers autenticados (lista depende do usuário)
-        if (! $request->hasAny(['categories', 'location_type', 'search'])
+        if (! $request->hasAny(['category_id', 'location_type', 'search'])
             && (! Auth::check() || ! Gate::allows('isFreelancer'))) {
             $vagas = Cache::remember($cacheKey, 600, function () use ($query) {
                 return $query->paginate(12);
@@ -142,7 +119,7 @@ class JobVacancyController extends Controller
 
         return view('vagas.index', array_merge([
             'vagas' => $vagas,
-            'selectedCategories' => (array) $request->get('categories', $request->filled('category') ? [$request->get('category')] : []),
+            'selectedCategoryId' => $request->get('category_id'),
             'selectedLocationType' => $request->get('location_type'),
             'search' => $request->get('search'),
         ], $filterData));
@@ -156,7 +133,8 @@ class JobVacancyController extends Controller
         $categories = Category::where('segment_id', $segment->id)
             ->where('active', true)
             ->orderBy('name')
-            ->pluck('name');
+            ->select('id', 'name')
+            ->get();
 
         return response()->json([
             'segment' => [

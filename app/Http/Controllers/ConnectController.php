@@ -27,8 +27,19 @@ class ConnectController extends Controller
             session()->forget('connect_cards_shown');
         }
 
-        // Fluxo para empresa: seleção de vaga antes de ver cards
-        if ($user && $user->isCompany() && $user->company) {
+        // Fluxo baseado no perfil ATIVO na sessão
+        $activeRole = session('active_role') ?? null;
+        if (! $activeRole && $user) {
+            if ($user->isFreelancer() && $user->freelancer) {
+                $activeRole = 'freelancer';
+                session(['active_role' => 'freelancer']);
+            } elseif ($user->isCompany() && $user->company) {
+                $activeRole = 'company';
+                session(['active_role' => 'company']);
+            }
+        }
+        // Empresa: seleção de vaga antes de ver cards, apenas quando active_role === 'company'
+        if ($user && $activeRole === 'company' && $user->isCompany() && $user->company) {
             $company = $user->company;
             $selectedJobId = (int) ($request->query('job_id') ?? 0);
             if ($selectedJobId > 0) {
@@ -59,9 +70,16 @@ class ConnectController extends Controller
                 session()->forget('connect_cards_shown');
             }
         } else {
-            // Fluxo padrão: limpar qualquer contexto de vaga
+            // Fluxo freelancer ou sem empresa: limpar qualquer contexto de vaga
             session()->forget('connect_job_id');
             session()->forget('connect_cards_shown');
+            try {
+                $segmentOnly = (session('connect_filter') === 'segment');
+                if ($user && $activeRole === 'freelancer' && $user->isFreelancer() && $user->freelancer) {
+                    $service->generateDailyBatchFor($user, 50, $segmentOnly);
+                }
+            } catch (\Throwable $e) {
+            }
         }
 
         // Notificações de novos matches desde a última visita
@@ -69,7 +87,7 @@ class ConnectController extends Controller
         $now = now();
         $matchNotice = [];
         $userMatches = [];
-        if ($user->isFreelancer() && $user->freelancer) {
+        if (($activeRole === 'freelancer') && $user->isFreelancer() && $user->freelancer) {
             $fid = $user->freelancer->id;
             $query = DB::table('matches')
                 ->join('job_vacancies', 'matches.job_vacancy_id', '=', 'job_vacancies.id')
@@ -87,7 +105,7 @@ class ConnectController extends Controller
                 }
             }
             $userMatches = $query->limit(20)->get();
-        } elseif ($user->isCompany() && $user->company) {
+        } elseif (($activeRole === 'company') && $user->isCompany() && $user->company) {
             $cid = $user->company->id;
             $query = DB::table('matches')
                 ->join('job_vacancies', 'matches.job_vacancy_id', '=', 'job_vacancies.id')
@@ -108,12 +126,42 @@ class ConnectController extends Controller
             $userMatches = $query->limit(20)->get();
         }
         session(['connect_last_match_seen' => $now]);
+        $initialCard = null;
+        try {
+            $candidate = $service->nextCardFor($user);
+            if (! $candidate) {
+                $activeRole = session('active_role');
+                if ($activeRole === 'company' && $user->isCompany() && session()->has('connect_job_id')) {
+                    $jobId = (int) session('connect_job_id');
+                    if ($jobId > 0) {
+                        $segmentOnly = (session('connect_filter') === 'segment');
+                        $service->prepareCompanyConnectForJob($user, $jobId, 50, $segmentOnly);
+                        $candidate = $service->nextCardFor($user);
+                    }
+                } else {
+                    $segmentOnly = (session('connect_filter') === 'segment');
+                    $service->generateDailyBatchFor($user, 50, $segmentOnly);
+                    $candidate = $service->nextCardFor($user);
+                }
+            }
+            if ($candidate instanceof \App\Models\FreelancerJobRecommendation) {
+                $candidate->load(['job.company']);
+            } elseif ($candidate instanceof \App\Models\CompanyFreelancerRecommendation) {
+                $candidate->load(['freelancer.user', 'freelancer.skills']);
+            }
+            if ($candidate) {
+                $initialCard = $this->mapRecommendationToCard($candidate);
+            }
+        } catch (\Throwable $e) {
+        }
 
         return view('connect.index', [
             'selectedJob' => $selectedJob,
             'companyVacancies' => $companyVacancies,
             'matchNotice' => $matchNotice,
             'userMatches' => $userMatches,
+            'newMatchesCount' => is_array($matchNotice) ? count($matchNotice) : 0,
+            'initialCard' => $initialCard,
         ]);
     }
 
@@ -133,7 +181,8 @@ class ConnectController extends Controller
         // Fallback: se não houver batch gerado ainda, tenta gerar agora e buscar novamente
         if (! $rec) {
             try {
-                if ($user->isCompany() && session()->has('connect_job_id')) {
+                $activeRole = session('active_role');
+                if ($activeRole === 'company' && $user->isCompany() && session()->has('connect_job_id')) {
                     $jobId = (int) session('connect_job_id');
                     if ($jobId > 0) {
                         $segmentOnly = (session('connect_filter') === 'segment');
@@ -151,6 +200,14 @@ class ConnectController extends Controller
         if (! $rec) {
             return response()->json(['empty' => true], 204);
         }
+
+        try {
+            if ($rec instanceof \App\Models\FreelancerJobRecommendation) {
+                $rec->load(['job.company']);
+            } elseif ($rec instanceof \App\Models\CompanyFreelancerRecommendation) {
+                $rec->load(['freelancer.user', 'freelancer.skills']);
+            }
+        } catch (\Throwable $e) {}
 
         // Incrementa contador de sessão
         session()->put('connect_cards_shown', $count + 1);
@@ -179,7 +236,7 @@ class ConnectController extends Controller
     private function mapRecommendationToCard($rec): array
     {
         if ($rec instanceof FreelancerJobRecommendation) {
-            $job = $rec->job;
+            $job = $rec->job ?: \App\Models\JobVacancy::with('company')->find($rec->job_vacancy_id);
             $companyName = $job?->company?->display_name ?: ($job?->company?->name ?: 'Empresa');
 
             return [
@@ -190,7 +247,7 @@ class ConnectController extends Controller
                     'id' => $job?->id,
                     'title' => $job?->title ?: 'Vaga',
                     'company' => $companyName,
-                    'location' => $job?->company?->location ?: '-',
+                    'location' => ($job && $job->company && $job->company->location) ? $job->company->location : '-',
                     'mode' => $job?->location_type ?: '-',
                     'range' => ($job && $job->salary_min && $job->salary_max) ? ('R$ '.number_format((float)$job->salary_min, 2, ',', '.').' - R$ '.number_format((float)$job->salary_max, 2, ',', '.')) : '-',
                     'skills' => [],
@@ -201,7 +258,7 @@ class ConnectController extends Controller
         }
 
         if ($rec instanceof CompanyFreelancerRecommendation) {
-            $f = $rec->freelancer;
+            $f = $rec->freelancer ?: \App\Models\Freelancer::with(['user', 'skills'])->find($rec->freelancer_id);
             $skills = $f?->skills()->pluck('name')->all() ?? [];
 
             return [
@@ -211,9 +268,9 @@ class ConnectController extends Controller
                 'payload' => [
                     'id' => $f?->id,
                     'title' => $f?->display_name ?: 'Freelancer',
-                    'location' => $f?->location ?: '-',
+                    'location' => ($f && $f->location) ? $f->location : '-',
                     'mode' => '—',
-                    'range' => $f?->hourly_rate ? ('R$ '.number_format((float) $f->hourly_rate, 2, ',', '.').'/h') : '-',
+                    'range' => ($f && $f->hourly_rate) ? ('R$ '.number_format((float) $f->hourly_rate, 2, ',', '.').'/h') : '-',
                     'skills' => $skills,
                     'summary' => Str::limit($f?->bio ?: '', 180),
                     'profile_url' => ($f && $f->user) ? route('profiles.show', $f->user) : null,

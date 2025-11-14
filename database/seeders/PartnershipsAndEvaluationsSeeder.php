@@ -38,12 +38,10 @@ class PartnershipsAndEvaluationsSeeder extends Seeder
                     'company_rating' => $companyScore,
                     'company_comment' => 'Projeto concluído com qualidade e alinhamento.',
                     'company_ratings_json' => $companyRatings,
-                    'company_rating_avg' => round(array_sum($companyRatings) / count($companyRatings), 1),
                     'evaluated_by_company_at' => now(),
                     'freelancer_rating' => $freelancerScore,
                     'freelancer_comment' => 'Cliente colaborativo e objetivo claro.',
                     'freelancer_ratings_json' => $freelancerRatings,
-                    'freelancer_rating_avg' => round(array_sum($freelancerRatings) / count($freelancerRatings), 1),
                     'evaluated_by_freelancer_at' => now(),
                 ]);
 
@@ -80,12 +78,10 @@ class PartnershipsAndEvaluationsSeeder extends Seeder
                         'company_rating' => 4.3,
                         'company_comment' => 'Entrega consistente dentro do escopo.',
                         'company_ratings_json' => $companyRatings,
-                        'company_rating_avg' => round(array_sum($companyRatings) / count($companyRatings), 1),
                         'evaluated_by_company_at' => now(),
                         'freelancer_rating' => 4.3,
                         'freelancer_comment' => 'Boa comunicação e clareza de requisitos.',
                         'freelancer_ratings_json' => $freelancerRatings,
-                        'freelancer_rating_avg' => round(array_sum($freelancerRatings) / count($freelancerRatings), 1),
                         'evaluated_by_freelancer_at' => now(),
                     ]);
                 }

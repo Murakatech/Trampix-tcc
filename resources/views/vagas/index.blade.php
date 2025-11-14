@@ -462,7 +462,7 @@ function handleDeleteClick(btn) {
 @endpush
 
 @push('scripts')
-<script id="FILTER_INITIALS" type="application/json">@json(['category' => request('category')])</script>
+<script id="FILTER_INITIALS" type="application/json">@json(['category_id' => request('category_id')])</script>
 <script>
     // Sistema de notificações
     function showNotification(message, type = 'info') {
@@ -1141,11 +1141,11 @@ function handleDeleteClick(btn) {
                 if (!res.ok || !ct.includes('application/json')) throw new Error('Resposta inválida');
                 const data = await res.json();
                 const cats = (data.categories || []);
-                cats.forEach(name => {
+                cats.forEach(c => {
                     const opt = document.createElement('option');
-                    opt.value = name;
-                    opt.textContent = name;
-                    if (preselectValue && preselectValue === name) opt.selected = true;
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    if (preselectValue && String(preselectValue) === String(c.id)) opt.selected = true;
                     categorySelect.appendChild(opt);
                 });
                 categorySelect.removeAttribute('disabled');
@@ -1161,7 +1161,7 @@ function handleDeleteClick(btn) {
             const initialSeg = segmentSelect.value;
             var fiEl = document.getElementById('FILTER_INITIALS');
             var fi = fiEl ? JSON.parse(fiEl.textContent || '{}') : {};
-            const initialCat = categorySelect.getAttribute('data-initial') || (fi.category || '');
+            const initialCat = categorySelect.getAttribute('data-initial') || (fi.category_id || '');
             if (initialSeg){
                 loadCategoriesBySegment(initialSeg, initialCat);
             }

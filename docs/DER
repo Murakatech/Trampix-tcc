@@ -1,0 +1,72 @@
+Entidades
+- users: id (PK), name, email (UNIQ), email_verified_at, password, remember_token, created_at, updated_at
+- companies: id (PK), user_id (FK→users.id), display_name, name, cnpj, location, description, website, linkedin_url, email, phone, company_size, employees_count, founded_year, is_active, profile_photo, activity_area_id (FK→activity_areas.id, opcional), segment_id (FK→segments.id, opcional), created_at, updated_at
+- freelancers: id (PK), user_id (FK→users.id), display_name, bio, portfolio_url, linkedin_url, cv_url, whatsapp, location, hourly_rate, availability, is_active, profile_photo, activity_area_id (FK→activity_areas.id, opcional), segment_id (FK→segments.id, opcional), created_at, updated_at
+- job_vacancies: id (PK), company_id (FK→companies.id), title, description, requirements, category_id (FK→categories.id, opcional), service_category_id (FK→service_categories.id, opcional), location_type, salary_min, salary_max, status, created_at, updated_at
+- applications: id (PK), job_vacancy_id (FK→job_vacancies.id), freelancer_id (FK→freelancers.id), cover_letter, status, company_rating, company_comment, company_ratings_json, evaluated_by_company_at, freelancer_rating, freelancer_comment, freelancer_ratings_json, evaluated_by_freelancer_at, rejected_acknowledged, created_at, updated_at
+- matches: id (PK), freelancer_id (FK→freelancers.id), job_vacancy_id (FK→job_vacancies.id), created_at
+- categories: id (PK), name, slug (UNIQ), description, segment_id (FK→segments.id, opcional), active, created_at, updated_at
+- segments: id (PK), name (UNIQ), active, created_at, updated_at
+- service_categories: id (PK), name, slug (UNIQ), description, icon, is_active, created_at, updated_at
+- activity_areas: id (PK), name, type, description, created_at, updated_at
+- sectors: id (PK), name (UNIQ), slug (UNIQ), icon, is_active, description, created_at, updated_at
+- preferences: id (PK), user_id (FK→users.id), role, desired_roles (JSON), segments (JSON), skills (JSON), seniority_min, seniority_max, remote_ok, salary_min, salary_max, location, radius_km, created_at, updated_at
+- freelancer_job_recommendations: id (PK), freelancer_id (FK→freelancers.id), job_vacancy_id (FK→job_vacancies.id), score, batch_date, status, decided_at, created_at
+- company_freelancer_recommendations: id (PK), company_id (FK→companies.id), freelancer_id (FK→freelancers.id), score, batch_date, status, decided_at, created_at
+- company_sector (pivot): id (PK), company_id (FK→companies.id), sector_id (FK→sectors.id), created_at, updated_at
+- freelancer_sector (pivot): id (PK), freelancer_id (FK→freelancers.id), sector_id (FK→sectors.id), created_at, updated_at
+- company_segment (pivot): id (PK), company_id (FK→companies.id), segment_id (FK→segments.id), created_at, updated_at
+- freelancer_segment (pivot): id (PK), freelancer_id (FK→freelancers.id), segment_id (FK→segments.id), created_at, updated_at
+
+Restrições e Índices
+- users.email: único
+- company_sector: único composto (company_id, sector_id)
+- freelancer_sector: único composto (freelancer_id, sector_id)
+- company_segment: único composto (company_id, segment_id)
+- freelancer_segment: único composto (freelancer_id, segment_id)
+- matches: único lógico por par (freelancer_id, job_vacancy_id) aplicado em código
+- freelancer_job_recommendations: único composto (freelancer_id, job_vacancy_id)
+- company_freelancer_recommendations: único composto (company_id, freelancer_id)
+- FKs com CASCADE: ver migrações de criação de tabelas principais e pivôs
+
+Relacionamentos
+- users 1–1 companies (via companies.user_id)
+- users 1–1 freelancers (via freelancers.user_id)
+- companies 1–N job_vacancies (via job_vacancies.company_id)
+- job_vacancies N–1 categories (via job_vacancies.category_id)
+- categories N–1 segments (via categories.segment_id)
+- companies N–1 segments (via companies.segment_id)
+- freelancers N–1 segments (via freelancers.segment_id)
+- companies N–N sectors (via company_sector)
+- freelancers N–N sectors (via freelancer_sector)
+- companies N–N segments (via company_segment)
+- freelancers N–N segments (via freelancer_segment)
+- service_categories N–N companies/freelancers (se necessário na aplicação; pivôs podem ser adicionados)
+- job_vacancies 1–N applications (via applications.job_vacancy_id)
+- freelancers 1–N applications (via applications.freelancer_id)
+- freelancers N–N job_vacancies via matches (par freelancer_id, job_vacancy_id)
+- freelancer_job_recommendations: freelancers 1–N recomendações para vagas; vaga 1–N recomendações por freelancer (único por par)
+- company_freelancer_recommendations: companies 1–N recomendações para freelancers; freelancer 1–N recomendações por empresa (único por par)
+- preferences 1–1 users (único por par [user_id, role])
+
+Cardinalidades
+- users→companies: 1:0..1
+- users→freelancers: 1:0..1
+- companies→job_vacancies: 1:N
+- job_vacancies→applications: 1:N
+- freelancers→applications: 1:N
+- freelancers↔job_vacancies (matches): N:N, único por par
+- companies↔sectors: N:N (company_sector)
+- freelancers↔sectors: N:N (freelancer_sector)
+- companies↔segments: N:N (company_segment)
+- freelancers↔segments: N:N (freelancer_segment)
+- categories→segments: N:1
+- companies→segments: N:0..1
+- freelancers→segments: N:0..1
+- freelancer_job_recommendations: freelancer 1:N, vaga 1:N, único por par
+- company_freelancer_recommendations: company 1:N, freelancer 1:N, único por par
+- preferences→users: 1:1 por role
+
+Observações de Modelagem
+- salaries: usar salary_min/salary_max em job_vacancies
+- avaliações: médias derivadas removidas; usar company_rating/freelancer_rating e JSON de perguntas

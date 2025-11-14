@@ -4,15 +4,15 @@
 <div class="flex items-center justify-between">
   <h1 class="text-2xl font-semibold text-gray-800">Conectar</h1>
   <div class="text-sm text-gray-500">
-    Novas: —
+    Novas: {{ isset($newMatchesCount) ? $newMatchesCount : 0 }}
   </div>
 </div>
 @endsection
 
 @section('content')
-<div class="space-y-6" x-data="connectModule({{ isset($selectedJob) && $selectedJob ? $selectedJob->id : 'null' }}, {{ isset($matchNotice) ? count($matchNotice) : 0 }})">
+<div class="space-y-6" x-data="connectModule({{ isset($selectedJob) && $selectedJob ? $selectedJob->id : 'null' }}, {{ isset($matchNotice) ? count($matchNotice) : 0 }}, @json($initialCard ?? null))">
   <!-- Fluxo de empresa: selecionar uma vaga antes de ver cards -->
-  @if(auth()->user()?->isCompany() && isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob))
+  @if(session('active_role') === 'company' && auth()->user()?->isCompany() && isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob))
   <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-5">
     <div class="flex items-center justify-between mb-3">
       <h3 class="text-lg font-semibold text-gray-800">Selecione uma vaga para conectar com freelancers</h3>
@@ -235,15 +235,15 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <script>
-  function connectModule(selectedJobId = null, newMatchesCount = 0) {
+  function connectModule(selectedJobId = null, newMatchesCount = 0, initialCard = null) {
     return {
-      card: null,
+      card: initialCard || null,
       disabled: false,
       cardsShown: 0,
       lastRejectedId: null,
       selectedJobId: selectedJobId,
       newMatchesCount: newMatchesCount,
-      companyMustSelectFirst: "{{ auth()->user()?->isCompany() && isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob) ? 'true' : 'false' }}" === "true",
+      companyMustSelectFirst: "{{ (session('active_role') === 'company') && auth()->user()?->isCompany() && isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob) ? 'true' : 'false' }}" === "true",
       snackbar: { visible: false, message: '', undo: false, timer: null },
       matchMenu: { visible: false, title: '', options: [], timer: null },
       matchesOverlay: { visible: false },
@@ -259,7 +259,7 @@
           this.disabled = true;
           return;
         }
-        this.loadNext();
+        if (!this.card) { this.loadNext(); }
         // Atalhos de teclado
         window.addEventListener('keydown', (e) => {
           if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
@@ -301,6 +301,11 @@
       async decide(action) {
         if (!this.card) return;
         const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        const payload = {
+          recommendation_id: Number(this.card.id),
+          action: action,
+          job_vacancy_id: this.selectedJobId ? Number(this.selectedJobId) : null,
+        };
         try {
           const res = await fetch(this.endpoints.decide, {
             method: 'POST',
@@ -309,7 +314,7 @@
               'Accept': 'application/json',
               'X-CSRF-TOKEN': token,
             },
-            body: JSON.stringify({ recommendation_id: this.card.id, action, job_vacancy_id: this.selectedJobId }),
+            body: JSON.stringify(payload),
           });
           if (!res.ok) {
             this.snackbarShow(`Erro ao enviar decisão (status ${res.status}).`, false);

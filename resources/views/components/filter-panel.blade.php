@@ -7,7 +7,7 @@
     'categories' => [],
     'segments' => [],
     'locationTypes' => [],
-    'selectedCategory' => null,
+    'selectedCategoryId' => request('category_id'),
     'selectedSegmentId' => request('segment_id'),
     'selectedLocationType' => null,
     'selectedRatingOrder' => request('rating_order'),
@@ -58,18 +58,18 @@
                 </div>
 
                 <div class="w-48">
-                    <label for="category" class="block text-xs font-medium text-gray-600 mb-1">Categoria
+                    <label for="category_id" class="block text-xs font-medium text-gray-600 mb-1">Categoria
                         @if(!$selectedSegmentId)
                             <span class="ml-2 inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 align-middle">
                                 <i class="fas fa-lock mr-1"></i>escolha um segmento
                             </span>
                         @endif
                     </label>
-                    <select id="category" name="category" class="trampix-input w-full {{ $selectedSegmentId ? '' : 'opacity-60 cursor-not-allowed' }}" data-category-select="true" {{ $selectedSegmentId ? '' : 'disabled aria-disabled=true' }}>
+                    <select id="category_id" name="category_id" class="trampix-input w-full {{ $selectedSegmentId ? '' : 'opacity-60 cursor-not-allowed' }}" data-category-select="true" {{ $selectedSegmentId ? '' : 'disabled aria-disabled=true' }}>
                         @if($selectedSegmentId)
                             <option value="">Todas</option>
                             @foreach(($categories ?: []) as $cat)
-                                <option value="{{ $cat }}" {{ $selectedCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                                <option value="{{ $cat->id }}" {{ (string)$selectedCategoryId === (string)$cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                             @endforeach
                         @else
                             <option value="">Selecione um segmento</option>
@@ -146,19 +146,19 @@
                 </select>
             </div>
 
-            <div class="w-48">
-                <label for="category" class="block text-xs font-medium text-gray-600 mb-1">Categoria
+                <div class="w-48">
+                    <label for="category_id" class="block text-xs font-medium text-gray-600 mb-1">Categoria
                     @if(!$selectedSegmentId)
                         <span class="ml-2 inline-flex items-center text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200 align-middle">
                             <i class="fas fa-lock mr-1"></i>escolha um segmento
                         </span>
                     @endif
                 </label>
-                <select id="category" name="category" class="trampix-input w-full {{ $selectedSegmentId ? '' : 'opacity-60 cursor-not-allowed' }}" data-category-select="true" {{ $selectedSegmentId ? '' : 'disabled aria-disabled=true' }}>
+                <select id="category_id" name="category_id" class="trampix-input w-full {{ $selectedSegmentId ? '' : 'opacity-60 cursor-not-allowed' }}" data-category-select="true" {{ $selectedSegmentId ? '' : 'disabled aria-disabled=true' }}>
                     @if($selectedSegmentId)
                         <option value="">Todas</option>
                         @foreach(($categories ?: []) as $cat)
-                            <option value="{{ $cat }}" {{ $selectedCategory === $cat ? 'selected' : '' }}>{{ $cat }}</option>
+                            <option value="{{ $cat->id }}" {{ (string)$selectedCategoryId === (string)$cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
                         @endforeach
                     @else
                         <option value="">Selecione um segmento</option>

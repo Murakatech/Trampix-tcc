@@ -129,7 +129,6 @@ class CompaniesAndVacanciesSeeder extends Seeder
                         'salary_min' => (4000 + $i * 300),
                         'salary_max' => (7000 + $i * 300),
                         'status' => 'active',
-                        'category' => $cat ? $cat->name : null,
                         'category_id' => $cat ? $cat->id : null,
                     ]
                 );
