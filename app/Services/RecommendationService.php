@@ -115,7 +115,11 @@ class RecommendationService
                 $signals += $company->website ? 1 : 0;
                 $signals += $company->linkedin_url ? 1 : 0;
                 $signals += $company->description ? 1 : 0;
-                $signals += $company->sector ? 1 : 0;
+                // setor: considerar relacionamento normalizado
+                try {
+                    $hasSector = $company->sectors()->exists();
+                } catch (\Throwable $e) { $hasSector = false; }
+                $signals += $hasSector ? 1 : 0;
                 $signals += $company->is_active ? 1 : 0;
             }
 
@@ -177,7 +181,7 @@ class RecommendationService
             $scored = [];
             foreach ($candidates as $job) {
                 $segmentsTarget = $this->segmentsForJob($job);
-                $faixaT = $this->parseSalaryRange($job->salary_range);
+                $faixaT = ['min' => $job->salary_min, 'max' => $job->salary_max];
                 $modalT = ['location_type' => $job->location_type, 'location' => $job->company?->location];
                 $confidence = $this->sinalConfiancaForTarget($job);
                 $score = $this->computeScore($segmentsUser, $segmentsTarget, $faixaU, $faixaT, $modalU, $modalT, $confidence);

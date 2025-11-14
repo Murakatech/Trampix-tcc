@@ -22,6 +22,8 @@ class UpdateJobVacancyRequest extends FormRequest
             'category_id' => ['nullable', 'exists:categories,id'],
             'location_type' => 'nullable|in:Remoto,Híbrido,Presencial',
             'salary_range' => 'nullable|string|max:100',
+            'salary_min' => 'nullable|numeric|min:0',
+            'salary_max' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:active,closed',
         ];
     }

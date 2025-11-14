@@ -27,7 +27,6 @@ class CompaniesAndVacanciesSeeder extends Seeder
                     'display_name' => 'Tech Corp',
                     'name' => 'Tech Corp Tecnologia LTDA',
                     'cnpj' => '00.000.000/0001-01',
-                    'sector' => 'Tecnologia e Informação',
                     'location' => 'São Paulo/SP',
                     'description' => 'Empresa focada em produtos digitais e inovação.',
                     'website' => 'https://techcorp.example.com',
@@ -46,7 +45,6 @@ class CompaniesAndVacanciesSeeder extends Seeder
                     'display_name' => 'Biz Solutions',
                     'name' => 'Biz Solutions Consultoria S/A',
                     'cnpj' => '00.000.000/0001-02',
-                    'sector' => 'Negócios e Administração',
                     'location' => 'Rio de Janeiro/RJ',
                     'description' => 'Consultoria empresarial e estratégia.',
                     'website' => 'https://bizsolutions.example.com',
@@ -65,7 +63,6 @@ class CompaniesAndVacanciesSeeder extends Seeder
                     'display_name' => 'Creative Labs',
                     'name' => 'Creative Labs Comunicação ME',
                     'cnpj' => '00.000.000/0001-03',
-                    'sector' => 'Comunicação e Criatividade',
                     'location' => 'Curitiba/PR',
                     'description' => 'Estúdio criativo para marcas e conteúdo.',
                     'website' => 'https://creativelabs.example.com',
@@ -100,7 +97,7 @@ class CompaniesAndVacanciesSeeder extends Seeder
                 ]
             );
 
-            $company = Company::updateOrCreate(
+                $company = Company::updateOrCreate(
                 ['user_id' => $user->id],
                 array_merge($companyData, [
                     'segment_id' => $segment->id,
@@ -108,6 +105,12 @@ class CompaniesAndVacanciesSeeder extends Seeder
             );
 
             $company->segments()->sync([$segment->id]);
+            // Vincular setor normalizado
+            $sector = \App\Models\Sector::firstOrCreate(['name' => $companyData['sector'] ?? $segment->name], [
+                'slug' => \Illuminate\Support\Str::slug($companyData['sector'] ?? $segment->name),
+                'is_active' => true,
+            ]);
+            try { $company->sectors()->syncWithoutDetaching([$sector->id]); } catch (\Throwable $e) {}
 
             $categories = Category::where('segment_id', $segment->id)->orderBy('id')->get();
             $total = 10;
@@ -123,7 +126,8 @@ class CompaniesAndVacanciesSeeder extends Seeder
                         'description' => 'Projeto para '.$title.' com escopo completo.',
                         'requirements' => 'Experiência comprovada em '.($cat ? $cat->name : 'área relacionada').'.',
                         'location_type' => $i % 2 === 0 ? 'Remoto' : 'Híbrido',
-                        'salary_range' => 'R$ '.(4000 + $i * 300).' - R$ '.(7000 + $i * 300),
+                        'salary_min' => (4000 + $i * 300),
+                        'salary_max' => (7000 + $i * 300),
                         'status' => 'active',
                         'category' => $cat ? $cat->name : null,
                         'category_id' => $cat ? $cat->id : null,

@@ -48,7 +48,12 @@
                                 </div>
                             @endif
 
-                            @if($company->sector)
+                            @php($sectorNames = $company->sectors->pluck('name')->implode(', '))
+                            @if($sectorNames)
+                                <div class="mb-2">
+                                    <strong>Setor:</strong> {{ $sectorNames }}
+                                </div>
+                            @elseif($company->sector)
                                 <div class="mb-2">
                                     <strong>Setor:</strong> {{ $company->sector }}
                                 </div>
@@ -128,7 +133,21 @@
                                                 @endif
                                             </div>
                                             
-                                            @if($vacancy->salary_range)
+                                            @php($srMin = $vacancy->salary_min)
+                                            @php($srMax = $vacancy->salary_max)
+                                            @if($srMin || $srMax)
+                                                <p class="text-success mb-2">
+                                                    <strong>
+                                                        @if($srMin && $srMax)
+                                                            R$ {{ number_format($srMin, 2, ',', '.') }} - R$ {{ number_format($srMax, 2, ',', '.') }}
+                                                        @elseif($srMin)
+                                                            A partir de R$ {{ number_format($srMin, 2, ',', '.') }}
+                                                        @else
+                                                            Até R$ {{ number_format($srMax, 2, ',', '.') }}
+                                                        @endif
+                                                    </strong>
+                                                </p>
+                                            @elseif($vacancy->salary_range)
                                                 <p class="text-success mb-2">
                                                     <strong>{{ $vacancy->salary_range }}</strong>
                                                 </p>

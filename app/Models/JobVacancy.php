@@ -19,6 +19,8 @@ class JobVacancy extends Model
         'service_category_id',
         'location_type',
         'salary_range',
+        'salary_min',
+        'salary_max',
         'status',
     ];
 
