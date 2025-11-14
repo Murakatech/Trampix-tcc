@@ -83,15 +83,13 @@ class EvaluationController extends Controller
 
         if ($isCompanyOwner) {
             // Empresa avalia o freelancer
-            $application->company_rating = $avgInt; // compatibilidade
-            $application->company_rating_avg = $avgDecimal;
+            $application->company_rating = $avgInt;
             $application->company_comment = $validated['comments'] ?? null;
             $application->company_ratings_json = $validated['ratings'];
             $application->evaluated_by_company_at = now();
         } else {
             // Freelancer avalia a empresa
-            $application->freelancer_rating = $avgInt; // compatibilidade
-            $application->freelancer_rating_avg = $avgDecimal;
+            $application->freelancer_rating = $avgInt;
             $application->freelancer_comment = $validated['comments'] ?? null;
             $application->freelancer_ratings_json = $validated['ratings'];
             $application->evaluated_by_freelancer_at = now();

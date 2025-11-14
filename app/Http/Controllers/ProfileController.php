@@ -61,11 +61,11 @@ class ProfileController extends Controller
                     $q->where('company_id', $company->id);
                 })
                 ->where('status', 'ended')
-                ->whereNotNull('freelancer_rating_avg');
+                ->whereNotNull('freelancer_rating');
 
             $companyPublicRatingCount = (int) $companyRatingsQuery->count();
             if ($companyPublicRatingCount > 0) {
-                $companyPublicRatingAvg = round((float) $companyRatingsQuery->avg('freelancer_rating_avg'), 1);
+                $companyPublicRatingAvg = round((float) $companyRatingsQuery->avg('freelancer_rating'), 1);
             }
         }
 
@@ -74,11 +74,11 @@ class ProfileController extends Controller
             $freelancerRatingsQuery = Application::query()
                 ->where('freelancer_id', $freelancer->id)
                 ->where('status', 'ended')
-                ->whereNotNull('company_rating_avg');
+                ->whereNotNull('company_rating');
 
             $freelancerPublicRatingCount = (int) $freelancerRatingsQuery->count();
             if ($freelancerPublicRatingCount > 0) {
-                $freelancerPublicRatingAvg = round((float) $freelancerRatingsQuery->avg('company_rating_avg'), 1);
+                $freelancerPublicRatingAvg = round((float) $freelancerRatingsQuery->avg('company_rating'), 1);
             }
         }
 

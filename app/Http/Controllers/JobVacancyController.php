@@ -106,12 +106,12 @@ class JobVacancyController extends Controller
 
         // Ordenação por avaliação da empresa (média das avaliações feitas pelos freelancers)
         if ($request->filled('rating_order') && in_array($request->get('rating_order'), ['asc', 'desc'])) {
-            // Subquery: média de freelancer_rating_avg por company_id
+            // Subquery: média de freelancer_rating (inteiro) por company_id
             $companyRatingsSub = \App\Models\Application::query()
-                ->selectRaw('job_vacancies.company_id as company_id, AVG(applications.freelancer_rating_avg) as company_public_rating_avg')
+                ->selectRaw('job_vacancies.company_id as company_id, AVG(applications.freelancer_rating) as company_public_rating_avg')
                 ->join('job_vacancies', 'applications.job_vacancy_id', '=', 'job_vacancies.id')
                 ->where('applications.status', 'ended')
-                ->whereNotNull('applications.freelancer_rating_avg')
+                ->whereNotNull('applications.freelancer_rating')
                 ->groupBy('job_vacancies.company_id');
 
             // Join da subquery para adicionar a coluna calculada e ordenar

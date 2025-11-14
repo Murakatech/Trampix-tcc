@@ -173,7 +173,7 @@
                                         <span class="badge bg-warning text-dark">Avaliação pendente</span>
                                     @else
                                         <span class="badge bg-success">Avaliação enviada</span>
-                                        @php $myAvg = $app->company_rating_avg ?? $app->company_rating; @endphp
+                                        @php $myAvg = $app->company_rating; @endphp
                                         @if(!empty($myAvg))
                                             <span class="badge bg-primary">{{ number_format((float)$myAvg, 1) }}/5</span>
                                             <a href="{{ route('applications.evaluate.show', $app) }}" class="btn btn-sm btn-outline-secondary">Avaliação Completa</a>
@@ -188,7 +188,7 @@
                                         <span class="badge bg-warning text-dark">Avaliação pendente</span>
                                     @else
                                         <span class="badge bg-success">Avaliação enviada</span>
-                                        @php $myAvgF = $app->freelancer_rating_avg ?? $app->freelancer_rating; @endphp
+                                        @php $myAvgF = $app->freelancer_rating; @endphp
                                         @if(!empty($myAvgF))
                                             <span class="badge bg-warning text-dark">{{ number_format((float)$myAvgF, 1) }}/5</span>
                                             <a href="{{ route('applications.evaluate.show', $app) }}" class="btn btn-sm btn-outline-secondary">Avaliação Completa</a>
