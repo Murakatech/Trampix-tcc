@@ -177,14 +177,14 @@ class ProfileController extends Controller
         $freelancer = $user->freelancer;
         $company = $user->company;
 
-        // Carregar categorias e segmentos se o freelancer existir
+        // Carregar segmentos se o freelancer existir
         if ($freelancer) {
-            $freelancer->load(['serviceCategories', 'segments']);
+            $freelancer->load(['segments']);
         }
 
-        // Carregar categorias se a empresa existir
+        // Carregar segmentos se a empresa existir
         if ($company) {
-            $company->load('serviceCategories');
+            $company->load('segments');
         }
 
         // Determinar o perfil ativo

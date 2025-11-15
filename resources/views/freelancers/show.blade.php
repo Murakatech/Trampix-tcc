@@ -159,14 +159,14 @@
                                 </div>
                             @endif
 
-                            {{-- Áreas de Atuação (Categorias) --}}
-                            @if($freelancer->serviceCategories && $freelancer->serviceCategories->count())
+                            {{-- Segmentos do Freelancer --}}
+                            @if($freelancer->segments && $freelancer->segments->count())
                                 <div class="mb-2">
-                                    <strong>Áreas de Atuação:</strong>
+                                    <strong>Segmentos:</strong>
                                 </div>
                                 <div class="mb-3 d-flex flex-wrap gap-2">
-                                    @foreach($freelancer->serviceCategories as $cat)
-                                        <span class="badge bg-info text-dark">{{ $cat->name }}</span>
+                                    @foreach($freelancer->segments as $seg)
+                                        <span class="badge bg-info text-dark">{{ $seg->name }}</span>
                                     @endforeach
                                 </div>
                             @endif

@@ -248,14 +248,14 @@
                             </div>
                         @endif
 
-                        {{-- Áreas de Atuação (Categorias) --}}
-                        @if(method_exists($activeProfile, 'serviceCategories') && $activeProfile->serviceCategories && $activeProfile->serviceCategories->count())
+                        {{-- Segmentos do Freelancer --}}
+                        @if(method_exists($activeProfile, 'segments') && $activeProfile->segments && $activeProfile->segments->count())
                             <div class="mb-2">
-                                <strong>Áreas de Atuação:</strong>
+                                <strong>Segmentos:</strong>
                             </div>
                             <div class="mb-3 d-flex flex-wrap gap-2">
-                                @foreach($activeProfile->serviceCategories as $cat)
-                                    <span class="badge bg-info text-dark">{{ $cat->name }}</span>
+                                @foreach($activeProfile->segments as $seg)
+                                    <span class="badge bg-info text-dark">{{ $seg->name }}</span>
                                 @endforeach
                             </div>
                         @endif
@@ -316,14 +316,14 @@
                                 </a>
                             </div>
                         @endif
-                        {{-- Áreas de Atuação (Categorias) da Empresa --}}
-                        @if(method_exists($activeProfile, 'serviceCategories') && $activeProfile->serviceCategories && $activeProfile->serviceCategories->count())
+                        {{-- Segmentos da Empresa --}}
+                        @if(method_exists($activeProfile, 'segments') && $activeProfile->segments && $activeProfile->segments->count())
                             <div class="mb-2">
-                                <strong>Áreas de Atuação:</strong>
+                                <strong>Segmentos:</strong>
                             </div>
                             <div class="mb-3 d-flex flex-wrap gap-2">
-                                @foreach($activeProfile->serviceCategories as $cat)
-                                    <span class="badge bg-info text-dark">{{ $cat->name }}</span>
+                                @foreach($activeProfile->segments as $seg)
+                                    <span class="badge bg-info text-dark">{{ $seg->name }}</span>
                                 @endforeach
                             </div>
                         @endif

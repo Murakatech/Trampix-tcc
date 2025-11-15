@@ -205,7 +205,7 @@ class ConnectController extends Controller
             if ($rec instanceof \App\Models\FreelancerJobRecommendation) {
                 $rec->load(['job.company']);
             } elseif ($rec instanceof \App\Models\CompanyFreelancerRecommendation) {
-                $rec->load(['freelancer.user', 'freelancer.skills']);
+                $rec->load(['freelancer.user']);
             }
         } catch (\Throwable $e) {}
 
@@ -258,8 +258,8 @@ class ConnectController extends Controller
         }
 
         if ($rec instanceof CompanyFreelancerRecommendation) {
-            $f = $rec->freelancer ?: \App\Models\Freelancer::with(['user', 'skills'])->find($rec->freelancer_id);
-            $skills = $f?->skills()->pluck('name')->all() ?? [];
+            $f = $rec->freelancer ?: \App\Models\Freelancer::with(['user'])->find($rec->freelancer_id);
+            $skills = [];
 
             return [
                 'id' => $rec->id,

@@ -35,18 +35,19 @@ class FreelancerDashboardController extends Controller
             ->limit(7)
             ->get();
 
-        // Vagas recomendadas baseadas nos setores do freelancer (match com categorias de vagas por nome)
-        $freelancerCategories = $freelancer->sectors->pluck('name')->toArray();
+        // Vagas recomendadas baseadas nos SEGMENTOS do freelancer (categoria da vaga ou segmento da empresa)
+        $segmentIds = [];
+        if ($freelancer->segment_id) { $segmentIds[] = (int) $freelancer->segment_id; }
+        try { $segmentIds = array_unique(array_filter(array_merge($segmentIds, $freelancer->segments()->pluck('segments.id')->all()))); } catch (\Throwable $e) {}
 
         $recommendedJobs = JobVacancy::where('status', 'active')
-            ->when(! empty($freelancerCategories), function ($query) use ($freelancerCategories) {
-                $ids = \App\Models\ServiceCategory::whereIn('name', $freelancerCategories)->pluck('id');
-
-                return $query->where(function ($q) use ($ids, $freelancerCategories) {
-                    if ($ids->count() > 0) {
-                        $q->whereIn('service_category_id', $ids);
-                    }
-                    $q->orWhereIn('category', $freelancerCategories);
+            ->when(! empty($segmentIds), function ($query) use ($segmentIds) {
+                $query->where(function ($q) use ($segmentIds) {
+                    $q->whereHas('category', function ($cq) use ($segmentIds) {
+                        $cq->whereIn('segment_id', $segmentIds);
+                    })->orWhereHas('company', function ($compQ) use ($segmentIds) {
+                        $compQ->whereIn('segment_id', $segmentIds);
+                    });
                 });
             })
             ->whereNotIn('id', function ($query) use ($freelancer) {
@@ -107,12 +108,19 @@ class FreelancerDashboardController extends Controller
             ->where('created_at', '>=', now()->subDay())
             ->count();
 
-        // Verificar se há novas vagas recomendadas (últimas 24 horas)
-        $freelancerSectorNames = $freelancer->sectors->pluck('name')->toArray();
-        $sectorMappedCategoryIds = \App\Models\ServiceCategory::whereIn('name', $freelancerSectorNames)->pluck('id');
-        $newRecommendedJobsCount = JobVacancy::where('status', 'open')
-            ->when($sectorMappedCategoryIds->count() > 0, function ($query) use ($sectorMappedCategoryIds) {
-                return $query->whereIn('service_category_id', $sectorMappedCategoryIds);
+        // Verificar se há novas vagas recomendadas (últimas 24 horas) baseadas em segmentos
+        $segmentIds = [];
+        if ($freelancer->segment_id) { $segmentIds[] = (int) $freelancer->segment_id; }
+        try { $segmentIds = array_unique(array_filter(array_merge($segmentIds, $freelancer->segments()->pluck('segments.id')->all()))); } catch (\Throwable $e) {}
+        $newRecommendedJobsCount = JobVacancy::where('status', 'active')
+            ->when(! empty($segmentIds), function ($query) use ($segmentIds) {
+                $query->where(function ($q) use ($segmentIds) {
+                    $q->whereHas('category', function ($cq) use ($segmentIds) {
+                        $cq->whereIn('segment_id', $segmentIds);
+                    })->orWhereHas('company', function ($compQ) use ($segmentIds) {
+                        $compQ->whereIn('segment_id', $segmentIds);
+                    });
+                });
             })
             ->where('created_at', '>=', now()->subDay())
             ->whereNotIn('id', function ($query) use ($freelancer) {

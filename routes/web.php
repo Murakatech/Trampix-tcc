@@ -43,12 +43,7 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-// Módulo Conectar (UI base + endpoints stub)
-Route::middleware(['auth'])->group(function () {
-    Route::get('/connect', [ConnectController::class, 'index'])->name('connect.index');
-    Route::get('/connect/next', [ConnectController::class, 'next'])->name('connect.next'); // stub
-    Route::post('/connect/decide', [ConnectController::class, 'decide'])->name('connect.decide'); // stub
-});
+// Módulo Conectar removido temporariamente (refactor do backend em andamento)
 
 // Matchmaking dedicado removido em favor de /connect
 

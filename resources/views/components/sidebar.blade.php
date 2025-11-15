@@ -87,10 +87,10 @@
                 class="ml-3 font-medium whitespace-nowrap overflow-hidden">Dashboard</span>
         </a>
 
-        <!-- Conectar - novo item abaixo de Dashboard -->
-        <a href="{{ route('connect.index') }}"
+        <!-- Conectar - botão mantido sem rota durante refactor -->
+        <a href="#"
            data-menu-item="connect"
-           class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200 {{ request()->routeIs('connect.index') ? ($activeRole === 'company' ? 'bg-green-100 text-green-600' : 'bg-purple-100 text-purple-600') : '' }}">
+           class="flex items-center px-4 py-3 mx-2 rounded-lg text-gray-600 {{ $hoverCls }} transition-colors duration-200">
             <i class="fa-solid fa-share-nodes text-lg flex-shrink-0"></i>
             <span
                 x-show="expanded"
