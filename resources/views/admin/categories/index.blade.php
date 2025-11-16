@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-<div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="max-w-7xl mx-auto sm:px-6 lg:px-8" x-data="{ catQuery: '', segQuery: '' }">
     <div class="mb-6 flex items-center justify-between">
         <div>
             <h1 class="text-2xl font-semibold text-gray-900">Categorias</h1>
@@ -21,9 +21,11 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Form de criação -->
-        <div class="lg:col-span-1">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900">Categorias</h2>
+            </div>
             <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <i class="fas fa-plus text-gray-800"></i>
@@ -47,7 +49,7 @@
                         <label for="segment_id" class="block text-xs font-medium text-gray-600 mb-1">Segmento</label>
                         <select id="segment_id" name="segment_id" class="trampix-input w-full">
                             <option value="">—</option>
-                            @foreach($segmentsActive as $seg)
+                            @foreach($segmentsActiveOptions as $seg)
                                 <option value="{{ $seg->id }}" {{ old('segment_id') == $seg->id ? 'selected' : '' }}>{{ $seg->name }}</option>
                             @endforeach
                         </select>
@@ -69,18 +71,18 @@
                     </div>
                 </form>
             </div>
-        </div>
 
-        <!-- Lista de categorias -->
-        <div class="lg:col-span-2">
             <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <i class="fas fa-list text-gray-800"></i>
                     Categorias ativas
                 </h2>
-                <div class="overflow-x-auto">
+                <div class="mb-3 flex items-center gap-3">
+                    <input type="text" x-model="catQuery" class="trampix-input w-full max-w-md" placeholder="Buscar por nome ou segmento">
+                </div>
+                <div class="overflow-x-auto max-h-[480px] overflow-y-auto rounded-md border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gray-50 sticky top-0 z-10">
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
@@ -90,10 +92,16 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($categoriesActive as $cat)
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50" x-data="{ name: '{{ Str::of($cat->name)->replace("'", "\u0027") }}'.toLowerCase(), seg: '{{ Str::of($cat->segment->name ?? '-') ->replace("'", "\u0027") }}'.toLowerCase() }" x-show="!catQuery || name.includes(catQuery.toLowerCase()) || seg.includes(catQuery.toLowerCase())">
                                     <td class="px-4 py-2 text-sm text-gray-900">{{ $cat->name }}</td>
                                     <td class="px-4 py-2 text-sm text-gray-600">{{ $cat->description }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-600">{{ $cat->segment->name ?? '-' }}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-600">
+                                        @if($cat->segment)
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs">{{ $cat->segment->name }}</span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-gray-600 text-xs">—</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-2 text-right">
                                         <button type="button" class="text-black hover:text-gray-700 text-sm" onclick="document.getElementById('edit-cat-{{ $cat->id }}').classList.toggle('hidden')">
                                             <i class="fas fa-pen mr-1"></i>Editar
@@ -118,7 +126,7 @@
                                                     <label class="block text-xs font-medium text-gray-600 mb-1">Segmento</label>
                                                     <select name="segment_id" class="trampix-input w-full">
                                                         <option value="">—</option>
-                                                        @foreach($segmentsActive as $seg)
+                                                         @foreach($segmentsActiveOptions as $seg)
                                                             <option value="{{ $seg->id }}" {{ (string)($cat->segment_id) === (string)($seg->id) ? 'selected' : '' }}>{{ $seg->name }}</option>
                                                         @endforeach
                                                     </select>
@@ -151,55 +159,54 @@
                     {{ $categoriesActive->links() }}
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Categorias inativas -->
-    <div class="mt-8">
-        <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                <i class="fas fa-archive text-gray-600"></i>
-                Categorias inativas
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Segmento</th>
-                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($categoriesInactive as $cat)
+            <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-archive text-gray-600"></i>
+                    Categorias inativas
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <td class="px-4 py-2 text-sm text-gray-900">{{ $cat->name }}</td>
-                                <td class="px-4 py-2 text-sm text-gray-600">{{ $cat->segment->name ?? '-' }}</td>
-                                <td class="px-4 py-2 text-right">
-                                    <form method="POST" action="{{ route('admin.categories.reactivate', $cat) }}" class="inline-block">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="btn-trampix-primary">
-                                            <i class="fas fa-undo mr-1"></i>Reativar
-                                        </button>
-                                    </form>
-                                </td>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Segmento</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="3" class="px-4 py-6 text-center text-gray-600">Nenhuma categoria inativa.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($categoriesInactive as $cat)
+                                <tr>
+                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $cat->name }}</td>
+                                    <td class="px-4 py-2 text-sm text-gray-600">{{ $cat->segment->name ?? '-' }}</td>
+                                    <td class="px-4 py-2 text-right">
+                                        <form method="POST" action="{{ route('admin.categories.reactivate', $cat) }}" class="inline-block">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn-trampix-primary">
+                                                <i class="fas fa-undo mr-1"></i>Reativar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="px-4 py-6 text-center text-gray-600">Nenhuma categoria inativa.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    {{ $categoriesInactive->links() }}
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Gestão de Segmentos -->
-    <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Form de criação de segmento -->
-        <div class="lg:col-span-1">
+        <div class="space-y-6">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900">Segmentos</h2>
+            </div>
             <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <i class="fas fa-layer-group text-gray-800"></i>
@@ -221,28 +228,30 @@
                     </div>
                 </form>
             </div>
-        </div>
 
-        <!-- Lista de segmentos -->
-        <div class="lg:col-span-2">
             <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                 <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
                     <i class="fas fa-list text-gray-800"></i>
                     Segmentos ativos
                     <span class="ml-auto px-3 py-1 bg-gray-100 text-black rounded-full text-sm">Total: {{ $stats['segments_total'] }}</span>
                 </h2>
-                <div class="overflow-x-auto">
+                <div class="mb-3 flex items-center gap-3">
+                    <input type="text" x-model="segQuery" class="trampix-input w-full max-w-md" placeholder="Buscar por nome do segmento">
+                </div>
+                <div class="overflow-x-auto max-h-[360px] overflow-y-auto rounded-md border border-gray-200">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gray-50 sticky top-0 z-10">
                             <tr>
                                 <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                                 <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($segmentsActive as $seg)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $seg->name }}</td>
+                            @forelse($segmentsActiveList as $seg)
+                                <tr class="hover:bg-gray-50" x-data="{ name: '{{ Str::of($seg->name)->replace("'", "\u0027") }}'.toLowerCase() }" x-show="!segQuery || name.includes(segQuery.toLowerCase())">
+                                    <td class="px-4 py-2 text-sm text-gray-900">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs">{{ $seg->name }}</span>
+                                    </td>
                                     <td class="px-4 py-2 text-right">
                                         <button type="button" class="text-black hover:text-gray-700 text-sm" onclick="document.getElementById('edit-seg-{{ $seg->id }}').classList.toggle('hidden')">
                                             <i class="fas fa-pen mr-1"></i>Editar
@@ -283,46 +292,49 @@
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-4">
+                    {{ $segmentsActiveList->links() }}
+                </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Segmentos inativos -->
-    <div class="mt-8">
-        <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-            <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-                <i class="fas fa-archive text-gray-600"></i>
-                Segmentos inativos
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($segmentsInactive as $seg)
+            <div class="trampix-card bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                <h2 class="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fas fa-archive text-gray-600"></i>
+                    Segmentos inativos
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <td class="px-4 py-2 text-sm text-gray-900">{{ $seg->name }}</td>
-                                <td class="px-4 py-2 text-right">
-                                    <form method="POST" action="{{ route('admin.segments.reactivate', $seg) }}" class="inline-block">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="btn-trampix-primary">
-                                            <i class="fas fa-undo mr-1"></i>Reativar
-                                        </button>
-                                    </form>
-                                </td>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="2" class="px-4 py-6 text-center text-gray-600">Nenhum segmento inativo.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($segmentsInactive as $seg)
+                                <tr>
+                                    <td class="px-4 py-2 text-sm text-gray-900">{{ $seg->name }}</td>
+                                    <td class="px-4 py-2 text-right">
+                                        <form method="POST" action="{{ route('admin.segments.reactivate', $seg) }}" class="inline-block">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="btn-trampix-primary">
+                                                <i class="fas fa-undo mr-1"></i>Reativar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="2" class="px-4 py-6 text-center text-gray-600">Nenhum segmento inativo.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4">
+                    {{ $segmentsInactive->links() }}
+                </div>
             </div>
         </div>
     </div>

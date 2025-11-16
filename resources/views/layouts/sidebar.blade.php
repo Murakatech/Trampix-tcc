@@ -45,8 +45,8 @@
     <nav class="py-3 overflow-y-auto h-[calc(100vh-5rem)]">
         <!-- Dashboard - comum para todos os papéis -->
         <x-sidebar-item href="{{ route('dashboard') }}" :active="request()->is('dashboard')" icon="fa-solid fa-house">Dashboard</x-sidebar-item>
-        <!-- Conectar - botão mantido sem rota durante refactor -->
-        <x-sidebar-item href="#" :active="false" icon="fa-solid fa-share-nodes">Conectar</x-sidebar-item>
+        <!-- Conectar -->
+        <x-sidebar-item href="{{ ($role === 'company') ? route('connect.jobs') : route('connect.index') }}" :active="request()->routeIs('connect.index') || request()->routeIs('connect.jobs')" icon="fa-solid fa-share-nodes">Conectar</x-sidebar-item>
         
         <hr class="my-3">
         

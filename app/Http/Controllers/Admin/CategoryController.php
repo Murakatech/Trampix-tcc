@@ -21,13 +21,20 @@ class CategoryController extends Controller
         $categoriesActive = Category::with('segment')
             ->where('active', true)
             ->orderBy('name')
-            ->paginate(20, ['*'], 'categories_active');
+            ->paginate(10, ['*'], 'categories_active');
         $categoriesInactive = Category::with('segment')
             ->where('active', false)
             ->orderBy('name')
+            ->paginate(10, ['*'], 'categories_inactive');
+        $segmentsActiveList = Segment::where('active', true)
+            ->orderBy('name')
+            ->paginate(10, ['*'], 'segments_active');
+        $segmentsInactive = Segment::where('active', false)
+            ->orderBy('name')
+            ->paginate(10, ['*'], 'segments_inactive');
+        $segmentsActiveOptions = Segment::where('active', true)
+            ->orderBy('name')
             ->get();
-        $segmentsActive = Segment::where('active', true)->orderBy('name')->get();
-        $segmentsInactive = Segment::where('active', false)->orderBy('name')->get();
         $stats = [
             'total' => Category::count(),
             'segments_total' => Segment::count(),
@@ -38,8 +45,9 @@ class CategoryController extends Controller
         return view('admin.categories.index', [
             'categoriesActive' => $categoriesActive,
             'categoriesInactive' => $categoriesInactive,
-            'segmentsActive' => $segmentsActive,
+            'segmentsActiveList' => $segmentsActiveList,
             'segmentsInactive' => $segmentsInactive,
+            'segmentsActiveOptions' => $segmentsActiveOptions,
             'stats' => $stats,
         ]);
     }

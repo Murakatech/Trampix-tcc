@@ -8,10 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('matches', function (Blueprint $table) {
+        Schema::create('connect_matches', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('freelancer_id')->constrained('freelancers')->onDelete('cascade');
-            $table->foreignId('job_vacancy_id')->constrained('job_vacancies')->onDelete('cascade');
+            $table->foreignId('freelancer_id')->constrained('freelancers')->cascadeOnDelete();
+            $table->foreignId('job_vacancy_id')->constrained('job_vacancies')->cascadeOnDelete();
             $table->timestamp('created_at')->useCurrent();
 
             $table->unique(['freelancer_id', 'job_vacancy_id']);
@@ -20,6 +20,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('matches');
+        Schema::dropIfExists('connect_matches');
     }
 };

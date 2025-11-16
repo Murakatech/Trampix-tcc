@@ -2,409 +2,265 @@
 
 @section('header')
 <div class="flex items-center justify-between">
-  <h1 class="text-2xl font-semibold text-gray-800">Conectar</h1>
-  <div class="text-sm text-gray-500">
-    Novas: {{ isset($newMatchesCount) ? $newMatchesCount : 0 }}
-  </div>
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Conectar</h1>
+    </div>
+    <div></div>
 </div>
 @endsection
 
 @section('content')
-<div class="space-y-6" x-data="connectModule({{ isset($selectedJob) && $selectedJob ? $selectedJob->id : 'null' }}, {{ isset($matchNotice) ? count($matchNotice) : 0 }}, @json($initialCard ?? null))">
-  <!-- Fluxo de empresa: selecionar uma vaga antes de ver cards -->
-  @if(session('active_role') === 'company' && auth()->user()?->isCompany() && isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob))
-  <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-5">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-lg font-semibold text-gray-800">Selecione uma vaga para conectar com freelancers</h3>
-      <span class="text-xs text-gray-500">Empresa</span>
-    </div>
-    @if($companyVacancies->count() === 0)
-      <p class="text-sm text-gray-600">Nenhuma vaga ativa encontrada. Crie uma vaga para começar.</p>
-    @else
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach($companyVacancies as $job)
-          <div class="border border-gray-200 rounded-md p-4">
-            <div class="font-medium text-gray-800">{{ $job->title }}</div>
-            <div class="text-sm text-gray-600">
-              <span class="mr-2">Local:</span>{{ $job->company?->location ?? '-' }}
-              <span class="mx-2">•</span>{{ $job->location_type ?? '-' }}
-            </div>
-            <div class="mt-3">
-              <a href="{{ route('connect.index', ['job_id' => $job->id]) }}" class="inline-flex items-center px-3 py-2 rounded-md shadow text-black hover:opacity-90" style="background-color:#b8fc64;">Selecionar</a>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    @endif
-  </div>
-  @endif
-
-  <!-- Ver Matches centralizado -->
-  @php $isFreelancer = auth()->user()?->isFreelancer(); @endphp
-  <div class="flex justify-center">
-    <button @click="openMatchesList()" class="px-8 py-3 rounded-full font-semibold shadow-md hover:opacity-90 {{ $isFreelancer ? 'text-white' : 'text-black' }}" style="background-color: {{ $isFreelancer ? '#8F3FF7' : '#b8fc64' }};">Ver Matches</button>
-  </div>
-
-  <!-- Notificação de Match -->
-  @if(isset($matchNotice) && count($matchNotice))
-    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-      <div class="font-medium text-green-800 mb-2">Novo(s) match(es):</div>
-      <ul class="list-disc ml-5">
-        @foreach($matchNotice as $n)
-          <li class="text-sm"><a href="{{ $n['url'] }}" class="text-green-700 hover:text-green-800">{{ $n['text'] }}</a></li>
-        @endforeach
-      </ul>
-    </div>
-  @endif
-
-  <!-- Estilos auxiliares -->
-  <style>
-    @keyframes fall { 0% { transform: translateY(-20px) rotate(0deg); } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
-  </style>
-  <!-- Conteúdo principal -->
-  <div class="flex flex-col items-center gap-6">
-    <!-- Card -->
-    <div class="max-w-2xl w-full mx-auto">
-      <div class="bg-white shadow-sm rounded-lg border border-gray-200">
-        <div class="p-5">
-          @if(isset($selectedJob) && $selectedJob)
-          <div class="mb-4 flex items-center justify-between">
-            <div class="text-sm text-gray-600">
-              <span class="font-medium">Vaga selecionada:</span> {{ $selectedJob->title }}
-              <span class="mx-2">•</span> {{ $selectedJob->company?->display_name ?? $selectedJob->company?->name ?? 'Empresa' }}
-            </div>
-            <a href="{{ route('connect.index') }}" class="inline-flex items-center gap-2 px-3 py-2 rounded-md border-2 border-indigo-600 bg-white text-black shadow">
-              <i class="fas fa-sync-alt"></i> Trocar vaga
-            </a>
-          </div>
-          @endif
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="text-xl font-semibold text-gray-800" x-text="cardTitle()">Card</h2>
-            <span class="text-xs px-2 py-1 rounded-full bg-indigo-50 text-indigo-600" x-text="cardType()"></span>
-          </div>
-          <div class="text-gray-600 mb-4">
-            <span class="mr-2 font-medium">Local:</span>
-            <span x-text="card?.payload?.location || '-'">-</span>
-            <span class="mx-2">•</span>
-            <span x-text="card?.payload?.mode || '-'">-</span>
-            <span class="mx-2">•</span>
-            <span x-text="card?.payload?.range || '-'">-</span>
-          </div>
-
-          <!-- Skills -->
-          <div class="flex flex-wrap gap-2 mb-4">
-            <template x-for="skill in (card?.payload?.skills || [])" :key="skill">
-              <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-gray-100 text-gray-700" x-text="skill"></span>
-            </template>
-          </div>
-
-          <!-- Summary -->
-          <p class="text-gray-700" x-text="card?.payload?.summary || '—'">—</p>
-        </div>
-        <div class="px-5 pb-5">
-          <div class="flex items-center justify-between">
-            <button :disabled="disabled" @click="decide('rejected')" class="px-3 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50">Rejeitar (A)</button>
-            <button :disabled="disabled" @click="decide('liked')" class="px-5 py-2 rounded-md hover:opacity-90 disabled:opacity-50 {{ $isFreelancer ? 'text-white' : 'text-black' }}" style="background-color: {{ $isFreelancer ? '#8F3FF7' : '#b8fc64' }};">Curtir (D)</button>
-          </div>
-          <div class="mt-3 text-right text-sm text-gray-500">Score: <span x-text="card?.score || '-'">-</span></div>
-          <!-- Empty-state: nenhuma opção disponível -->
-          <div x-show="disabled && !card" class="mt-4 p-3 rounded-md bg-indigo-50 text-indigo-700 text-sm">
-            Acabaram as opções para mostrar no momento. Tente novamente mais tarde ou ajuste seus filtros/segmentos.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Filtros abaixo do card -->
-    <aside class="w-full max-w-2xl">
-      @php $currentMode = session('connect_filter') ?? 'all'; @endphp
-      @if(auth()->user()?->isFreelancer())
-        <div class="text-xs text-gray-600 mb-2 text-center">Selecione o filtro de mostragem</div>
-        <div class="grid grid-cols-2 gap-2">
-          <a href="{{ route('connect.index', ['mode' => 'segment']) }}"
-             aria-current="{{ $currentMode === 'segment' ? 'true' : 'false' }}"
-             class="block w-full px-3 py-2 rounded-md shadow {{ $currentMode === 'segment' ? 'ring-2 ring-black shadow-lg' : 'opacity-80 hover:opacity-100' }}"
-             style="background-color:#8F3FF7;color:#fff;">
-             @if($currentMode === 'segment')<i class="fas fa-check-circle mr-2"></i>@endif Meu segmento
-          </a>
-          <a href="{{ route('connect.index', ['mode' => 'all']) }}"
-             aria-current="{{ $currentMode === 'all' ? 'true' : 'false' }}"
-             class="block w-full px-3 py-2 rounded-md shadow {{ $currentMode === 'all' ? 'ring-2 ring-black shadow-lg' : 'opacity-80 hover:opacity-100' }}"
-             style="background-color:#8F3FF7;color:#fff;">
-             @if($currentMode === 'all')<i class="fas fa-check-circle mr-2"></i>@endif Geral
-          </a>
-        </div>
-      @elseif(auth()->user()?->isCompany())
-        @if(isset($selectedJob) && $selectedJob)
-          <div class="text-xs text-gray-600 mb-2 text-center">Selecione o filtro de mostragem</div>
-          <div class="grid grid-cols-2 gap-2">
-            <a href="{{ route('connect.index', ['job_id' => $selectedJob->id, 'mode' => 'segment']) }}"
-               aria-current="{{ $currentMode === 'segment' ? 'true' : 'false' }}"
-               class="block w-full px-3 py-2 rounded-md shadow {{ $currentMode === 'segment' ? 'ring-2 ring-black shadow-lg' : 'opacity-80 hover:opacity-100' }}"
-               style="background-color:#b8fc64;color:#000;">
-               @if($currentMode === 'segment')<i class="fas fa-check-circle mr-2"></i>@endif Segmento da vaga
-            </a>
-            <a href="{{ route('connect.index', ['job_id' => $selectedJob->id, 'mode' => 'all']) }}"
-               aria-current="{{ $currentMode === 'all' ? 'true' : 'false' }}"
-               class="block w-full px-3 py-2 rounded-md shadow {{ $currentMode === 'all' ? 'ring-2 ring-black shadow-lg' : 'opacity-80 hover:opacity-100' }}"
-               style="background-color:#b8fc64;color:#000;">
-               @if($currentMode === 'all')<i class="fas fa-check-circle mr-2"></i>@endif Geral
-            </a>
-          </div>
-        @else
-          <span class="block w-full px-3 py-2 rounded-md border-2 border-gray-300 bg-white text-black">Selecione uma vaga</span>
-        @endif
-      @endif
-    </aside>
-
-    <!-- Matches Overlay acionado pelo botão Ver Matches -->
-    <div x-show="matchesOverlay.visible" x-transition class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="rounded-2xl shadow-2xl w-full max-w-xl p-8 mx-6 {{ $isFreelancer ? 'text-white' : 'text-black' }} max-h-[80vh] overflow-y-auto" style="background-color: {{ $isFreelancer ? '#8F3FF7' : '#b8fc64' }};">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-3xl font-semibold">Seus Matches</h3>
-          <button @click="matchesOverlay.visible = false" class="px-3 py-2 rounded-md bg-white text-black hover:bg-white/90 shadow">Fechar</button>
-        </div>
-        <template x-if="(userMatches || []).length === 0">
-          <div class="text-sm {{ $isFreelancer ? 'text-white/90' : 'text-black/70' }}">Nenhum match encontrado ainda.</div>
-        </template>
-        <ul class="space-y-4" x-show="(userMatches || []).length > 0">
-          <template x-for="m in userMatches" :key="m.id">
-            <li class="flex items-center justify-between gap-4 p-4 rounded-lg transition {{ $isFreelancer ? 'bg-white/15 hover:bg-white/20' : 'bg-black/5 hover:bg-black/10' }} overflow-hidden min-h-[84px] relative">
-              <div class="flex items-start gap-3 min-w-0 flex-1">
-                <template x-if="m.job_title">
-                  <div class="w-9 h-9 rounded-md bg-white/25 flex items-center justify-center shrink-0">
-                    <i class="fas fa-briefcase"></i>
-                  </div>
-                </template>
-                <template x-if="!m.job_title">
-                  <div class="w-9 h-9 rounded-md bg-white/25 flex items-center justify-center shrink-0">
-                    <i class="fas fa-user"></i>
-                  </div>
-                </template>
-                <div class="min-w-0">
-                  <div class="font-semibold text-lg leading-snug truncate" x-text="m.job_title || m.freelancer_name"></div>
-                  <div class="text-sm {{ $isFreelancer ? 'text-white' : 'text-black/80' }} mt-1" x-text="m.job_title ? 'Vaga' : 'Freelancer'"></div>
+<div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    @php $isCompany = auth()->user()?->isCompany(); @endphp
+    @if(!$isCompany && isset($job) && $job)
+        <div class="flex items-center justify-center gap-6">
+            <form method="POST" action="{{ route('connect.decide') }}">
+                @csrf
+                <input type="hidden" name="job_id" value="{{ $job->id }}">
+                <input type="hidden" name="action" value="rejected">
+                <button type="submit" class="btn-trampix-secondary">Rejeitar</button>
+            </form>
+            <div class="trampix-card w-full max-w-3xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div>
+                        <div class="inline-block bg-purple-600 text-white rounded px-3 py-1 font-semibold mb-3">{{ $job->title }}</div>
+                        <div class="space-y-2 text-sm text-gray-800">
+                            <div><strong>Descrição:</strong> {{ \Illuminate\Support\Str::limit($job->description, 220) }}</div>
+                            <div>
+                                <strong>Valor:</strong>
+                                @php
+                                    $range = '-';
+                                    if ($job->salary_min && $job->salary_max) {
+                                        $range = 'R$ '.number_format((float)$job->salary_min, 2, ',', '.').' - R$ '.number_format((float)$job->salary_max, 2, ',', '.');
+                                    } elseif ($job->salary_range) {
+                                        $range = $job->salary_range;
+                                    }
+                                @endphp
+                                {{ $range }}
+                            </div>
+                            <div><strong>Email da empresa:</strong> {{ $job->company?->email ?? '-' }}</div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{{ route('vagas.show', $job->id) }}" class="btn-trampix-secondary">Ver vaga completa</a>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-900 font-medium mb-2">{{ $job->company?->display_name ?? $job->company?->name ?? 'Empresa' }}</div>
+                        @if($job->company?->profile_photo)
+                            <img src="{{ asset('storage/'.$job->company->profile_photo) }}" alt="Logo da empresa" class="mx-auto h-32 w-32 object-cover rounded-lg shadow" />
+                        @else
+                            <div class="mx-auto h-32 w-32 rounded-lg shadow bg-gray-200 flex items-center justify-center text-gray-600 text-xs uppercase">sem logo</div>
+                        @endif
+                        <div class="mt-3">
+                            <a href="{{ route('companies.show', $job->company?->id) }}" class="btn-trampix-secondary">Ver perfil da empresa</a>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div class="shrink-0 self-center">
-                <a :href="m.job_title ? ('/vagas/' + m.job_id) : ('/profiles/' + (m.user_id || ''))" class="px-4 py-2 rounded-md bg-white text-black hover:bg-white/90 shadow text-sm whitespace-nowrap" x-text="m.job_title ? 'Ir para vaga completa' : ('Ir para perfil de ' + (m.freelancer_name || 'Freelancer'))"></a>
-              </div>
-            </li>
-          </template>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  
-
-  <!-- Snackbar -->
-  <div x-show="snackbar.visible" x-transition class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-md shadow-lg flex items-center gap-3">
-    <span x-text="snackbar.message"></span>
-    <template x-if="snackbar.undo">
-      <button @click="performUndo()" class="px-2 py-1 rounded bg-white text-gray-900">Desfazer</button>
-    </template>
-  </div>
-  <div x-show="matchMenu.visible" x-transition class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-    <div class="w-full max-w-md rounded-2xl shadow-2xl overflow-hidden mx-6">
-      <div class="px-6 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-md bg-white/20 flex items-center justify-center">
-            <i class="fas fa-heart text-white"></i>
-          </div>
-          <div class="text-2xl font-bold" x-text="matchMenu.title"></div>
+            </div>
+            <form method="POST" action="{{ route('connect.decide') }}">
+                @csrf
+                <input type="hidden" name="job_id" value="{{ $job->id }}">
+                <input type="hidden" name="action" value="liked">
+                <button type="submit" class="btn-trampix-company">Curtir</button>
+            </form>
         </div>
-        <button @click="matchMenu.visible = false" class="px-3 py-2 rounded-md bg-white/20 hover:bg-white/30 text-white">Fechar</button>
-      </div>
-      <div class="bg-white p-6">
-        <div class="space-y-4">
-          <template x-for="opt in matchMenu.options" :key="opt.label">
-            <a :href="opt.href" class="block px-4 py-3 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow" x-text="opt.label"></a>
-          </template>
+        <div class="mt-6 text-center">
+            <button type="button" onclick="toggleMatchesMenu()" class="btn-trampix-secondary">
+                Conexões
+                @if(isset($userMatches) && $userMatches && count($userMatches))
+                    <span class="ml-2 inline-flex items-center justify-center h-6 w-6 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold">{{ count($userMatches) }}</span>
+                @endif
+            </button>
         </div>
-        <div class="mt-6 text-sm text-gray-800">Este menu fecha automaticamente em 30 segundos.</div>
-      </div>
-    </div>
-  </div>
-  <!-- Confetti Animation -->
-  <div x-show="confetti.visible" class="fixed inset-0 pointer-events-none z-50">
-    <div class="absolute inset-0" id="confetti-container"></div>
-  </div>
+    @elseif($isCompany && isset($companyJob) && $companyJob && isset($candidate) && $candidate)
+        <div class="mb-4 text-center">
+            <span class="inline-block text-sm font-medium text-gray-700">Vaga ativa: {{ $companyJob->title }}</span>
+            <a href="{{ route('connect.jobs') }}" class="ml-2 inline-flex items-center px-2 py-1 rounded text-black hover:opacity-90" style="background-color: var(--trampix-green);">Trocar vaga</a>
+        </div>
+        <div class="flex items-center justify-center gap-6">
+            <form method="POST" action="{{ route('connect.company.decide') }}">
+                @csrf
+                <input type="hidden" name="freelancer_id" value="{{ $candidate->id }}">
+                <input type="hidden" name="action" value="rejected">
+                <button type="submit" class="btn-trampix-secondary">Rejeitar</button>
+            </form>
+            <div class="trampix-card w-full max-w-3xl">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div>
+                        @if($candidate->display_name || ($candidate->user && $candidate->user->name))
+                            <div class="inline-block rounded px-3 py-1 font-semibold mb-3 text-black" style="background-color: var(--trampix-green);">{{ $candidate->display_name ?? $candidate->user?->name }}</div>
+                        @endif
+                        <div class="space-y-2 text-sm text-gray-800">
+                            @if($candidate->bio)
+                                <div><strong>Bio:</strong> {{ \Illuminate\Support\Str::limit($candidate->bio, 220) }}</div>
+                            @endif
+                            @if($candidate->linkedin_url)
+                                <div><strong>LinkedIn:</strong> <a href="{{ $candidate->linkedin_url }}" class="text-blue-600 hover:underline" target="_blank" rel="noopener">{{ $candidate->linkedin_url }}</a></div>
+                            @endif
+                            @if($candidate->whatsapp)
+                                <div><strong>WhatsApp:</strong> {{ $candidate->whatsapp }}</div>
+                            @endif
+                            @if($candidate->cv_url)
+                                <div><strong>Currículo:</strong> <a href="{{ route('freelancers.download-cv', $candidate->id) }}" class="text-indigo-600 hover:underline">Download</a></div>
+                            @endif
+                        </div>
+                        <div class="mt-4 text-center">
+                            <a href="{{ $candidate->user ? route('profiles.show', $candidate->user) : '#' }}" class="btn-trampix-secondary">Ir para perfil do Freelancer</a>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        @if($candidate->profile_photo)
+                            <img src="{{ asset('storage/'.$candidate->profile_photo) }}" alt="Foto do freelancer" class="mx-auto h-32 w-32 object-cover rounded-lg shadow" />
+                        @else
+                            <div class="mx-auto h-32 w-32 rounded-lg shadow bg-gray-200 flex items-center justify-center text-gray-600 text-xs uppercase">sem foto</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            <form method="POST" action="{{ route('connect.company.decide') }}">
+                @csrf
+                <input type="hidden" name="freelancer_id" value="{{ $candidate->id }}">
+                <input type="hidden" name="action" value="liked">
+                <button type="submit" class="btn-trampix-company">Curtir</button>
+            </form>
+        </div>
+        <div class="mt-6 text-center">
+            <button type="button" onclick="toggleMatchesMenu()" class="btn-trampix-secondary">
+                Conexões
+                @if(isset($userMatches) && $userMatches && count($userMatches))
+                    <span class="ml-2 inline-flex items-center justify-center h-6 w-6 rounded-full bg-green-100 text-green-700 text-xs font-semibold">{{ count($userMatches) }}</span>
+                @endif
+            </button>
+        </div>
+    @else
+        <div class="flex items-center justify-center">
+            <div class="trampix-card w-full max-w-md text-center">
+                @php $isCompany = auth()->user()?->isCompany(); $isFreelancer = auth()->user()?->isFreelancer(); @endphp
+                @if($isFreelancer && !isset($job))
+                    <h3 class="text-lg font-semibold text-gray-900">Nenhuma vaga disponível</h3>
+                    <p class="mt-2 text-sm text-gray-700">Sem vagas ativas ou todas já foram curtidas/rejeitadas.</p>
+                    <div class="mt-3"><a href="{{ route('vagas.index') }}" class="btn-trampix-secondary">Ver todas as vagas</a></div>
+                @elseif($isCompany && (!isset($companyJob) || !$companyJob))
+                    <h3 class="text-lg font-semibold text-gray-900">Selecione uma vaga</h3>
+                    <p class="mt-2 text-sm text-gray-700">Escolha uma vaga ativa para conectar.</p>
+                    <div class="mt-3"><a href="{{ route('connect.jobs') }}" class="btn-trampix-company">Conectar</a></div>
+                @elseif($isCompany && isset($companyJob) && !$candidate)
+                    <h3 class="text-lg font-semibold text-gray-900">Sem candidatos disponíveis</h3>
+                    <p class="mt-2 text-sm text-gray-700">Todos os freelancers desta sessão já foram curtidos ou rejeitados.</p>
+                    <div class="mt-3"><a href="{{ route('connect.jobs') }}" class="btn-trampix-company">Trocar vaga</a></div>
+                @else
+                    <h3 class="text-lg font-semibold text-gray-900">Conectar</h3>
+                @endif
+            </div>
+        </div>
+    @endif
 </div>
 
-<meta name="csrf-token" content="{{ csrf_token() }}">
+<div id="matchesMenu" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;">
+    @php $isCompany = auth()->user()?->isCompany(); @endphp
+    <div class="w-full max-w-md mx-auto rounded-lg shadow-2xl overflow-hidden">
+        <div class="px-4 py-3 flex items-center justify-between" style="background-color: {{ $isCompany ? 'var(--trampix-green)' : '#8F3FF7' }};">
+            <h3 class="text-lg font-semibold text-black">Conexões</h3>
+            <button class="btn-trampix-secondary" onclick="toggleMatchesMenu()">Fechar</button>
+        </div>
+        <div class="bg-white p-4 space-y-3">
+            @if(isset($userMatches) && $userMatches && count($userMatches))
+                @foreach($userMatches as $m)
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            @if(!$isCompany)
+                                @php $logo = $m->company_logo ? asset('storage/'.$m->company_logo) : null; @endphp
+                                @if($logo)
+                                    <img src="{{ $logo }}" class="h-8 w-8 rounded-full object-cover" alt="logo">
+                                @else
+                                    <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-[10px] uppercase">sem logo</div>
+                                @endif
+                                <span class="text-sm">{{ $m->company_name ?? 'Empresa' }} — {{ $m->job_title }}</span>
+                            @else
+                                @php $photo = $m->freelancer_photo ? asset('storage/'.$m->freelancer_photo) : null; @endphp
+                                @if($photo)
+                                    <img src="{{ $photo }}" class="h-8 w-8 rounded-full object-cover" alt="foto">
+                                @else
+                                    <div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 text-[10px] uppercase">sem foto</div>
+                                @endif
+                                <span class="text-sm">{{ $m->freelancer_name }} — {{ $m->job_title }}</span>
+                            @endif
+                        </div>
+                        @if(!$isCompany)
+                            <a href="{{ route('companies.show', $m->company_id) }}" class="btn-trampix-secondary">Ver perfil</a>
+                        @else
+                            <a href="{{ route('profiles.show', $m->user_id) }}" class="btn-trampix-secondary">Ver perfil</a>
+                        @endif
+                    </div>
+                @endforeach
+            @else
+                <div class="text-sm text-gray-700">Sem conexões ainda.</div>
+            @endif
+        </div>
+    </div>
+</div>
+
+@if(isset($confetti) && $confetti)
+<div id="confetti-overlay" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 pointer-events-none">
+        <div class="absolute inset-0" id="confetti-container"></div>
+    </div>
+    <div class="trampix-card shadow-2xl max-w-md w-full text-center">
+        <h3 class="text-xl font-bold mb-2">Match!</h3>
+        @if(isset($confettiMessage) && $confettiMessage)
+            <div class="text-sm text-gray-800">{{ $confettiMessage }}</div>
+        @elseif(isset($newMatches) && $newMatches && count($newMatches))
+            <div class="space-y-1 text-sm text-gray-800">
+                @foreach($newMatches as $msg)
+                    <div>{{ $msg }}</div>
+                @endforeach
+            </div>
+        @else
+            <div class="text-sm text-gray-800">Você se conectou!</div>
+        @endif
+        <div class="mt-4">
+            <button class="btn-trampix-secondary" onclick="dismissConfetti()">Fechar</button>
+        </div>
+    </div>
+</div>
+<script>
+(function(){
+    const container = document.getElementById('confetti-container');
+    if (!container) return;
+    container.innerHTML = '';
+    const colors = ['#8F3FF7','#B9FF66','#3b82f6','#22c55e','#f59e0b','#ef4444'];
+    for (let i = 0; i < 100; i++) {
+      const conf = document.createElement('div');
+      conf.style.position = 'absolute';
+      conf.style.width = Math.floor(Math.random()*8 + 6)+'px';
+      conf.style.height = conf.style.width;
+      conf.style.background = colors[Math.floor(Math.random()*colors.length)];
+      conf.style.borderRadius = '50%';
+      conf.style.left = Math.floor(Math.random()*100)+'%';
+      conf.style.top = '-20px';
+      conf.style.opacity = '0.9';
+      container.appendChild(conf);
+      const duration = Math.random()*2000 + 2500;
+      const translateY = window.innerHeight + 100;
+      conf.animate([
+        { transform: 'translateY(0)' },
+        { transform: 'translateY('+translateY+'px)' }
+      ], { duration, easing: 'ease-out' });
+    }
+    setTimeout(()=>{ const overlay=document.getElementById('confetti-overlay'); if(overlay){ overlay.style.display='none'; } }, 3500);
+})();
+function dismissConfetti(){
+  const overlay = document.getElementById('confetti-overlay');
+  if (overlay) overlay.style.display='none';
+}
+</script>
+@endif
 
 <script>
-  function connectModule(selectedJobId = null, newMatchesCount = 0, initialCard = null) {
-    return {
-      card: initialCard || null,
-      disabled: false,
-      cardsShown: 0,
-      lastRejectedId: null,
-      selectedJobId: selectedJobId,
-      newMatchesCount: newMatchesCount,
-      companyMustSelectFirst: "{{ (session('active_role') === 'company') && auth()->user()?->isCompany() && isset($companyVacancies) && $companyVacancies && (!isset($selectedJob) || !$selectedJob) ? 'true' : 'false' }}" === "true",
-      snackbar: { visible: false, message: '', undo: false, timer: null },
-      matchMenu: { visible: false, title: '', options: [], timer: null },
-      matchesOverlay: { visible: false },
-      userMatches: [],
-      confetti: { visible: false, timer: null },
-      endpoints: {
-        next: "{{ route('connect.next') }}",
-        decide: "{{ route('connect.decide') }}",
-      },
-      init() {
-        // Se a empresa ainda não selecionou uma vaga, não carregar cards
-        if (!this.selectedJobId && this.companyMustSelectFirst) {
-          this.disabled = true;
-          return;
-        }
-        if (!this.card) { this.loadNext(); }
-        // Atalhos de teclado
-        window.addEventListener('keydown', (e) => {
-          if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
-          if (e.key.toLowerCase() === 'a') this.decide('rejected');
-          if (e.key.toLowerCase() === 'd') this.decide('liked');
-        });
-        // Load matches data from server
-        try {
-          const el = document.getElementById('MATCHES_DATA');
-          this.userMatches = el ? JSON.parse(el.textContent || '[]') : [];
-        } catch (e) { this.userMatches = []; }
-        if ((this.newMatchesCount || 0) > 0) { this.showConfetti(); }
-      },
-      async loadNext() {
-        try {
-          const res = await fetch(this.endpoints.next, { headers: { 'Accept': 'application/json' } });
-          if (res.status === 204) {
-            // vazio ou limite atingido
-            this.card = null;
-            this.disabled = true;
-            this.snackbarShow('Fim dos cards nesta sessão ou sem recomendações no momento.', false);
-            return;
-          }
-          this.card = await res.json();
-          this.cardsShown++;
-        } catch (err) {
-          console.error('Erro ao carregar próximo card', err);
-        }
-      },
-      cardTitle() {
-        if (!this.card) return '—';
-        const t = this.card?.payload?.title || '—';
-        return `${t}`;
-      },
-      cardType() {
-        if (!this.card) return '—';
-        return this.card.type === 'job' ? 'Vaga' : 'Freelancer';
-      },
-      async decide(action) {
-        if (!this.card) return;
-        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        const payload = {
-          recommendation_id: Number(this.card.id),
-          action: action,
-          job_vacancy_id: this.selectedJobId ? Number(this.selectedJobId) : null,
-        };
-        try {
-          const res = await fetch(this.endpoints.decide, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'X-CSRF-TOKEN': token,
-            },
-            body: JSON.stringify(payload),
-          });
-          if (!res.ok) {
-            this.snackbarShow(`Erro ao enviar decisão (status ${res.status}).`, false);
-            return;
-          }
-          const data = await res.json();
-          if (data && data.match) {
-            this.showConfetti();
-            this.showMatchMenu();
-          } else if (action === 'rejected') {
-            // habilita undo por 5s
-            this.lastRejectedId = this.card.id;
-            this.snackbarShow('Rejeitado. Desfazer?', true);
-          } else if (action === 'liked') {
-            this.snackbarShow('Curtido! Se o outro lado também curtir, vira Match.', false);
-          }
-        } catch (err) {
-          console.error('Erro ao enviar decisão', err);
-          this.snackbarShow('Falha na conexão ao enviar a decisão. Verifique sua rede e tente novamente.', false);
-        } finally {
-          // Puxa próximo
-          this.loadNext();
-        }
-      },
-      snackbarShow(message, undo) {
-        if (this.snackbar.timer) clearTimeout(this.snackbar.timer);
-        this.snackbar.message = message;
-        this.snackbar.undo = !!undo;
-        this.snackbar.visible = true;
-        this.snackbar.timer = setTimeout(() => { this.snackbar.visible = false; this.snackbar.undo = false; }, 5000);
-      },
-      async performUndo() {
-        if (!this.lastRejectedId) return;
-        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-        try {
-          await fetch(this.endpoints.decide, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'X-CSRF-TOKEN': token,
-            },
-            body: JSON.stringify({ recommendation_id: this.lastRejectedId, action: 'undo' }),
-          });
-        } catch (e) { console.error('Falha ao desfazer', e); }
-        finally {
-          this.snackbar.visible = false;
-          this.snackbar.undo = false;
-          this.lastRejectedId = null;
-        }
-      },
-      openMatchesList() {
-        this.matchesOverlay.visible = true;
-      },
-      showMatchMenu() {
-        this.matchMenu.visible = true; this.matchMenu.title = 'Match!';
-        const opts = [];
-        if (this.card?.type === 'job' && this.card?.payload?.job_url) { opts.push({ label: 'Ir para vaga completa', href: this.card.payload.job_url }); }
-        if (this.card?.type === 'freelancer' && this.card?.payload?.profile_url) { opts.push({ label: 'Ir para perfil de ' + (this.card.payload.title || 'Freelancer'), href: this.card.payload.profile_url }); }
-        this.matchMenu.options = opts;
-        if (this.matchMenu.timer) clearTimeout(this.matchMenu.timer);
-        this.matchMenu.timer = setTimeout(() => { this.matchMenu.visible = false; }, 30000);
-      },
-      showConfetti() {
-        this.confetti.visible = true;
-        const container = document.getElementById('confetti-container');
-        if (!container) return;
-        container.innerHTML = '';
-        const colors = ['#8F3FF7','#B9FF66','#3b82f6','#22c55e','#f59e0b','#ef4444'];
-        for (let i = 0; i < 80; i++) {
-          const conf = document.createElement('div');
-          conf.style.position = 'absolute';
-          conf.style.width = Math.floor(Math.random()*8 + 6)+'px';
-          conf.style.height = conf.style.width;
-          conf.style.background = colors[Math.floor(Math.random()*colors.length)];
-          conf.style.borderRadius = '50%';
-          conf.style.left = Math.floor(Math.random()*100)+'%';
-          conf.style.top = '-20px';
-          conf.style.opacity = '0.9';
-          conf.style.transform = 'translateY(0)';
-          conf.style.animation = `fall ${Math.random()*2 + 2}s linear forwards`;
-          conf.style.animationDelay = (Math.random()*0.8)+'s';
-          container.appendChild(conf);
-        }
-        if (this.confetti.timer) clearTimeout(this.confetti.timer);
-        this.confetti.timer = setTimeout(() => { this.confetti.visible = false; container.innerHTML=''; }, 3500);
-      }
-    }
-  }
+function toggleMatchesMenu(){
+  const el = document.getElementById('matchesMenu');
+  if (!el) return;
+  el.style.display = (el.style.display === 'none' || !el.style.display) ? 'block' : 'none';
+}
 </script>
-<script id="MATCHES_DATA" type="application/json">@json($userMatches ?? [])</script>
-<!-- overlay removido: agora incorporado no componente principal -->
 @endsection
