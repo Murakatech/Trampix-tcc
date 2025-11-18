@@ -93,7 +93,7 @@
                                                 @if($application->freelancer->user->profile_photo)
                                                     <img src="{{ asset('storage/' . $application->freelancer->user->profile_photo) }}" 
                                                          alt="{{ $application->freelancer->user->name }}" 
-                                                         class="h-10 w-10 rounded-full object-cover">
+                                                         class="h-10 w-10 rounded-full object-cover" loading="lazy">
                                                 @else
                                                     <div class="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
                                                         <i class="fas fa-user text-gray-600"></i>

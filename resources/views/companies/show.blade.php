@@ -48,7 +48,7 @@
                                 </div>
                             @endif
 
-                            @php $sectorNames = $company->sectors->pluck('name')->implode(', '); @endphp
+                            @php($sectorNames = $company->sectors->pluck('name')->implode(', '))
                             @if($sectorNames)
                                 <div class="mb-2">
                                     <strong>Setor:</strong> {{ $sectorNames }}

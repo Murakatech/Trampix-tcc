@@ -262,8 +262,7 @@
 
                 <div class="space-y-4">
                     @forelse($recentApplications as $index => $application)
-                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-300 hover:border-blue-300 group transform hover:scale-[1.02] application-card" 
-                             style="animation-delay: {{ $index * 0.1 }}s">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-300 hover:border-blue-300 group transform hover:scale-[1.02] application-card">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <h3 class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
@@ -343,8 +342,7 @@
 
                 <div class="space-y-4">
                     @forelse($recommendedJobs as $index => $job)
-                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-300 hover:border-green-300 group transform hover:scale-[1.02] job-card" 
-                             style="animation-delay: {{ $index * 0.1 }}s">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-300 hover:border-green-300 group transform hover:scale-[1.02] job-card">
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <h3 class="font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200">

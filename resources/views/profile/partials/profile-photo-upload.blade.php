@@ -19,7 +19,7 @@
             <div class="mb-4">
                 <img src="{{ asset('storage/' . $profile->profile_photo) }}" 
                      alt="{{ $type === 'freelancer' ? 'Foto de perfil' : 'Logo da empresa' }}" 
-                     class="w-24 h-24 rounded-full object-cover border-2 border-gray-200">
+                     class="w-24 h-24 rounded-full object-cover border-2 border-gray-200" loading="lazy">
             </div>
         @endif
         
@@ -54,8 +54,9 @@
                 @csrf
                 @method('delete')
                 <input type="hidden" name="profile_type" value="{{ $type }}">
+                @php $removeLabel = $type === 'freelancer' ? 'foto' : 'logo'; @endphp
                 <button type="button" class="text-red-600 hover:text-red-800 text-sm transition-colors duration-200"
-                        onclick="showRemovePhotoConfirmation('{{ $type === 'freelancer' ? 'foto' : 'logo' }}')">
+                        onclick="showRemovePhotoConfirmation('{{ $removeLabel }}')">
                     Remover {{ $type === 'freelancer' ? 'foto' : 'logo' }}
                 </button>
             </form>

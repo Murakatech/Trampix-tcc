@@ -85,7 +85,7 @@
                                                         <img src="{{ asset('storage/' . $freelancer->profile_photo) }}" 
                                                              alt="Foto de {{ $freelancer->user->name }}" 
                                                              class="rounded-circle me-2" 
-                                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                                             style="width: 40px; height: 40px; object-fit: cover;" loading="lazy">
                                                     @else
                                                         <div class="bg-success rounded-circle me-2 d-flex align-items-center justify-content-center" 
                                                              style="width: 40px; height: 40px;">

@@ -156,10 +156,14 @@
     @endif
 </div>
 
+<style>
+    .bg-trampix-company { background-color: var(--trampix-green); }
+    .bg-trampix-freelancer { background-color: #8F3FF7; }
+</style>
 <div id="matchesMenu" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="display:none;">
     @php $isCompany = auth()->user()?->isCompany(); @endphp
     <div class="w-full max-w-md mx-auto rounded-lg shadow-2xl overflow-hidden">
-        <div class="px-4 py-3 flex items-center justify-between" style="background-color: {{ $isCompany ? 'var(--trampix-green)' : '#8F3FF7' }};">
+        <div class="px-4 py-3 flex items-center justify-between {{ $isCompany ? 'bg-trampix-company' : 'bg-trampix-freelancer' }}">
             <h3 class="text-lg font-semibold text-black">Conexões</h3>
             <button class="btn-trampix-secondary" onclick="toggleMatchesMenu()">Fechar</button>
         </div>
