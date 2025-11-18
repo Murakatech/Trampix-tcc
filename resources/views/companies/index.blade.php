@@ -90,7 +90,7 @@
                                                     @endif
                                                     <div>
                                                         <strong>{{ $company->name }}</strong>
-                                                        @php($sectorNames = $company->sectors->pluck('name')->implode(', '))
+                                                        @php $sectorNames = $company->sectors->pluck('name')->implode(', '); @endphp
                                                         @if($sectorNames)
                                                             <br><small class="text-muted">{{ $sectorNames }}</small>
                                                         @endif

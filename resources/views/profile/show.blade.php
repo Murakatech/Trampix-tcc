@@ -266,7 +266,7 @@
                                     <strong>CNPJ:</strong> {{ $activeProfile->cnpj }}
                                 </div>
                             @endif
-                            @php($sectorNames = method_exists($activeProfile, 'sectors') ? $activeProfile->sectors->pluck('name')->implode(', ') : '')
+                            @php $sectorNames = method_exists($activeProfile, 'sectors') ? $activeProfile->sectors->pluck('name')->implode(', ') : ''; @endphp
                             @if($sectorNames)
                                 <div class="col-md-6 mb-2">
                                     <strong>Setor:</strong> {{ $sectorNames }}
