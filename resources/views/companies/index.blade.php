@@ -93,8 +93,6 @@
                                                         @php($sectorNames = $company->sectors->pluck('name')->implode(', '))
                                                         @if($sectorNames)
                                                             <br><small class="text-muted">{{ $sectorNames }}</small>
-                                                        @elseif($company->sector)
-                                                            <br><small class="text-muted">{{ $company->sector }}</small>
                                                         @endif
                                                     </div>
                                                 </div>

@@ -40,7 +40,7 @@
                             </div>
                             <div class="mb-2">
                                 <strong>Sua avaliação enviada:</strong>
-                                @php $myAvg = $application->company_rating_avg ?? $application->company_rating; @endphp
+                                @php $myAvg = $application->company_rating; @endphp
                                 @if($myAvg)
                                     <span class="badge bg-primary">{{ number_format((float)$myAvg, 1) }}/5</span>
                                 @else
@@ -49,7 +49,7 @@
                             </div>
                             <div class="mb-2">
                                 <strong>Nota que sua empresa recebeu:</strong>
-                                @php $fromFreelancerAvg = $application->freelancer_rating_avg ?? $application->freelancer_rating; @endphp
+                                @php $fromFreelancerAvg = $application->freelancer_rating; @endphp
                                 @if($fromFreelancerAvg)
                                     <span class="badge bg-warning text-dark">{{ number_format((float)$fromFreelancerAvg, 1) }}/5</span>
                                 @else
@@ -66,7 +66,7 @@
                         <div class="card-footer bg-transparent d-flex gap-2">
                             <a href="{{ route('vagas.status', $application->jobVacancy->id) }}" class="btn btn-sm btn-outline-primary">Ver detalhes da vaga</a>
                             <a href="{{ route('profiles.show', $application->freelancer->user) }}" class="btn btn-sm btn-outline-secondary">Ver perfil do freelancer</a>
-                            @if($application->company_rating || $application->company_rating_avg)
+                            @if($application->company_rating)
                                 <a href="{{ route('applications.evaluate.show', $application) }}" class="btn btn-sm btn-outline-secondary">Avaliação Completa</a>
                             @elseif($application->status === 'ended')
                                 <a href="{{ route('applications.evaluate.create', $application) }}" class="btn btn-sm btn-primary">Avaliar</a>

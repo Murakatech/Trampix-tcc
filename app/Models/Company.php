@@ -14,7 +14,6 @@ class Company extends Model
         'display_name',
         'name',
         'cnpj',
-        'sector',
         'location',
         'description',
         'website',

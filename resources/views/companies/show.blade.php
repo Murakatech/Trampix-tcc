@@ -53,10 +53,6 @@
                                 <div class="mb-2">
                                     <strong>Setor:</strong> {{ $sectorNames }}
                                 </div>
-                            @elseif($company->sector)
-                                <div class="mb-2">
-                                    <strong>Setor:</strong> {{ $company->sector }}
-                                </div>
                             @endif
 
                             @if($company->location)

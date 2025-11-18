@@ -30,7 +30,6 @@ class CompanyUpdateRequest extends FormRequest
                 'max:18',
                 Rule::unique('companies', 'cnpj')->ignore($companyId),
             ],
-            'sector' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:100',
             'description' => 'nullable|string|max:1000',
             'website' => 'nullable|url|max:255',

@@ -506,7 +506,8 @@ class ProfileController extends Controller
             'company_name' => 'required|string|min:3|max:255',
             'cnpj' => 'nullable|string|size:18', // Com máscara: 00.000.000/0000-00
             'description' => 'required|string|min:30|max:1000',
-            'sector' => 'required|string|max:255',
+            'sectors' => 'nullable|array',
+            'sectors.*' => 'exists:sectors,id',
             'website' => 'nullable|url|max:255',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,svg|max:5120', // 5MB
         ]);
@@ -528,10 +529,13 @@ class ProfileController extends Controller
             'name' => $validated['company_name'],
             'cnpj' => $validated['cnpj'] ?? null,
             'description' => $validated['description'],
-            'sector' => $validated['sector'],
             'website' => $validated['website'] ?? null,
             'logo' => $validated['logo'] ?? null,
         ]);
+
+        if (isset($validated['sectors'])) {
+            $company->sectors()->sync($validated['sectors']);
+        }
 
         // Definir empresa como perfil ativo
         session(['active_role' => 'company']);

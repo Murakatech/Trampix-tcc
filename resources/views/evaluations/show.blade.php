@@ -27,7 +27,7 @@
             ? (is_array($application->company_ratings_json) ? $application->company_ratings_json : (json_decode($application->company_ratings_json ?? '[]', true) ?: []))
             : (is_array($application->freelancer_ratings_json) ? $application->freelancer_ratings_json : (json_decode($application->freelancer_ratings_json ?? '[]', true) ?: []));
 
-        $avg = $isCompanyOwner ? ($application->company_rating_avg ?? $application->company_rating) : ($application->freelancer_rating_avg ?? $application->freelancer_rating);
+        $avg = $isCompanyOwner ? ($application->company_rating) : ($application->freelancer_rating);
         $comment = $isCompanyOwner ? $application->company_comment : $application->freelancer_comment;
 
         $questions = [

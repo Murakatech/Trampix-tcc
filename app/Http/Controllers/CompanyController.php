@@ -57,7 +57,6 @@ class CompanyController extends Controller
         $validated = $request->validate([
             'display_name' => 'required|string|min:2|max:255',
             'cnpj' => 'nullable|string|max:18|unique:companies,cnpj',
-            'sector' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:100',
             'description' => 'nullable|string|max:1000',
             'website' => 'nullable|url|max:255',
@@ -136,7 +135,6 @@ class CompanyController extends Controller
                 'max:18',
                 Rule::unique('companies', 'cnpj')->ignore($company->id),
             ],
-            'sector' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:100',
             'description' => 'nullable|string|max:1000',
             'website' => 'nullable|url|max:255',
