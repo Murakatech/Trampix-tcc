@@ -55,7 +55,7 @@
   .btn-trampix-company {
     @apply btn;
     background-color: var(--trampix-green);
-    border-color: var(--trampix-green);
+    border: 2px solid var(--trampix-green);
     color: var(--trampix-black);
     border-radius: 12px;
     padding: 12px 24px;

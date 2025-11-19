@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Application;
+use App\Models\Category;
 use App\Models\Freelancer;
 use App\Models\JobVacancy;
 use App\Models\Segment;
@@ -15,107 +16,147 @@ class FreelancersAndApplicationsSeeder extends Seeder
 {
     public function run(): void
     {
-        $segments = Segment::orderBy('id')->get();
-        if ($segments->count() === 0) {
+        $segments = Segment::with('categories')->get();
+
+        if ($segments->isEmpty()) {
+            $this->command?->error("Rodar antes o seeder de Segmentos e Categorias!");
             return;
         }
 
-        $names = [
-            'Ana Souza',
-            'Bruno Lima',
-            'Carla Mendes',
-            'Diego Almeida',
-            'Eduarda Pires',
-            'Felipe Martins',
-            'Gabriela Rocha',
-            'Henrique Santos',
-            'Isabela Nogueira',
-            'João Pedro Costa',
-        ];
+        // -------- ENDEREÇOS 100% região de Ribeirão Preto --------
         $locations = [
-            'São Paulo/SP',
-            'Rio de Janeiro/RJ',
-            'Belo Horizonte/MG',
-            'Curitiba/PR',
-            'Porto Alegre/RS',
-            'Recife/PE',
-            'Salvador/BA',
-            'Florianópolis/SC',
-            'Fortaleza/CE',
-            'Brasília/DF',
+            "Ribeirão Preto/SP",
+            "Sertãozinho/SP",
+            "Jardinópolis/SP",
+            "Cravinhos/SP",
+            "Serrana/SP",
+            "Bonfim Paulista/SP",
+            "Dumont/SP",
+            "Brodowski/SP",
+            "Guatapará/SP",
+            "Pontal/SP",
+            "Barrinha/SP",
         ];
-        $rates = [120, 95, 110, 100, 130, 85, 140, 105, 115, 125];
-        $bios = [
-            'Experiência prática e foco em resultados.',
-            'Portfólio sólido e entregas consistentes.',
-            'Metodologias ágeis e comunicação clara.',
-            'Pesquisa aplicada e melhoria contínua.',
-            'Design centrado no usuário e testes.',
-            'Estratégia de marca e conteúdo.',
-            'Otimização de processos e métricas.',
-            'Análise de dados e insights acionáveis.',
-            'Storytelling e experiência digital.',
-            'Colaboração multidisciplinar e inovação.',
+
+        // -------- NOMES BRASILEIROS POR SEGMENTO --------
+        $nomeBase = [
+            "Gastronomia & Eventos" => [
+                "Ana Paula Ferreira",
+                "João Victor Carvalho"
+            ],
+            "Serviços Gerais & Operacionais" => [
+                "Carlos Henrique Souza",
+                "Marcos Almeida"
+            ],
+            "Comércio & Atendimento" => [
+                "Fernanda Ribeiro",
+                "Lucas Teixeira"
+            ],
+            "Criatividade, Mídia & Conteúdo" => [
+                "Beatriz Santos",
+                "Felipe Rodrigues"
+            ],
+            "Tecnologia & Desenvolvimento" => [
+                "Rafael Lima",
+                "Thiago Martins"
+            ],
+            "Saúde, Beleza & Bem-estar" => [
+                "Camila Nogueira",
+                "Juliana Rocha"
+            ],
+            "Educação & Especialistas" => [
+                "Patrícia Oliveira",
+                "Gustavo Mendes"
+            ],
         ];
 
         $freelancers = [];
-        for ($i = 0; $i < 10; $i++) {
-            $seg = $segments[$i % $segments->count()];
-            $name = $names[$i];
-            $slug = Str::slug($name);
-            $email = $slug.'@seed.trampix';
 
-            $user = User::updateOrCreate(
-                ['email' => $email],
-                [
-                    'name' => $name,
-                    'display_name' => $name,
-                    'password' => Hash::make('Trampix@123'),
-                    'email_verified_at' => now(),
-                    'role' => 'freelancer',
-                ]
-            );
+        // -------- CRIAÇÃO DOS FREELANCERS --------
+        foreach ($segments as $segment) {
 
-            $freelancer = Freelancer::updateOrCreate(
-                ['user_id' => $user->id],
-                [
-                    'display_name' => $name,
-                    'bio' => 'Profissional de '.$seg->name.'. '.$bios[$i],
-                    'portfolio_url' => 'https://portfolio.example.com/'.$slug,
-                    'linkedin_url' => 'https://www.linkedin.com/in/'.$slug,
-                    'cv_url' => 'https://cv.example.com/'.$slug.'.pdf',
-                    'whatsapp' => '55119'.str_pad((string) (870000 + $i), 7, '0', STR_PAD_LEFT),
-                    'location' => $locations[$i],
-                    'hourly_rate' => $rates[$i],
-                    'availability' => 'project_based',
-                    'is_active' => true,
-                    'segment_id' => $seg->id,
-                ]
-            );
-            $freelancer->segments()->sync([$seg->id]);
-            $freelancers[] = $freelancer;
+            $nomes = $nomeBase[$segment->name] ?? [];
+
+            foreach ($nomes as $nome) {
+
+                $slug = Str::slug($nome);
+                $email = $slug . '@seed.trampix';
+
+                $user = User::updateOrCreate(
+                    ['email' => $email],
+                    [
+                        'name'              => $nome,
+                        'display_name'      => $nome,
+                        'role'              => 'freelancer',
+                        'password'          => Hash::make('Trampix@123'),
+                        'email_verified_at' => now(),
+                    ]
+                );
+
+                // BIO REALISTA
+                $bio = "{$nome} atua profissionalmente no segmento de {$segment->name}, com sólida experiência prática 
+e participação em diversos projetos reais. Possui histórico consistente de entregas com qualidade, boa comunicação 
+e foco total em resultados.";
+
+                // PERFIL COMPLETO (SEM FOTO)
+                $freela = Freelancer::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'display_name'     => $nome,
+                        'bio'              => $bio,
+                        'portfolio_url'    => "https://portfolio.trampix.com/{$slug}",
+                        'linkedin_url'     => "https://linkedin.com/in/{$slug}",
+                        'cv_url'           => "https://files.trampix.com/cv/{$slug}.pdf",
+                        'whatsapp'         => '55119'.rand(900000000, 999999999),
+                        'location'         => $locations[array_rand($locations)],
+                        'hourly_rate'      => rand(60, 150),
+                        'availability'     => 'project_based',
+                        'is_active'        => true,
+                        'segment_id'       => $segment->id,
+                    ]
+                );
+
+                $freela->segments()->sync([$segment->id]);
+                $freelancers[] = $freela;
+            }
         }
 
-        $jobs = JobVacancy::query()->orderBy('id')->get();
-        if ($jobs->count() === 0) {
+        // -------- TODAS AS VAGAS --------
+        $jobs = JobVacancy::with('category')->get();
+
+        if ($jobs->isEmpty()) {
+            $this->command?->error("Rodar antes Empresas + Vagas!");
             return;
         }
 
-        foreach ($freelancers as $idx => $freelancer) {
-            $applyCount = 4 + ($idx % 2);
-            $selected = $jobs->shuffle()->take($applyCount);
-            foreach ($selected as $job) {
+        // -------- FREELA → APLICA EM VAGAS DO SEGMENTO --------
+        foreach ($freelancers as $freela) {
+
+            $catIds = Category::where('segment_id', $freela->segment_id)->pluck('id');
+
+            $matching = JobVacancy::whereIn('category_id', $catIds)->get();
+
+            if ($matching->isEmpty()) continue;
+
+            $applyIn = $matching->shuffle()->take(rand(4, 6));
+
+            foreach ($applyIn as $job) {
+
                 Application::updateOrCreate(
                     [
                         'job_vacancy_id' => $job->id,
-                        'freelancer_id' => $freelancer->id,
+                        'freelancer_id'  => $freela->id,
                     ],
                     [
-                        'cover_letter' => 'Olá, sou '.$freelancer->display_name.' com experiência em '.$seg->name.' e posso contribuir no projeto '.$job->title.'.',
+                        'cover_letter' =>
+                            "Olá! Sou {$freela->display_name}, profissional de {$job->category->name}. 
+Tenho experiência sólida na área e foco total em qualidade e responsabilidade.",
                         'status' => 'applied',
                     ]
                 );
             }
         }
+
+        $this->command?->info("Freelancers e aplicações criados com sucesso (SEM IMAGENS)!");
     }
 }

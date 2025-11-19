@@ -6,129 +6,119 @@ use App\Models\Application;
 use App\Models\Company;
 use App\Models\Freelancer;
 use App\Models\JobVacancy;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class PartnershipsAndEvaluationsSeeder extends Seeder
 {
     public function run(): void
     {
-        $endedByFreelancer = [];
-        $endedByCompany = [];
+        // DESTQUES
+        $superFreelancerName = "Lucas Teixeira";
+        $superCompanyName = "DevTech Solutions";
 
-        $freelancers = Freelancer::query()->orderBy('id')->get();
-        foreach ($freelancers as $freelancer) {
-            $app = Application::where('freelancer_id', $freelancer->id)->first();
-            if ($app) {
-                $companyScore = 4.0 + (($freelancer->id % 3) * 0.3);
-                $freelancerScore = 4.0 + (($app->job_vacancy_id % 3) * 0.3);
-                $companyRatings = [
-                    'qualidade' => $companyScore,
-                    'comunicacao' => 4.0,
-                    'prazo' => 4.5,
-                ];
-                $freelancerRatings = [
-                    'qualidade' => $freelancerScore,
-                    'profissionalismo' => 4.5,
-                    'entrega' => 4.2,
-                ];
+        $superFreelancer = Freelancer::whereHas('user', fn($q) =>
+            $q->where('name', $superFreelancerName)
+        )->first();
 
-                $app->update([
-                    'status' => 'ended',
-                    'company_rating' => $companyScore,
-                    'company_comment' => 'Projeto concluído com qualidade e alinhamento.',
-                    'company_ratings_json' => $companyRatings,
-                    'evaluated_by_company_at' => now(),
-                    'freelancer_rating' => $freelancerScore,
-                    'freelancer_comment' => 'Cliente colaborativo e objetivo claro.',
-                    'freelancer_ratings_json' => $freelancerRatings,
-                    'evaluated_by_freelancer_at' => now(),
-                ]);
+        $superCompany = Company::where('display_name', $superCompanyName)->first();
 
-                $endedByFreelancer[$freelancer->id] = $app->id;
-                $endedByCompany[$app->jobVacancy->company_id] = true;
-            }
+        if (!$superFreelancer || !$superCompany) {
+            $this->command?->error("Não encontrei Lucas Teixeira ou DevTech. Rode os outros seeders primeiro!");
+            return;
         }
 
-        $companies = Company::query()->orderBy('id')->get();
-        foreach ($companies as $company) {
-            $hasEnded = Application::whereHas('jobVacancy', function ($q) use ($company) {
-                $q->where('company_id', $company->id);
-            })->where('status', 'ended')->exists();
+        // LISTAS DE AVALIAÇÕES DETALHADAS
+        $companyComments = [
+            "Excelente qualidade técnica na execução, profissional extremamente cuidadoso no processo e atento às revisões.",
+            "Boa comunicação durante o projeto, entregas consistentes e respeito total ao escopo.",
+            "Alguns atrasos ocorreram, mas o resultado final demonstrou domínio técnico e capricho.",
+            "Demonstrou iniciativa, organização e ótima postura profissional em todas as etapas.",
+            "Trabalho muito bem documentado, seguindo padrões e boas práticas.",
+            "Resultado acima do esperado, com otimizações e melhorias além do solicitado.",
+            "Profissional comprometido, aberto a feedback e com postura exemplar.",
+            "Execução precisa, comunicação clara e facilidade para alinhar expectativas.",
+            "Superou as expectativas em vários pontos do escopo inicial.",
+            "Entregou com qualidade consistente, mantendo organização e clareza."
+        ];
 
-            if (! $hasEnded) {
-                $pending = Application::whereHas('jobVacancy', function ($q) use ($company) {
-                    $q->where('company_id', $company->id);
-                })->first();
+        $freelancerComments = [
+            "Equipe extremamente organizada, comunicação clara e retorno muito rápido.",
+            "Escopo foi bem definido e aprovado sem burocracia, ambiente ótimo de trabalho.",
+            "Processos internos eficientes e suporte constante da equipe técnica.",
+            "Empresa muito profissional, pagamentos pontuais e alinhamentos objetivos.",
+            "Experiência excelente em todas as etapas, desde briefing até entrega final.",
+            "Feedbacks construtivos e colaboração ativa, o que facilitou todo o processo.",
+            "Ambiente profissional e cordial, facilitando adaptações e revisões.",
+            "Organização impecável, documentação clara e respeito ao cronograma."
+        ];
 
-                if ($pending) {
-                    $companyRatings = [
-                        'qualidade' => 4.3,
-                        'comunicacao' => 4.1,
-                        'prazo' => 4.2,
-                    ];
-                    $freelancerRatings = [
-                        'qualidade' => 4.4,
-                        'profissionalismo' => 4.3,
-                        'entrega' => 4.0,
-                    ];
+        // DEFINIÇÃO DE QUANTAS AVALIAÇÕES POR EMPRESA
+        $evaluationMap = [
+            "DevTech Solutions"         => 25,
+            "Restaurante Sabor Caseiro" => 6,
+            "Buffet Prime Festas"       => 5,
+            "ServManutenções Pro"       => 4,
+            "Agência Criativa PixelUp"  => 7,
+        ];
 
-                    $pending->update([
-                        'status' => 'ended',
-                        'company_rating' => 4.3,
-                        'company_comment' => 'Entrega consistente dentro do escopo.',
-                        'company_ratings_json' => $companyRatings,
-                        'evaluated_by_company_at' => now(),
-                        'freelancer_rating' => 4.3,
-                        'freelancer_comment' => 'Boa comunicação e clareza de requisitos.',
-                        'freelancer_ratings_json' => $freelancerRatings,
-                        'evaluated_by_freelancer_at' => now(),
-                    ]);
-                }
-            }
-        }
+        foreach ($evaluationMap as $companyName => $count) {
 
-        $lines = [];
-        $lines[] = 'Resumo dos Seeders: Empresas, Vagas, Freelancers, Aplicações e Avaliações';
-        $lines[] = 'Credenciais de teste';
-        $lines[] = 'Senha padrão: Trampix@123';
-        $admins = User::where('role', 'admin')->get();
-        if ($admins->count() > 0) {
-            $lines[] = 'Logins de Admin:';
-            foreach ($admins as $admin) {
-                $lines[] = '- '.$admin->name.': '.$admin->email.' / Trampix@123';
-            }
-        }
-        $lines[] = 'Logins de Empresas:';
-        foreach ($companies as $company) {
-            if ($company->user) {
-                $lines[] = '- '.$company->display_name.': '.$company->user->email.' / Trampix@123';
-            }
-        }
-        $lines[] = 'Logins de Freelancers:';
-        foreach ($freelancers as $freelancer) {
-            if ($freelancer->user) {
-                $lines[] = '- '.$freelancer->display_name.': '.$freelancer->user->email.' / Trampix@123';
-            }
-        }
+            $company = Company::where('display_name', $companyName)->first();
+            if (!$company) continue;
 
-        foreach ($freelancers as $freelancer) {
-            $apps = Application::with(['jobVacancy.company'])
-                ->where('freelancer_id', $freelancer->id)
-                ->get();
-            $companiesApplied = $apps->pluck('jobVacancy.company.display_name')->unique()->values()->all();
-            $endedCount = $apps->where('status', 'ended')->count();
-            $lines[] = '- Freela '.$freelancer->display_name.' do segmento {'.($freelancer->segment ? $freelancer->segment->name : 'N/A').'} aplicou para: '.implode(', ', $companiesApplied).'; finalizados: '.$endedCount;
-        }
-
-        foreach ($companies as $company) {
             $jobs = JobVacancy::where('company_id', $company->id)->get();
-            $applications = Application::whereIn('job_vacancy_id', $jobs->pluck('id'))->get();
-            $ended = $applications->where('status', 'ended');
-            $lines[] = '- Empresa '.$company->display_name.' do segmento {'.($company->segment ? $company->segment->name : 'N/A').'} tem '.$ended->count().' trabalhos finalizados; vagas: '.$jobs->pluck('title')->implode(', ');
+            if ($jobs->isEmpty()) continue;
+
+            // Freelancers compatíveis com o segmento da empresa
+            $companySegmentIds = $company->segments->pluck('id');
+            $freelancers = Freelancer::whereHas('segments', function ($q) use ($companySegmentIds) {
+                $q->whereIn('segments.id', $companySegmentIds);
+            })->get();
+
+            if ($freelancers->isEmpty()) continue;
+
+            // Criação das avaliações reais
+            for ($i = 0; $i < $count; $i++) {
+
+                $job = $jobs->random();
+                $freela = $freelancers->random();
+
+                // Notas realistas (2.5 a 5.0)
+                $companyRating    = round(rand(25, 50) / 10, 1);
+                $freelancerRating = round(rand(25, 50) / 10, 1);
+
+                // Datas aleatórias entre 2024 e 2025
+                $daysAgo = rand(30, 450);
+
+                // APLICAÇÃO FINALIZADA
+                Application::create([
+                    'job_vacancy_id' => $job->id,
+                    'freelancer_id'  => $freela->id,
+                    'status'         => 'ended',
+
+                    // Avaliação da empresa → freelancer
+                    'company_rating'       => $companyRating,
+                    'company_comment'      => $companyComments[array_rand($companyComments)],
+                    'company_ratings_json' => [
+                        "qualidade"     => $companyRating,
+                        "comunicacao"   => round(max(2.5, $companyRating - 0.3), 1),
+                        "prazo"         => round(min(5.0, $companyRating + 0.2), 1),
+                    ],
+                    'evaluated_by_company_at' => now()->subDays($daysAgo),
+
+                    // Avaliação do freelancer → empresa
+                    'freelancer_rating'       => $freelancerRating,
+                    'freelancer_comment'      => $freelancerComments[array_rand($freelancerComments)],
+                    'freelancer_ratings_json' => [
+                        "qualidade"         => $freelancerRating,
+                        "profissionalismo"  => round(min(5.0, $freelancerRating + 0.2), 1),
+                        "entrega"           => round(max(2.5, $freelancerRating - 0.1), 1),
+                    ],
+                    'evaluated_by_freelancer_at' => now()->subDays(rand(15, $daysAgo)),
+                ]);
+            }
         }
 
-        $content = implode(PHP_EOL, $lines).PHP_EOL;
-        @file_put_contents(base_path('ResumãoTopSeeders'), $content);
+        $this->command?->info("Avaliações reais criadas com sucesso! DevTech e Lucas Teixeira com histórico completo.");
     }
 }

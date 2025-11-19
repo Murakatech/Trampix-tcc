@@ -14,135 +14,154 @@ class CompaniesAndVacanciesSeeder extends Seeder
 {
     public function run(): void
     {
-        $segmentNames = [
-            'Tecnologia e Informação',
-            'Negócios e Administração',
-            'Comunicação e Criatividade',
+        $segments = Segment::pluck('id', 'name');
+
+        // EMPRESAS (SEM LOGOS)
+        $companies = [
+
+            [
+                'name' => 'Restaurante Sabor Caseiro',
+                'email' => 'restaurante@seed.trampix',
+                'segments' => ['Gastronomia & Eventos'],
+                'description' => 'Restaurante especializado em pratos caseiros e eventos.',
+                'location' => 'Ribeirão Preto/SP',
+                'cnpj' => '11.111.111/0001-11',
+                'phone' => '(16) 3900-1001',
+                'website' => 'https://saborcaseiro.com',
+                'linkedin' => 'https://linkedin.com/company/saborcaseiro',
+            ],
+
+            [
+                'name' => 'Buffet Prime Festas',
+                'email' => 'buffet@seed.trampix',
+                'segments' => ['Gastronomia & Eventos', 'Serviços Gerais & Operacionais'],
+                'description' => 'Buffet completo para eventos e festas.',
+                'location' => 'Sertãozinho/SP',
+                'cnpj' => '22.222.222/0001-22',
+                'phone' => '(16) 3500-2200',
+                'website' => 'https://primefestas.com',
+                'linkedin' => 'https://linkedin.com/company/primefestas',
+            ],
+
+            [
+                'name' => 'ServManutenções Pro',
+                'email' => 'servmanutencao@seed.trampix',
+                'segments' => ['Serviços Gerais & Operacionais'],
+                'description' => 'Especializada em manutenção elétrica, hidráulica e reformas.',
+                'location' => 'Cravinhos/SP',
+                'cnpj' => '33.333.333/0001-33',
+                'phone' => '(16) 3200-3300',
+                'website' => 'https://servmanutencoes.com',
+                'linkedin' => 'https://linkedin.com/company/servmanutencoes',
+            ],
+
+            [
+                'name' => 'Agência Criativa PixelUp',
+                'email' => 'agenciacriativa@seed.trampix',
+                'segments' => ['Criatividade, Mídia & Conteúdo'],
+                'description' => 'Agência criativa especializada em branding e social media.',
+                'location' => 'Ribeirão Preto/SP',
+                'cnpj' => '44.444.444/0001-44',
+                'phone' => '(16) 3300-4400',
+                'website' => 'https://pixelup.com',
+                'linkedin' => 'https://linkedin.com/company/pixelup',
+            ],
+
+            [
+                'name' => 'DevTech Solutions',
+                'email' => 'devtech@seed.trampix',
+                'segments' => ['Tecnologia & Desenvolvimento'],
+                'description' => 'Software house especializada em desenvolvimento web e apps.',
+                'location' => 'Ribeirão Preto/SP',
+                'cnpj' => '55.555.555/0001-55',
+                'phone' => '(16) 3400-5500',
+                'website' => 'https://devtech.com',
+                'linkedin' => 'https://linkedin.com/company/devtech',
+            ],
         ];
 
-        $companiesData = [
-            [
-                'user' => ['name' => 'Tech Corp', 'email' => 'techcorp@seed.trampix'],
-                'company' => [
-                    'display_name' => 'Tech Corp',
-                    'name' => 'Tech Corp Tecnologia LTDA',
-                    'cnpj' => '00.000.000/0001-01',
-                    'location' => 'São Paulo/SP',
-                    'description' => 'Empresa focada em produtos digitais e inovação.',
-                    'website' => 'https://techcorp.example.com',
-                    'linkedin_url' => 'https://www.linkedin.com/company/techcorp',
-                    'email' => 'contato@techcorp.example.com',
-                    'phone' => '+55 11 3000-0001',
-                    'company_size' => 'Médio',
-                    'employees_count' => 250,
-                    'founded_year' => 2012,
-                    'is_active' => true,
-                ],
-            ],
-            [
-                'user' => ['name' => 'Biz Solutions', 'email' => 'bizsolutions@seed.trampix'],
-                'company' => [
-                    'display_name' => 'Biz Solutions',
-                    'name' => 'Biz Solutions Consultoria S/A',
-                    'cnpj' => '00.000.000/0001-02',
-                    'location' => 'Rio de Janeiro/RJ',
-                    'description' => 'Consultoria empresarial e estratégia.',
-                    'website' => 'https://bizsolutions.example.com',
-                    'linkedin_url' => 'https://www.linkedin.com/company/bizsolutions',
-                    'email' => 'contato@bizsolutions.example.com',
-                    'phone' => '+55 21 3000-0002',
-                    'company_size' => 'Grande',
-                    'employees_count' => 480,
-                    'founded_year' => 2008,
-                    'is_active' => true,
-                ],
-            ],
-            [
-                'user' => ['name' => 'Creative Labs', 'email' => 'creativelabs@seed.trampix'],
-                'company' => [
-                    'display_name' => 'Creative Labs',
-                    'name' => 'Creative Labs Comunicação ME',
-                    'cnpj' => '00.000.000/0001-03',
-                    'location' => 'Curitiba/PR',
-                    'description' => 'Estúdio criativo para marcas e conteúdo.',
-                    'website' => 'https://creativelabs.example.com',
-                    'linkedin_url' => 'https://www.linkedin.com/company/creativelabs',
-                    'email' => 'contato@creativelabs.example.com',
-                    'phone' => '+55 41 3000-0003',
-                    'company_size' => 'Pequeno',
-                    'employees_count' => 45,
-                    'founded_year' => 2016,
-                    'is_active' => true,
-                ],
-            ],
-        ];
+        foreach ($companies as $data) {
 
-        foreach ($segmentNames as $idx => $segmentName) {
-            $segment = Segment::where('name', $segmentName)->first();
-            if (! $segment) {
-                continue;
-            }
-
-            $userData = $companiesData[$idx]['user'];
-            $companyData = $companiesData[$idx]['company'];
-
+            // USER
             $user = User::updateOrCreate(
-                ['email' => $userData['email']],
+                ['email' => $data['email']],
                 [
-                    'name' => $userData['name'],
-                    'display_name' => $userData['name'],
-                    'password' => Hash::make('Trampix@123'),
+                    'name'              => $data['name'],
+                    'display_name'      => $data['name'],
+                    'role'              => 'company',
+                    'password'          => Hash::make('Trampix@123'),
                     'email_verified_at' => now(),
-                    'role' => 'company',
                 ]
             );
 
-                $company = Company::updateOrCreate(
+            // COMPANY (SEM LOGO)
+            $company = Company::updateOrCreate(
                 ['user_id' => $user->id],
-                array_merge($companyData, [
-                    'segment_id' => $segment->id,
-                ])
+                [
+                    'display_name'    => $data['name'],
+                    'name'            => $data['name'],
+                    'cnpj'            => $data['cnpj'],
+                    'location'        => $data['location'],
+                    'description'     => $data['description'],
+                    'website'         => $data['website'],
+                    'linkedin_url'    => $data['linkedin'],
+                    'email'           => $data['email'],
+                    'phone'           => $data['phone'],
+                    'company_size'    => 'Pequeno',
+                    'employees_count' => rand(5, 80),
+                    'founded_year'    => rand(2005, 2022),
+                    'is_active'       => true,
+                ]
             );
 
-            $company->segments()->sync([$segment->id]);
-            // Vincular setor normalizado
-            $sector = \App\Models\Sector::firstOrCreate(['name' => $companyData['sector'] ?? $segment->name], [
-                'slug' => \Illuminate\Support\Str::slug($companyData['sector'] ?? $segment->name),
-                'is_active' => true,
-            ]);
-            try { $company->sectors()->syncWithoutDetaching([$sector->id]); } catch (\Throwable $e) {}
+            // SEGMENTOS
+            $segmentIds = collect($data['segments'])
+                ->map(fn($s) => $segments[$s] ?? null)
+                ->filter()
+                ->take(3)
+                ->values()
+                ->toArray();
 
-            $categories = Category::where('segment_id', $segment->id)->orderBy('id')->get();
-            $total = 10;
-            for ($i = 0; $i < $total; $i++) {
-                $cat = $categories->count() > 0 ? $categories[$i % $categories->count()] : null;
-                $title = $cat ? ($cat->name.' '.($i + 1)) : ('Vaga '.($i + 1));
+            $company->segments()->sync($segmentIds);
+
+            // CATEGORIAS
+            $categories = Category::whereIn('segment_id', $segmentIds)->get();
+
+            // VAGAS
+            for ($i = 1; $i <= 5; $i++) {
+
+                $cat = $categories->random();
+                $title = $cat->name . " - " . $i;
+
                 JobVacancy::updateOrCreate(
                     [
                         'company_id' => $company->id,
                         'title' => $title,
                     ],
                     [
-                        'description' => 'Projeto para '.$title.' com escopo completo.',
-                        'requirements' => 'Experiência comprovada em '.($cat ? $cat->name : 'área relacionada').'.',
-                        'location_type' => $i % 2 === 0 ? 'Remoto' : 'Híbrido',
-                        'salary_min' => (4000 + $i * 300),
-                        'salary_max' => (7000 + $i * 300),
+                        'description' =>
+                            "Profissional para atuar em {$cat->name}, com foco em qualidade e resultados.",
+                        'requirements' =>
+                            "Experiência comprovada como {$cat->name}, boa comunicação e comprometimento.",
+                        'location_type' => $i % 2 === 0 ? 'Presencial' : 'Remoto',
+                        'salary_min' => rand(1600, 3000),
+                        'salary_max' => rand(3000, 6000),
                         'status' => 'active',
-                        'category_id' => $cat ? $cat->id : null,
+                        'category_id' => $cat->id,
                     ]
                 );
             }
         }
 
+        // ADMIN PADRÃO
         User::updateOrCreate(
             ['email' => 'admin@seed.trampix'],
             [
-                'name' => 'Admin Trampix',
-                'display_name' => 'Admin Trampix',
-                'password' => Hash::make('Trampix@123'),
+                'name'              => 'Admin Trampix',
+                'display_name'      => 'Admin Trampix',
+                'password'          => Hash::make('Trampix@123'),
+                'role'              => 'admin',
                 'email_verified_at' => now(),
-                'role' => 'admin',
             ]
         );
     }

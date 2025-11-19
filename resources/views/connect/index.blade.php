@@ -61,7 +61,7 @@
                 @csrf
                 <input type="hidden" name="job_id" value="{{ $job->id }}">
                 <input type="hidden" name="action" value="liked">
-                <button type="submit" class="btn-trampix-company">Curtir</button>
+                <button type="submit" class="btn-trampix-primary">Curtir</button>
             </form>
         </div>
         <div class="mt-6 text-center">

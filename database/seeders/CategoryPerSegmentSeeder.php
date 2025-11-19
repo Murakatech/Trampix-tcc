@@ -13,113 +13,103 @@ class CategoryPerSegmentSeeder extends Seeder
     {
         $data = [
 
-            // 💼 Negócios e Administração
-            'Negócios e Administração' => [
-                'Administração',
-                'Contabilidade',
-                'Finanças',
-                'Recursos Humanos',
-                'Marketing',
-                'Vendas e Comercial',
-                'Empreendedorismo',
-                'Comércio Exterior',
-                'Logística',
-                'Consultoria Empresarial',
+            // 🍳 Gastronomia & Eventos
+            'Gastronomia & Eventos' => [
+                'Garçom',
+                'Bartender',
+                'Cozinheiro',
+                'Chapeiro',
+                'Auxiliar de Cozinha',
+                'Confeiteiro',
+                'Barista',
+                'Buffet / Catering',
+                'Auxiliar de Eventos',
+                'Cerimonialista',
+                'Recepcionista de Eventos',
             ],
 
-            // 💻 Tecnologia e Informação
-            'Tecnologia e Informação' => [
-                'Desenvolvimento de Software',
-                'Análise de Sistemas',
-                'Suporte Técnico / Help Desk',
-                'Banco de Dados',
-                'Cibersegurança',
-                'UX/UI Design',
-                'Inteligência Artificial',
-                'Ciência de Dados',
-                'Infraestrutura e Redes',
-                'Game Design',
-            ],
-
-            // 🏗️ Engenharia e Indústria
-            'Engenharia e Indústria' => [
-                'Engenharia Civil',
-                'Engenharia Mecânica',
-                'Engenharia Elétrica',
-                'Engenharia de Produção',
-                'Engenharia Ambiental',
-                'Engenharia Química',
-                'Manutenção Industrial',
-                'Desenho Técnico / CAD',
-            ],
-
-            // 🎨 Comunicação e Criatividade
-            'Comunicação e Criatividade' => [
-                'Design Gráfico',
-                'Publicidade e Propaganda',
-                'Jornalismo',
-                'Fotografia',
-                'Produção Audiovisual',
-                'Moda',
-                'Redação e Copywriting',
-                'Social Media',
-                'Edição de Vídeo',
-            ],
-
-            // 🧑‍⚕️ Saúde e Bem-Estar
-            'Saúde e Bem-Estar' => [
-                'Enfermagem',
-                'Medicina',
-                'Psicologia',
-                'Fisioterapia',
-                'Nutrição',
-                'Educação Física',
-                'Estética e Beleza',
-            ],
-
-            // 🏫 Educação e Pesquisa
-            'Educação e Pesquisa' => [
-                'Pedagogia',
-                'Letras',
-                'Ensino de Idiomas',
-                'Pesquisa Acadêmica',
-                'Tutoria / Aulas particulares',
-            ],
-
-            // ⚖️ Jurídico e Público
-            'Jurídico e Público' => [
-                'Direito',
-                'Advocacia',
-                'Administração Pública',
-                'Contabilidade Pública',
-                'Gestão Governamental',
-            ],
-
-            // 🌱 Meio Ambiente e Sustentabilidade
-            'Meio Ambiente e Sustentabilidade' => [
-                'Gestão Ambiental',
-                'Agricultura / Agronegócio',
-                'Biotecnologia',
-                'Energias Renováveis',
-            ],
-
-            // 🧱 Serviços e Operações
-            'Serviços e Operações' => [
-                'Construção Civil',
-                'Transporte e Logística',
+            // 🔧 Serviços Gerais & Operacionais
+            'Serviços Gerais & Operacionais' => [
                 'Serviços Gerais',
-                'Limpeza e Conservação',
-                'Segurança Patrimonial',
+                'Faxineira / Limpeza',
+                'Jardineiro',
+                'Diarista',
+                'Pintor',
+                'Montador de Móveis',
+                'Eletricista',
+                'Encanador',
+                'Pedreiro',
+                'Ajudante de Obra',
+                'Técnico de Manutenção',
+                'Transporte / Carreto',
+                'Motoboy / Entregador',
+            ],
+
+            // 🛍 Comércio & Atendimento
+            'Comércio & Atendimento' => [
+                'Repositor',
+                'Atendente de Loja',
+                'Caixa',
+                'Promotor de Vendas',
+                'Vendedor',
+                'Telemarketing',
                 'Atendimento ao Cliente',
             ],
 
-            // 🛍️ Comércio e Atendimento
-            'Comércio e Atendimento' => [
-                'Varejo',
-                'E-commerce',
-                'Atendimento ao Cliente',
-                'Telemarketing',
-                'Representação Comercial',
+            // 🎨 Criatividade, Mídia & Conteúdo
+            'Criatividade, Mídia & Conteúdo' => [
+                'Designer Gráfico',
+                'Fotógrafo',
+                'Videomaker',
+                'Editor de Vídeo',
+                'Social Media',
+                'Redator',
+                'Criador de Conteúdo',
+                'Motion Designer',
+                'Gestão de Tráfego',
+            ],
+
+            // 💻 Tecnologia & Desenvolvimento
+            'Tecnologia & Desenvolvimento' => [
+                'Desenvolvedor Full Stack',
+                'Desenvolvedor Backend',
+                'Desenvolvedor Frontend',
+                'Desenvolvedor Mobile',
+                'Desenvolvedor WordPress / CMS',
+                'UX/UI Designer',
+                'Product Designer',
+                'QA / Testes de Software',
+                'Analista de Sistemas',
+                'Automação / Scripts',
+                'Administração de Servidores',
+                'DevOps / CI-CD',
+                'Banco de Dados / SQL',
+                'Cibersegurança',
+                'Infraestrutura / Redes',
+                'Gerenciamento de Projetos (Tech)',
+                'Gestão de Tráfego Pago (Google/Meta)',
+                'Data Science / IA',
+                'Machine Learning',
+                'Suporte Técnico / Help Desk',
+            ],
+
+            // 💅 Saúde, Beleza & Bem-estar
+            'Saúde, Beleza & Bem-estar' => [
+                'Esteticista',
+                'Manicure / Pedicure',
+                'Maquiador',
+                'Cabeleireiro',
+                'Massagista',
+                'Personal Trainer',
+            ],
+
+            // 📚 Educação & Especialistas
+            'Educação & Especialistas' => [
+                'Professor Particular',
+                'Aulas de Idiomas',
+                'Reforço Escolar',
+                'Consultoria Especializada',
+                'Instrutor Técnico',
             ],
         ];
 
@@ -127,9 +117,8 @@ class CategoryPerSegmentSeeder extends Seeder
             $segment = Segment::firstOrCreate(['name' => $segmentName]);
 
             foreach ($categories as $categoryName) {
-                $slug = Str::slug($categoryName);
                 Category::updateOrCreate(
-                    ['slug' => $slug],
+                    ['slug' => Str::slug($categoryName)],
                     [
                         'name' => $categoryName,
                         'segment_id' => $segment->id,
@@ -138,8 +127,6 @@ class CategoryPerSegmentSeeder extends Seeder
             }
         }
 
-        if (property_exists($this, 'command') && $this->command) {
-            $this->command->info('Segments and categories seeded successfully.');
-        }
+        $this->command?->info('Segments and categories seeded successfully (freelancer-optimized version).');
     }
 }
