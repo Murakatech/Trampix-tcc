@@ -16,6 +16,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfilePhotoController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // garante que {vaga} só aceite números
 Route::pattern('vaga', '[0-9]+');
@@ -297,6 +298,22 @@ Route::middleware(['auth'])->group(function () {
                                 'created_at' => now(),
                             ]);
                         }
+
+                        // Auto-criar candidatura pendente no match (se não existir)
+                        try {
+                            $appExists = \App\Models\Application::where('job_vacancy_id', $jobId)
+                                ->where('freelancer_id', $freelancerId)
+                                ->exists();
+                            if (! $appExists) {
+                                \App\Models\Application::create([
+                                    'job_vacancy_id' => $jobId,
+                                    'freelancer_id' => $freelancerId,
+                                    'status' => 'pending',
+                                ]);
+                                Log::info('Auto-application created via match', ['job_vacancy_id' => $jobId, 'freelancer_id' => $freelancerId]);
+                            }
+                        } catch (\Throwable $e) {}
+
                         $companyName = DB::table('companies')->where('id', $companyId)->value('display_name');
                         $jobTitle = DB::table('job_vacancies')->where('id', $jobId)->value('title');
                         session([
@@ -366,6 +383,22 @@ Route::middleware(['auth'])->group(function () {
                                     'created_at' => now(),
                                 ]);
                             }
+
+                            // Auto-criar candidatura pendente no match (se não existir)
+                            try {
+                                $appExists = \App\Models\Application::where('job_vacancy_id', $jobId)
+                                    ->where('freelancer_id', $freelancerId)
+                                    ->exists();
+                                if (! $appExists) {
+                                    \App\Models\Application::create([
+                                        'job_vacancy_id' => $jobId,
+                                        'freelancer_id' => $freelancerId,
+                                        'status' => 'pending',
+                                    ]);
+                                    Log::info('Auto-application created via match', ['job_vacancy_id' => $jobId, 'freelancer_id' => $freelancerId]);
+                                }
+                            } catch (\Throwable $e) {}
+
                             $freelancerName = DB::table('users')
                                 ->join('freelancers', 'users.id', '=', 'freelancers.user_id')
                                 ->where('freelancers.id', $freelancerId)

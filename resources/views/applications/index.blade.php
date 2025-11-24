@@ -143,7 +143,10 @@
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="button" class="btn btn-sm btn-outline-danger"
-                                                            onclick="showCancelConfirmation({{ $application->id }}, '{{ $application->jobVacancy->title }}', '{{ $application->jobVacancy->company->name ?? 'Empresa' }}')">
+                                                            data-application-id="{{ $application->id }}"
+                                                            data-job-title="{{ e($application->jobVacancy->title) }}"
+                                                            data-company-name="{{ e($application->jobVacancy->company->name ?? 'Empresa') }}"
+                                                            onclick="showCancelConfirmation(this.dataset.applicationId, this.dataset.jobTitle, this.dataset.companyName)">
                                                         Cancelar
                                                     </button>
                                                 </form>
