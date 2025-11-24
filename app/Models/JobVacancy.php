@@ -56,7 +56,7 @@ class JobVacancy extends Model
     {
         return $query->active()
             ->whereDoesntHave('applications', function ($q) {
-                $q->whereIn('status', ['accepted']);
+                $q->whereIn('status', ['accepted', 'ended']);
             });
     }
 

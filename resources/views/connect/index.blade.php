@@ -121,7 +121,7 @@
                 @csrf
                 <input type="hidden" name="freelancer_id" value="{{ $candidate->id }}">
                 <input type="hidden" name="action" value="liked">
-                <button type="submit" class="btn-trampix-company">Curtir</button>
+                <button type="submit" class="btn-trampix-company" style="background-color: var(--trampix-green); border: 2px solid var(--trampix-green); color: var(--trampix-black); transition: all .3s ease;" onmouseenter="this.style.backgroundColor='var(--trampix-purple)'; this.style.borderColor='var(--trampix-purple)'; this.style.color='#ffffff'; this.style.transform='translateY(-2px)';" onmouseleave="this.style.backgroundColor='var(--trampix-green)'; this.style.borderColor='var(--trampix-green)'; this.style.color='var(--trampix-black)'; this.style.transform='none';">Curtir</button>
             </form>
         </div>
         <div class="mt-6 text-center">

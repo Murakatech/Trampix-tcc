@@ -36,7 +36,11 @@ class CompanyVacancyController extends Controller
 
             // Query base para vagas da empresa
             $query = JobVacancy::where('company_id', $company->id)
-                ->with('applications');
+                ->with('applications')
+                // Não listar vagas já finalizadas e avaliadas pela empresa
+                ->whereDoesntHave('applications', function($q){
+                    $q->where('status', 'ended')->whereNotNull('evaluated_by_company_at');
+                });
 
             // Filtros
             if ($request->filled('category')) {
@@ -65,9 +69,23 @@ class CompanyVacancyController extends Controller
 
             // Estatísticas
             $stats = [
-                'total' => JobVacancy::where('company_id', $company->id)->count(),
-                'active' => JobVacancy::where('company_id', $company->id)->where('status', 'active')->count(),
-                'closed' => JobVacancy::where('company_id', $company->id)->where('status', 'closed')->count(),
+                'total' => JobVacancy::where('company_id', $company->id)
+                    ->whereDoesntHave('applications', function($q){
+                        $q->where('status', 'ended')->whereNotNull('evaluated_by_company_at');
+                    })
+                    ->count(),
+                'active' => JobVacancy::where('company_id', $company->id)
+                    ->where('status', 'active')
+                    ->whereDoesntHave('applications', function($q){
+                        $q->where('status', 'ended')->whereNotNull('evaluated_by_company_at');
+                    })
+                    ->count(),
+                'closed' => JobVacancy::where('company_id', $company->id)
+                    ->where('status', 'closed')
+                    ->whereDoesntHave('applications', function($q){
+                        $q->where('status', 'ended')->whereNotNull('evaluated_by_company_at');
+                    })
+                    ->count(),
                 'total_applications' => \App\Models\Application::whereIn('job_vacancy_id',
                     JobVacancy::where('company_id', $company->id)->pluck('id')
                 )->count(),

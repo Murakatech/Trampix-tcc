@@ -233,6 +233,11 @@
                                                     <span class="badge badge-soft-green me-2">
                                                         <i class="fas fa-check me-1"></i>Aceito
                                                     </span>
+                                                    <a href="{{ route('company.vagas.show', $application->jobVacancy->id) }}" 
+                                                       class="btn btn-company-primary btn-compact btn-glow me-2" 
+                                                       title="Ver detalhes da vaga">
+                                                        <i class="fas fa-eye me-1"></i>Detalhes da vaga
+                                                    </a>
                                                     <form method="POST" action="{{ route('applications.updateStatus', $application) }}" class="d-inline" id="finalizeForm-{{ $application->id }}">
                                                         @csrf @method('PATCH')
                                                         <input type="hidden" name="status" value="ended">

@@ -857,9 +857,10 @@ function handleDeleteClick(btn) {
                         {{-- Header do Card --}}
                         <div class="flex items-start justify-between mb-4">
                             <div class="flex-1">
+                                @php $isAccepted = auth()->check() && auth()->user()->freelancer ? $vaga->applications()->where('freelancer_id', auth()->user()->freelancer->id)->where('status','accepted')->exists() : false; @endphp
                                 <h3 id="job-title-{{ $vaga->id }}" 
                                     class="text-lg font-semibold text-gray-900 mb-2 hover:text-purple-600 transition-colors duration-200">
-                                    <a href="{{ route('vagas.show', $vaga->id) }}" 
+                                    <a href="{{ route($isAccepted ? 'vagas.status' : 'vagas.show', $vaga->id) }}" 
                                        class="text-decoration-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded"
                                        aria-describedby="job-company-{{ $vaga->id }} job-description-{{ $vaga->id }}">
                                         {{ Str::limit($vaga->title, 50) }}
@@ -956,10 +957,10 @@ function handleDeleteClick(btn) {
 
                         {{-- Ações --}}
                         <div class="flex flex-wrap gap-3 mt-4" role="group" aria-label="Ações disponíveis para esta vaga">
-                            <a href="{{ route('vagas.show', $vaga->id) }}" 
+                            <a href="{{ route($isAccepted ? 'vagas.status' : 'vagas.show', $vaga->id) }}" 
                                class="card-btn card-btn-primary"
-                               aria-label="Ver detalhes completos da vaga {{ $vaga->title }}">
-                                <i class="fas fa-eye mr-2" aria-hidden="true"></i>Ver Detalhes
+                               aria-label="{{ $isAccepted ? 'Ver status da vaga ' . $vaga->title : 'Ver detalhes completos da vaga ' . $vaga->title }}">
+                                <i class="fas fa-eye mr-2" aria-hidden="true"></i>{{ $isAccepted ? 'Status da Vaga' : 'Ver Detalhes' }}
                             </a>
 
                             {{-- Ver Perfil da Empresa --}}
@@ -982,10 +983,10 @@ function handleDeleteClick(btn) {
                                             ->exists();
                                     @endphp
                                     @if (!$hasApplied)
-                                        <a href="{{ route('vagas.show', $vaga->id) }}"
+                                        <a href="{{ route($isAccepted ? 'vagas.status' : 'vagas.show', $vaga->id) }}"
                                            class="card-btn card-btn-outline"
-                                           aria-label="Ir para a vaga {{ $vaga->title }}">
-                                            <i class="fas fa-arrow-right mr-2" aria-hidden="true"></i>Ir para a vaga
+                                           aria-label="{{ $isAccepted ? 'Ir para status da vaga ' . $vaga->title : 'Ir para a vaga ' . $vaga->title }}">
+                                            <i class="fas fa-arrow-right mr-2" aria-hidden="true"></i>{{ $isAccepted ? 'Status da Vaga' : 'Ir para a vaga' }}
                                         </a>
                                     @else
                                         <button type="button" 

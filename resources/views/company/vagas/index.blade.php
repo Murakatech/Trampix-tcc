@@ -164,13 +164,21 @@
                         </thead>
                         <tbody>
                             @foreach ($vagas as $vaga)
-                                <tr>
+                                @php $hasActivePartnership = $vaga->applications->where('status', 'accepted')->isNotEmpty(); @endphp
+                                <tr {!! $hasActivePartnership ? 'style="border-left: 4px solid #10b981;"' : '' !!}>
                                     <td>
                                         <a href="{{ route('company.vagas.show', $vaga->id) }}" class="text-decoration-none fw-bold">
                                             {{ $vaga->title }}
                                         </a>
                                         @if($vaga->description)
                                             <br><small class="text-muted">{{ Str::limit($vaga->description, 50) }}</small>
+                                        @endif
+                                        @if($hasActivePartnership)
+                                            <div class="mt-1">
+                                                <span class="badge badge-soft-green">
+                                                    <i class="fas fa-handshake me-1"></i>Parceria ativa
+                                                </span>
+                                            </div>
                                         @endif
                                     </td>
                                     <td>
@@ -195,7 +203,16 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <span class="badge bg-primary">{{ $vaga->applications->count() }}</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge bg-primary">{{ $vaga->applications->count() }}</span>
+                                            @if($hasActivePartnership)
+                                                <a href="{{ route('company.vagas.show', $vaga->id) }}" 
+                                                   class="btn btn-sm btn-company-primary btn-glow"
+                                                   title="Ver detalhes da vaga">
+                                                    <i class="fas fa-eye me-1"></i>Detalhes
+                                                </a>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <small class="text-muted">{{ $vaga->created_at->format('d/m/Y') }}</small>

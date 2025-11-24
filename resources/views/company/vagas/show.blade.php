@@ -168,43 +168,83 @@
             {{-- Parcerias Ativas em destaque --}}
             @php
                 $acceptedApplications = $vaga->applications->where('status', 'accepted');
+                $endedApplications = $vaga->applications->where('status', 'ended');
             @endphp
             <div class="trampix-card mb-4 card-featured">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="trampix-h3 mb-0">Parcerias Ativas</h3>
-                    <span class="badge bg-success">{{ $acceptedApplications->count() }}
-                        {{ $acceptedApplications->count() === 1 ? 'ativo' : 'ativos' }}</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-success">{{ $acceptedApplications->count() }} {{ $acceptedApplications->count() === 1 ? 'ativo' : 'ativos' }}</span>
+                        <span class="badge bg-secondary">{{ $endedApplications->count() }} finalizado(s)</span>
+                    </div>
                 </div>
                 <div class="card-body">
-                    @if($acceptedApplications->isEmpty())
+                    @if($acceptedApplications->isEmpty() && $endedApplications->isEmpty())
                         <div class="text-center text-muted py-3">
                             <i class="fas fa-handshake mb-2" style="font-size: 1.5rem;"></i>
                             <div>Nenhuma parceria ativa ainda.</div>
                         </div>
                     @else
-                        <ul class="list-group list-group-flush">
-                            @foreach($acceptedApplications as $app)
-                                <li class="list-group-item d-flex align-items-center justify-content-between">
-                                    <div class="d-flex align-items-center">
-                                        <div class="avatar-circle company me-2">
-                                            {{ substr($app->freelancer->user->name, 0, 1) }}
+                        @if($acceptedApplications->isNotEmpty())
+                            <ul class="list-group list-group-flush mb-3">
+                                @foreach($acceptedApplications as $app)
+                                    <li class="list-group-item d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle company me-2">
+                                                {{ substr($app->freelancer->user->name, 0, 1) }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ $app->freelancer->user->name }}</div>
+                                                <small class="text-muted">{{ $app->freelancer->profession ?? 'Freelancer' }}</small>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div class="fw-medium">{{ $app->freelancer->user->name }}</div>
-                                            <small class="text-muted">{{ $app->freelancer->profession ?? 'Freelancer' }}</small>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('freelancers.show', $app->freelancer) }}" class="btn btn-sm btn-company-outline-primary" target="_blank">
+                                                <i class="fas fa-user me-1"></i>Ver Perfil
+                                            </a>
+                                            <a href="{{ route('vagas.status', $vaga->id) }}" class="btn btn-company-primary btn-prominent btn-glow btn-pulse">
+                                                <i class="fas fa-info-circle me-1"></i>Status da Vaga
+                                            </a>
                                         </div>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        <a href="{{ route('freelancers.show', $app->freelancer) }}" class="btn btn-sm btn-company-outline-primary" target="_blank">
-                                            <i class="fas fa-user me-1"></i>Ver Perfil
-                                        </a>
-                                        <a href="{{ route('vagas.status', $vaga->id) }}" class="btn btn-company-primary btn-prominent btn-glow btn-pulse">
-                                            <i class="fas fa-info-circle me-1"></i>Status da Vaga
-                                        </a>
-                                    </div>
-                                </li>
-                            @endforeach
-                        </ul>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
+
+                        @if($endedApplications->isNotEmpty())
+                            <div class="mb-2">
+                                <span class="badge bg-secondary"><i class="fas fa-flag-checkered me-1"></i>Parceria finalizada</span>
+                            </div>
+                            <ul class="list-group list-group-flush">
+                                @foreach($endedApplications as $app)
+                                    <li class="list-group-item d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle company me-2">
+                                                {{ substr($app->freelancer->user->name, 0, 1) }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-medium">{{ $app->freelancer->user->name }}</div>
+                                                <small class="text-muted">{{ $app->freelancer->profession ?? 'Freelancer' }}</small>
+                                            </div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="{{ route('vagas.status', $vaga->id) }}" class="btn btn-company-outline-secondary btn-compact">
+                                                <i class="fas fa-info-circle me-1"></i>Status da Vaga
+                                            </a>
+                                            @if(!$app->evaluated_by_company_at)
+                                                <a href="{{ route('applications.evaluate.create', $app) }}" class="btn btn-company-primary btn-compact btn-glow">
+                                                    <i class="fas fa-star me-1"></i>Avaliar
+                                                </a>
+                                            @else
+                                                <a href="{{ route('applications.evaluate.show', $app) }}" class="btn btn-outline-secondary btn-compact">
+                                                    <i class="fas fa-list me-1"></i>Avaliação Completa
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -303,6 +343,8 @@
                                             <span class="badge bg-warning">Pendente</span>
                                         @elseif($application->status === 'accepted')
                                             <span class="badge bg-success">Aceita</span>
+                                        @elseif($application->status === 'ended')
+                                            <span class="badge bg-secondary">Finalizada</span>
                                         @else
                                             <span class="badge bg-danger">Rejeitada</span>
                                         @endif

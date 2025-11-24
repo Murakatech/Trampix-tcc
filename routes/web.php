@@ -77,10 +77,10 @@ Route::middleware(['auth'])->group(function () {
             $liked = collect(session('connect_liked', []))->map(fn($v)=> (int)$v)->all();
             $exclude = array_values(array_unique(array_merge($rejected, $liked)));
             if ($currentId) {
-                $job = \App\Models\JobVacancy::query()->active()->with('company')->where('id', $currentId)->first();
+                $job = \App\Models\JobVacancy::query()->publicList()->with('company')->where('id', $currentId)->first();
             }
             if (!$job) {
-                $query = \App\Models\JobVacancy::query()->active()->with('company');
+                $query = \App\Models\JobVacancy::query()->publicList()->with('company');
                 if (!empty($exclude)) {
                     $query->whereNotIn('id', $exclude);
                 }
@@ -96,14 +96,28 @@ Route::middleware(['auth'])->group(function () {
             $selected = (int) request()->query('job_id', 0);
             $currentCompanyJobId = (int) (session('connect_company_job_id') ?? 0);
             if ($selected > 0) {
-                $own = \App\Models\JobVacancy::query()->where('company_id', $company->id)->where('id', $selected)->first();
+                $own = \App\Models\JobVacancy::query()
+                    ->where('company_id', $company->id)
+                    ->where('id', $selected)
+                    ->where('status', 'active')
+                    ->whereDoesntHave('applications', function($q){ $q->whereIn('status', ['accepted','ended']); })
+                    ->first();
                 if ($own) {
                     session(['connect_company_job_id' => $own->id]);
                     $currentCompanyJobId = $own->id;
                 }
             }
             if ($currentCompanyJobId > 0) {
-                $companyJob = \App\Models\JobVacancy::with('company')->find($currentCompanyJobId);
+                $companyJob = \App\Models\JobVacancy::query()
+                    ->where('company_id', $company->id)
+                    ->where('id', $currentCompanyJobId)
+                    ->where('status', 'active')
+                    ->whereDoesntHave('applications', function($q){ $q->whereIn('status', ['accepted','ended']); })
+                    ->with('company')
+                    ->first();
+                if (!$companyJob) {
+                    session()->forget('connect_company_job_id');
+                }
             }
             $currentFreelancerId = (int) (session('connect_current_freelancer_id') ?? 0);
             if ($currentFreelancerId > 0) {
@@ -398,7 +412,12 @@ Route::middleware(['auth', 'can:isCompany'])->group(function () {
     Route::get('/connect/jobs', function () {
         $user = request()->user();
         $company = $user->company;
-        $companyVacancies = $company ? $company->vacancies()->active()->with(['company.segment','category.segment'])->latest()->get() : collect();
+        $companyVacancies = $company ? $company->vacancies()
+            ->active()
+            ->whereDoesntHave('applications', function($q){ $q->whereIn('status', ['accepted','ended']); })
+            ->with(['company.segment','category.segment'])
+            ->latest()
+            ->get() : collect();
         $grouped = $companyVacancies->groupBy(function ($job) {
             $segName = null;
             if ($job->category && $job->category->segment) {

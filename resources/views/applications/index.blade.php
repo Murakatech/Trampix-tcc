@@ -90,18 +90,22 @@
                                     </td>
                                     <td>
                                         @if($application->status === 'accepted')
-                            <span class="badge bg-success fs-6" id="accepted-applications">
-                                <i class="fas fa-check-circle me-1"></i>Aceita
-                            </span>
-                        @elseif($application->status === 'rejected')
-                            <span class="badge bg-danger fs-6">
-                                <i class="fas fa-times-circle me-1"></i>Rejeitada
-                            </span>
-                        @else
-                            <span class="badge bg-warning fs-6" id="pending-applications">
-                                <i class="fas fa-clock me-1"></i>Pendente
-                            </span>
-                        @endif
+                                            <span class="badge bg-success fs-6" id="accepted-applications">
+                                                <i class="fas fa-check-circle me-1"></i>Aceita
+                                            </span>
+                                        @elseif($application->status === 'ended')
+                                            <span class="badge bg-secondary fs-6">
+                                                <i class="fas fa-flag-checkered me-1"></i>Finalizado
+                                            </span>
+                                        @elseif($application->status === 'rejected')
+                                            <span class="badge bg-danger fs-6">
+                                                <i class="fas fa-times-circle me-1"></i>Rejeitada
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning fs-6" id="pending-applications">
+                                                <i class="fas fa-clock me-1"></i>Pendente
+                                            </span>
+                                        @endif
                                     </td>
                                     <td>
                                         <small>{{ $application->created_at->format('d/m/Y H:i') }}</small>
@@ -111,8 +115,19 @@
                                             @if($application->status === 'accepted')
                                                 <a href="{{ route('vagas.status', $application->jobVacancy) }}" 
                                                    class="btn btn-sm btn-outline-primary">
-                                                    Ver Vaga
+                                                    Status da Vaga
                                                 </a>
+                                            @elseif($application->status === 'ended')
+                                                <a href="{{ route('vagas.status', $application->jobVacancy) }}" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    Status da Vaga
+                                                </a>
+                                                @if(!$application->freelancer_rating)
+                                                    <a href="{{ route('applications.evaluate.create', $application) }}" 
+                                                       class="btn btn-sm btn-primary">
+                                                        Avaliar empresa
+                                                    </a>
+                                                @endif
                                             @else
                                                 <a href="{{ route('vagas.show', $application->jobVacancy) }}" 
                                                    class="btn btn-sm btn-outline-primary">
